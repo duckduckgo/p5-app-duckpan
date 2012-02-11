@@ -1,0 +1,30 @@
+#!/usr/bin/env perl
+# PODNAME: duckpan
+# ABSTRACT: Command line tool for using the DuckPAN of DuckDuckGo
+
+$|=1;
+
+use utf8::all;
+use App::DuckPAN;
+App::DuckPAN->new_with_cmd;
+
+__END__
+
+=head1 SYNPOSIS
+  
+=head1 DESCRIPTION
+
+=head1 SUPPORT
+
+IRC
+
+  Join us on #duckduckgo on irc.freenode.net.
+
+Repository
+
+  https://github.com/duckduckgo/p5-app-duckpan
+  Pull request and additional contributors are welcome
+ 
+Issue Tracker
+
+  https://github.com/duckduckgo/p5-app-duckpan/issues
