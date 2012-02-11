@@ -64,7 +64,8 @@ sub setup_dukgo {
 		if ($self->term->ask_yn( prompt => 'Wanna try again? ' )) {
 			$self->setup_dukgo;
 		} else {
-			die "A login to https://dukgo.com/ is required to work with DuckPAN";
+			print "[ERROR] A login to https://dukgo.com/ is required to work with DuckPAN\n";
+			exit 1;
 		}
 	}
 }
