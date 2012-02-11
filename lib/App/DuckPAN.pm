@@ -2,12 +2,50 @@ package App::DuckPAN;
 
 use Moo;
 use MooX::Cmd;
+use MooX::Options;
 use App::DuckPAN::Config;
 use App::DuckPAN::Help;
 use File::Which;
 use Class::Load ':all';
+use HTTP::Request::Common qw( GET POST );
+use HTTP::Status;
+use LWP::UserAgent;
 
 our $VERSION ||= '0.000';
+
+option dukgo_login => (
+	is => 'ro',
+	lazy => 1,
+	default => sub { 'https://dukgo.com/my/login' }
+);
+
+sub _ua_string {
+  my ($self) = @_;
+  my $class   = ref $self || $self;
+  my $version = $class->VERSION;
+ 
+  return "$class/$version";
+}
+
+option http_proxy => (
+	is => 'ro',
+	predicate => 'has_http_proxy',
+);
+
+has http => (
+	is => 'ro',
+	builder => '_build_http',
+	lazy => 1,
+);
+
+sub _build_http {
+	my ( $self ) = @_;
+	my $agent = LWP::UserAgent->new;
+	$agent->agent($self->_ua_string);
+	$agent->env_proxy;
+	$agent->proxy( http => $self->http_proxy ) if $self->has_http_proxy;
+	return $agent;
+}
 
 has config => (
 	is => 'ro',
@@ -101,5 +139,14 @@ sub check_wget {
 	# print "\n";
 	# return $ok;
 # }
+
+sub checking_dukgo_user {
+	my ( $self, $user, $pass ) = @_;
+	my $response = $self->http->request(POST($self->dukgo_login, Content => {
+		username => $user,
+		password => $pass,
+	}));
+	$response->code == 302 ? 1 : 0; # workaround, need something in dukgo
+}
 
 1;
