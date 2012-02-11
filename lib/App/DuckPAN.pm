@@ -1,4 +1,5 @@
 package App::DuckPAN;
+# ABSTRACT: The DuckDuckGo DuckPAN client
 
 use Moo;
 use MooX::Cmd;
@@ -85,7 +86,7 @@ sub execute {
 sub check_requirements {
 	my ( $self ) = @_;
 	my $fail = 0;
-	print "Checking your environment for the DuckPAN requirements\n";
+	print "\nChecking your environment for the DuckPAN requirements\n\n";
 	#$fail = 1 unless $self->check_locallib;
 	$fail = 1 unless $self->check_git;
 	$fail = 1 unless $self->check_wget;

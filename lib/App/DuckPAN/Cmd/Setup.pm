@@ -39,11 +39,11 @@ sub _build_term { Term::ReadLine->new('duckpan') }
 sub run {
 	my ( $self ) = @_;
 	$self->app->check_requirements;
-	print "Initalizing DuckPAN Environment\n";
-	$self->setup_configdir;
-	print "Getting your https://dukgo.com/ user informations\n";
+	print "\nGetting your https://dukgo.com/ user informations\n\n";
 	$self->setup_dukgo;
-	print "Initalizing Dist::Zilla for Perl5\n";
+	print "\nInitalizing DuckPAN Environment\n\n";
+	$self->setup_configdir;
+	print "\nInitalizing Dist::Zilla for Perl5\n";
 	$self->app->perl->setup(
 		dukgo_user => $self->user,
 		dukgo_pass => $self->pass,
