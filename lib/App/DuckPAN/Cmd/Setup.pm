@@ -96,15 +96,19 @@ sub run {
 		print "\nGetting your https://dukgo.com/ user informations\n\n";
 		$self->setup_dukgo;
 	}
-	print "\nInitalizing DuckPAN Environment\n\n";
-	$self->setup_configdir;
-	print "\nInitalizing Dist::Zilla for Perl5\n";
-	$self->app->perl->setup(
-		dukgo_user => $self->user,
-		dukgo_pass => $self->pass,
+	my %vars = (
+		user => $self->user,
+		pass => $self->pass,
 		name => $self->name,
 		email => $self->email,
 	);
+	print "\nInitalizing DuckPAN environment\n\n";
+	$self->setup(%vars);
+	print "\nInitalizing Dist::Zilla for Perl5\n\n";
+	$self->app->perl->setup(%vars);
+	print "Installing DDG base Perl modules from DuckPAN\n\n";
+	$self->app->perl->duckpan_install('DDG');
+	print "\nSetup complete.\n\n";
 }
 
 sub setup_name {
@@ -160,11 +164,19 @@ sub setup_dukgo {
 	}
 }
 
-sub setup_configdir {
-	my ( $self ) = @_;
-	my $configdir = $self->app->config_path;
-	mkdir $configdir unless -d $configdir;
-	
+sub setup {
+	my ( $self, %params ) = @_;
+	my $config = $self->app->get_config;
+	$config = {} unless $config;
+	$config->{USERINFO} = {} unless defined $config->{USERINFO};
+	$config->{DUKGO} = {} unless defined $config->{DUKGO};
+	for (qw( name email )) {
+		$config->{USERINFO}->{$_} = $params{$_} if defined $params{$_};
+	}
+	for (qw( user pass )) {
+		$config->{DUKGO}->{$_} = $params{$_} if defined $params{$_};
+	}
+	$self->app->set_config($config);
 }
 
 1;

@@ -54,6 +54,9 @@ has config => (
 	lazy => 1,
 	handles => [qw(
 		config_path
+		config_file
+		set_config
+		get_config
 	)]
 );
 
@@ -80,7 +83,22 @@ sub _build_perl {
 
 sub execute {
 	my ( $self, $args, $chain ) = @_;
+	my @arr_args = @{$args};
+	if (@arr_args) {
+		my @modules;
+		my @left_args;
+		for (@arr_args) {
+			my $lc = lc($_);
+			if ($lc =~ /^ddg/) {
+				push @modules, $_;
+			} else {
+				push @left_args, $_;
+			}
+		}
+		return $self->perl->duckpan_install(@modules) unless @left_args;
+	}
 	print $self->help->help;
+	exit 0;
 }
 
 sub check_requirements {
@@ -90,6 +108,10 @@ sub check_requirements {
 	#$fail = 1 unless $self->check_locallib;
 	$fail = 1 unless $self->check_git;
 	$fail = 1 unless $self->check_wget;
+	if ($fail) {
+		print "[ERROR] Requirements fails\n";
+		exit 1;
+	}
 }
 
 sub check_git {
