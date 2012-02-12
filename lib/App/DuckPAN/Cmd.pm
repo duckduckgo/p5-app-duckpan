@@ -12,7 +12,7 @@ sub execute {
 	my ( $self, $args, $chain ) = @_;
 	my $app = shift @{$chain};
 	$self->app($app);
-	$self->run;
+	$self->run(@{$args});
 }
 
 1;
