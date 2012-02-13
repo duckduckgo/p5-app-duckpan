@@ -7,7 +7,7 @@ use MooX::Options;
 
 sub run {
 	my ( $self ) = @_;
-	$self->app->check_requirements;
+	exit 1 unless $self->app->check_requirements;
 }
 
 1;

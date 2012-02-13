@@ -110,8 +110,9 @@ sub check_requirements {
 	$fail = 1 unless $self->check_wget;
 	if ($fail) {
 		print "[ERROR] Requirements fails\n";
-		exit 1;
+		return 1;
 	}
+	return 0;
 }
 
 sub check_git {

@@ -58,7 +58,7 @@ sub _build_term { Term::ReadLine->new('duckpan') }
 
 sub run {
 	my ( $self ) = @_;
-	$self->app->check_requirements;
+	exit 1 unless $self->app->check_requirements;
 	if (my $dzil_config = $self->app->perl->get_dzil_config) {
 		print "\nFound existing Dist::Zilla config!\n\n";
 		my $name = $dzil_config->{'%User'}->{name};
@@ -71,7 +71,7 @@ sub run {
 		print "Password at https://dukgo.com/: ".$pass."\n" if $pass;
 		if ($name || $email || $user || $pass) {
 			print "\n";
-			if ($self->term->ask_yn( prompt => 'Do you wanna use those? ' )) {
+			if ($self->term->ask_yn( prompt => 'Do you wanna use those? ', default => 'y' )) {
 				if ($user && $pass) {
 					print "\nChecking your account on https://dukgo.com/... ";
 					if ($self->app->checking_dukgo_user($user,$pass)) {
@@ -118,7 +118,7 @@ sub setup_name {
 		$self->name($name);
 	} else {
 		print "We need some kind of name!\n";
-		if ($self->term->ask_yn( prompt => 'Wanna try again? ' )) {
+		if ($self->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->setup_name;
 		} else {
 			print "[ERROR] A name is required to work with DuckPAN\n";
@@ -134,7 +134,7 @@ sub setup_email {
 		$self->email($email);
 	} else {
 		print "No valid email given!\n";
-		if ($self->term->ask_yn( prompt => 'Wanna try again? ' )) {
+		if ($self->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->setup_email;
 		} else {
 			print "[ERROR] An email is required to work with DuckPAN\n";
@@ -154,7 +154,7 @@ sub setup_dukgo {
 		$self->pass($pass);
 	} else {
 		print "failed!\n";
-		if ($self->term->ask_yn( prompt => 'Wanna try again? ' )) {
+		if ($self->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->clear_user if $self->has_user;
 			$self->setup_dukgo;
 		} else {
