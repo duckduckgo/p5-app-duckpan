@@ -20,7 +20,6 @@ has config_file => (
 sub set_config {
 	my ( $self, $config ) = @_;
 	$self->config_path->mkpath unless -d $self->config_path;
-	use DDP; p($self->config_file);
 	Config::INI::Writer->write_file($config,$self->config_file);
 }
 

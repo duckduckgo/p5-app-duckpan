@@ -11,6 +11,12 @@ use Class::Load ':all';
 use HTTP::Request::Common qw( GET POST );
 use HTTP::Status;
 use LWP::UserAgent;
+use LWP::Simple;
+use Parse::CPAN::Packages::Fast;
+use File::Temp qw/ :POSIX /;
+use Class::Load ':all';
+use Term::UI;
+use Term::ReadLine;
 
 our $VERSION ||= '0.000';
 
@@ -18,6 +24,24 @@ option dukgo_login => (
 	is => 'ro',
 	lazy => 1,
 	default => sub { 'https://dukgo.com/my/login' }
+);
+
+option no_check => (
+	is => 'ro',
+	lazy => 1,
+	default => sub { 0 }
+);
+
+option duckpan_packages => (
+	is => 'ro',
+	lazy => 1,
+	default => sub { shift->duckpan.'/modules/02packages.details.txt.gz' }
+);
+
+option duckpan => (
+	is => 'ro',
+	lazy => 1,
+	default => sub { 'http://duckpan.org/' }
 );
 
 sub _ua_string {
@@ -32,6 +56,14 @@ option http_proxy => (
 	is => 'ro',
 	predicate => 'has_http_proxy',
 );
+
+has term => (
+	is => 'ro',
+	lazy => 1,
+	builder => '_build_term',
+);
+
+sub _build_term { Term::ReadLine->new('duckpan') }
 
 has http => (
 	is => 'ro',
@@ -88,8 +120,7 @@ sub execute {
 		my @modules;
 		my @left_args;
 		for (@arr_args) {
-			my $lc = lc($_);
-			if ($lc =~ /^ddg/) {
+			if ($_ =~ /^ddg/i) {
 				push @modules, $_;
 			} else {
 				push @left_args, $_;
@@ -106,6 +137,7 @@ sub check_requirements {
 	my $fail = 0;
 	print "\nChecking your environment for the DuckPAN requirements\n\n";
 	#$fail = 1 unless $self->check_locallib;
+	$fail = 1 unless $self->check_ddg;
 	$fail = 1 unless $self->check_git;
 	$fail = 1 unless $self->check_wget;
 	if ($fail) {
@@ -145,6 +177,40 @@ sub check_wget {
 		print $wget;
 	} else {
 		print "No!"; $ok = 0;
+	}
+	print "\n";
+	return $ok;
+}
+
+sub get_local_ddg_version {
+	my $installed_version;
+	eval {
+		load_class('DDG');
+		$installed_version = $DDG::VERSION;
+	};
+	return $installed_version;
+}
+
+sub check_ddg {
+	my ( $self ) = @_;
+	my $ok = 1;
+	print "Checking for latest DDG Perl package... ";
+	my $tempfile = tmpnam;
+	if (is_success(getstore($self->duckpan_packages,$tempfile))) {
+		my $packages = Parse::CPAN::Packages::Fast->new($tempfile);
+		my $module = $packages->package('DDG');
+		my $latest = $self->duckpan.'authors/id/'.$module->distribution->pathname;
+		my $installed_version = $self->get_local_ddg_version;
+		if ($installed_version && version->parse($installed_version) == version->parse($module->version)) {
+			print $module->version;
+		} else {
+			print "You got ".$installed_version.", latest is ".$module->version."!\n";
+			print "[ERROR] Please install latest DDG with: cpanm ".$latest;
+			$ok = 0;
+		}
+	} else {
+		print "[ERROR] Can't download ".$self->duckpan_packages;
+		$ok = 0;
 	}
 	print "\n";
 	return $ok;

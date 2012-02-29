@@ -4,8 +4,6 @@ use Moo;
 with qw( App::DuckPAN::Cmd );
 
 use MooX::Options;
-use Term::UI;
-use Term::ReadLine;
 use Email::Valid;
 
 option override => ( is => 'ro' );
@@ -18,7 +16,7 @@ option user => (
 	default => sub { shift->get_user }
 );
 
-sub get_user { shift->term->get_reply( prompt => 'What is your username on https://dukgo.com/ ? ' ) }
+sub get_user { shift->app->term->get_reply( prompt => 'What is your username on https://dukgo.com/ ? ' ) }
 
 option pass => (
 	is => 'rw',
@@ -27,7 +25,7 @@ option pass => (
 	default => sub { shift->get_pass }
 );
 
-sub get_pass { shift->term->get_reply( prompt => 'What is your password on https://dukgo.com/ ? ' ) }
+sub get_pass { shift->app->term->get_reply( prompt => 'What is your password on https://dukgo.com/ ? ' ) }
 
 option name => (
 	is => 'rw',
@@ -36,7 +34,7 @@ option name => (
 	default => sub { shift->get_name }
 );
 
-sub get_name { shift->term->get_reply( prompt => 'What is your name (real name not required) ? ' ) }
+sub get_name { shift->app->term->get_reply( prompt => 'What is your name (real name not required) ? ' ) }
 
 option email => (
 	is => 'rw',
@@ -46,15 +44,7 @@ option email => (
 	default => sub { shift->get_email }
 );
 
-sub get_email { shift->term->get_reply( prompt => 'What is your email (public in your release) ? ' ) }
-
-has term => (
-	is => 'ro',
-	lazy => 1,
-	builder => '_build_term',
-);
-
-sub _build_term { Term::ReadLine->new('duckpan') }
+sub get_email { shift->app->term->get_reply( prompt => 'What is your email (public in your release) ? ' ) }
 
 sub run {
 	my ( $self ) = @_;
@@ -71,7 +61,7 @@ sub run {
 		print "Password at https://dukgo.com/: ".$pass."\n" if $pass;
 		if ($name || $email || $user || $pass) {
 			print "\n";
-			if ($self->term->ask_yn( prompt => 'Do you wanna use those? ', default => 'y' )) {
+			if ($self->app->term->ask_yn( prompt => 'Do you wanna use those? ', default => 'y' )) {
 				if ($user && $pass) {
 					print "\nChecking your account on https://dukgo.com/... ";
 					if ($self->app->checking_dukgo_user($user,$pass)) {
@@ -118,7 +108,7 @@ sub setup_name {
 		$self->name($name);
 	} else {
 		print "We need some kind of name!\n";
-		if ($self->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
+		if ($self->app->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->setup_name;
 		} else {
 			print "[ERROR] A name is required to work with DuckPAN\n";
@@ -134,7 +124,7 @@ sub setup_email {
 		$self->email($email);
 	} else {
 		print "No valid email given!\n";
-		if ($self->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
+		if ($self->app->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->setup_email;
 		} else {
 			print "[ERROR] An email is required to work with DuckPAN\n";
@@ -154,7 +144,7 @@ sub setup_dukgo {
 		$self->pass($pass);
 	} else {
 		print "failed!\n";
-		if ($self->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
+		if ($self->app->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->clear_user if $self->has_user;
 			$self->setup_dukgo;
 		} else {
