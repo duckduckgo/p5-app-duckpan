@@ -9,11 +9,13 @@ use Path::Class;
 use Config::INI::Reader;
 use Config::INI::Writer;
 use Data::Dumper;
+use LWP::Simple;
+use File::Temp qw/ :POSIX /;
+use version;
+use Class::Load ':all';
 
 sub dzil_root { Dist::Zilla::Util->_global_config_root }
 sub dzil_config { file(shift->dzil_root,'config.ini') }
-
-sub duckpan_url { 'http://duckpan.org/' }
 
 sub setup {
 	my ( $self, %params ) = @_;
@@ -35,12 +37,41 @@ sub setup {
 	$self->set_dzil_config($config);
 }
 
+sub get_local_version {
+	# TODO
+}
+
 sub duckpan_install {
 	my ( $self, @modules ) = @_;
-	my $mirror = $self->duckpan_url;
+	my $mirror = $self->app->duckpan;
 	my $modules_string = join(' ',@modules);
-	my $return = system("cpanm --mirror=$mirror --mirror-only $modules_string");
-	return $return ? 0 : 1;
+	my $tempfile = tmpnam;
+	if (is_success(getstore($self->app->duckpan_packages,$tempfile))) {
+		my $packages = Parse::CPAN::Packages::Fast->new($tempfile);
+		my @to_install;
+		my $error = 0;
+		for (@modules) {
+			my $module = $packages->package($_);
+			if ($module) {
+				# TODO
+				# my $localver = get_local_version($_);
+				# if ($localver && version->parse($localver) == version->parse($module->version)) {
+					# print "You already have latest version of ".$_." with ".$localver."\n";
+				# } else {
+					my $latest = $self->app->duckpan.'authors/id/'.$module->distribution->pathname;
+					push @to_install, $latest unless grep { $_ eq $latest } @to_install;
+				# }
+			} else {
+				print "[ERROR] Can't find package ".$_." on ".$self->app->duckpan."\n";
+				$error = 1;
+			}
+		}
+		return 1 if $error;
+		return system("cpanm ".join(" ",@to_install));
+	} else {
+		print "[ERROR] Can't reach duckpan at ".$self->app->duckpan."!\n";
+		return 1;
+	}
 }
 
 sub set_dzil_config {
