@@ -11,14 +11,60 @@ App::DuckPAN->new_with_cmd;
 __END__
 
 =head1 SYNPOSIS
+
+  # You need an account at https://dukgo.com/
+
+  duckpan check
+  # Check for the requirements to make duckpan contributions
   
+  duckpan goodie test
+  # Fire up your own CLI DuckDuckGo to test goodies
+  # Use it in the zeroclickinfo-goodies repository root
+  
+  duckpan help <command>
+  # Getting help
+
+  # TODO  
+  duckpan release
+  duckpan test
+  duckpan faq
+  # TODO
+
+  # BETA
+  duckpan setup
+  # Setup your environment for using Dist::Zilla::Plugin::UploadToDuckPAN
+  # BETA
+
 =head1 DESCRIPTION
+
+L<DuckPAN|http://duckpan.org/> is a project of L<DuckDuckGo|https://duckduckgo.com/>
+trying to make a release platform for the contributions to DuckDuckGo. DuckDuckGo
+is a search engine, using so a so called Zero-click Info to spice the search result
+with a very specific result, for example 2+2 or 200 USD to EUR. In this concept
+there is like a nearly unlimited option of what contributions are possible. Beside
+gathering those Zero-click Info plugins, we also want to use it to store all
+released style projects of DuckDuckGo (for example opensource browser plugins and
+the other user contributed tools).
+
+We are still in the buildup of all this, but you may contact us in the channel
+mentioned in the SUPPORT section down under. So anything can change, but we try to
+keep this client and already implemented features stable.
+
+=head1 SEE ALSO
+
+L<https://duckduckgo.com>
+
+L<https://github.com/duckduckgo>
+
+L<https://dukgo.com>
+
+L<http://duckpan.org>
 
 =head1 SUPPORT
 
 IRC
 
-  Join us on #duckduckgo on irc.freenode.net.
+  Join us on #duckduckgo on irc.freenode.net
 
 Repository
 

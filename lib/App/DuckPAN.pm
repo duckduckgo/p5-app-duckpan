@@ -184,7 +184,7 @@ sub check_wget {
 }
 
 sub get_local_ddg_version {
-	my $installed_version;
+	my $installed_version = "0";
 	eval {
 		load_class('DDG');
 		$installed_version = $DDG::VERSION;
@@ -235,3 +235,11 @@ sub BUILD {
 }
 
 1;
+
+__END__
+
+=head1 DESCRIPTION
+
+Please see L<duckpan>
+
+__
