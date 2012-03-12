@@ -205,8 +205,12 @@ sub check_ddg {
 		if ($installed_version && version->parse($installed_version) == version->parse($module->version)) {
 			print $module->version;
 		} else {
-			print "You got ".$installed_version.", latest is ".$module->version."!\n";
-			print "[ERROR] Please install latest DDG with: cpanm ".$latest;
+			if ($installed_version) {
+				print "You got ".$installed_version.", latest is ".$module->version."!\n";
+			} else {
+				print "You dont have it installed at all, latest is ".$module->version."!\n";
+			}
+			print "[ERROR] Please install latest DDG with: duckpan DDG";
 			$ok = 0;
 		}
 	} else {
