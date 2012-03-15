@@ -41,6 +41,14 @@ sub get_local_version {
 	# TODO
 }
 
+sub cpanminus_install_error {
+	print_text(
+		"[ERROR] Failure on installation of modules!",
+		"This could have several reasons, for first you can just restart this installer, cause it could be a pure download problem. If this isnt the case, please read the build.log mentioned on the errors and see if you can fix the problem yourself. Otherwise, please report the problem via email to use at open\@duckduckgo.com with the build.log attached. If there is no build.log mentioned, just attach the output you see.",
+	);
+	exit 1;	
+}
+
 sub duckpan_install {
 	my ( $self, @modules ) = @_;
 	my $mirror = $self->app->duckpan;
