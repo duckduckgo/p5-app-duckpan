@@ -121,7 +121,7 @@ sub execute {
 		my @modules;
 		my @left_args;
 		for (@arr_args) {
-			if ($_ =~ /^ddg/i) {
+			if ($_ =~ /^ddg/i || $_ =~ /^app::duckpan/i) {
 				push @modules, $_;
 			} else {
 				push @left_args, $_;
