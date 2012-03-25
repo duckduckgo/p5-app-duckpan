@@ -29,6 +29,10 @@ duckpan check
  Check if you fulfill all requirements for the development
  environment (will automatically gets fired on setup)
 
+duckpan query
+-------------
+ Test your plugins if they match a specific query (interactive)
+
 duckpan goodie
 --------------
  More help there about DDG::Goodie

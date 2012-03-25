@@ -17,6 +17,7 @@ sub run {
 			exit 1;
 		}
 		if ($args[0] eq 'test') {
+			print "\n[WARNING] Please use duckpan query to cover all plugins!\n";
 			shift @args;
 			if (defined $args[0] and $args[0] eq 'all') {
 				my $finder = Module::Pluggable::Object->new(
