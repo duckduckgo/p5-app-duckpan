@@ -174,7 +174,7 @@ sub check_git {
 	print "Checking for git... ";
 	if (my $git = which('git')) {
 		my $version_string = `$git --version`;
-		if ($version_string =~ m/git version (\d+)\.(\d+)\.(\d+)\.(\d+)/) {
+		if ($version_string =~ m/git version (\d+)\.(\d+)/) {
 			if ($1 <= 1 && $2 < 7) {
 				print "require minimum 1.7"; $ok = 0;
 			} else {
