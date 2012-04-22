@@ -123,6 +123,8 @@ sub execute {
 		for (@arr_args) {
 			if ($_ =~ /^ddg/i || $_ =~ /^app::duckpan/i) {
 				push @modules, $_;
+			} elsif (lc($_) eq 'duckpan') {
+				push @modules, 'App::DuckPAN';
 			} else {
 				push @left_args, $_;
 			}
