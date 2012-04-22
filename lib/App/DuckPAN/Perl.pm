@@ -90,6 +90,8 @@ sub duckpan_install {
 				my $localver = get_local_version($_);
 				if ($localver && $localver == version->parse($module->version)) {
 					print "You already have latest version of ".$_." with ".$localver."\n";
+				} elsif ($localver && $localver > version->parse($module->version)) {
+					print "You have a newer version of ".$_." with ".$localver." (duckpan has ".version->parse($module->version).")\n";
 				} else {
 					my $latest = $self->app->duckpan.'authors/id/'.$module->distribution->pathname;
 					push @to_install, $latest unless grep { $_ eq $latest } @to_install;
@@ -100,6 +102,7 @@ sub duckpan_install {
 			}
 		}
 		return 1 if $error;
+		return 0 unless @to_install;
 		return system("cpanm ".join(" ",@to_install));
 	} else {
 		print "[ERROR] Can't reach duckpan at ".$self->app->duckpan."!\n";
