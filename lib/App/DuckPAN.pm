@@ -135,7 +135,7 @@ sub execute {
 		for (@arr_args) {
 			if ($_ =~ /^ddg/i || $_ =~ /^app::duckpan/i) {
 				push @modules, $_;
-			} elsif (lc($_) eq 'duckpan') {
+			} elsif (lc($_) eq 'duckpan' or lc($_) eq 'upgrade') {
 				push @modules, 'App::DuckPAN';
 			} else {
 				push @left_args, $_;
@@ -231,12 +231,8 @@ sub check_ssh {
 }
 
 sub get_local_ddg_version {
-	my $installed_version = "0";
-	eval {
-		load_class('DDG');
-		$installed_version = $DDG::VERSION;
-	};
-	return $installed_version;
+	my ( $self ) = @_;
+	return $self->perl->get_local_version('DDG');
 }
 
 sub check_ddg {

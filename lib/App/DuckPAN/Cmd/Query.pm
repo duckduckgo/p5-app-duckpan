@@ -9,6 +9,8 @@ use Data::Printer;
 sub run {
 	my ( $self, @args ) = @_;
 
+	exit 1 unless $self->app->check_ddg;
+
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
 	print "\n(Empty query for ending test)\n";

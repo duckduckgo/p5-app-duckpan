@@ -51,7 +51,7 @@ See L<< C<version.pm>'s documentation|version >> for more on version objects.
 =cut
 
 sub get_local_version {
-	my ($module) = @_;
+	my ( $self, $module ) = @_;
 	require Module::Data;
 	my $v;
 	{
@@ -61,8 +61,8 @@ sub get_local_version {
 			1
 		} or return;
 	};
-	return if not defined $v;
-	return version->parse($v) if not ref $v;
+	return unless defined $v;
+	return version->parse($v) unless ref $v;
 	return $v;
 }
 
@@ -87,7 +87,7 @@ sub duckpan_install {
 			my $module = $packages->package($_);
 			if ($module) {
 				local $@;
-				my $localver = get_local_version($_);
+				my $localver = $self->get_local_version($_);
 				if ($localver && $localver == version->parse($module->version)) {
 					print "You already have latest version of ".$_." with ".$localver."\n";
 				} elsif ($localver && $localver > version->parse($module->version)) {
