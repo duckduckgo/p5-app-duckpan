@@ -92,6 +92,7 @@ has config => (
 		get_config
 	)]
 );
+sub cfg { shift->config(@_) }
 
 sub _build_config { App::DuckPAN::Config->new }
 
@@ -112,6 +113,17 @@ has perl => (
 sub _build_perl { 
 	load_class('App::DuckPAN::Perl');
 	App::DuckPAN::Perl->new( app => shift );
+}
+
+has ddg => (
+	is => 'ro',
+	builder => '_build_ddg',
+	lazy => 1,
+);
+
+sub _build_ddg { 
+	load_class('App::DuckPAN::DDG');
+	App::DuckPAN::DDG->new( app => shift );
 }
 
 sub execute {

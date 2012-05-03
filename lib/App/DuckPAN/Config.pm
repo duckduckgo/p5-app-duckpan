@@ -1,21 +1,18 @@
 package App::DuckPAN::Config;
 
 use Moo;
+use MooX::HasEnv;
 use Path::Class;
 use Config::INI::Reader;
 use Config::INI::Writer;
 
-has config_path => (
-	is => 'ro',
-	lazy => 1,
-	default => sub { defined $ENV{DUCKPAN_CONFIG_PATH} ? $ENV{DUCKPAN_CONFIG_PATH} : dir($ENV{HOME},'.duckpan') },
-);
-
+has_env config_path => DUCKPAN_CONFIG_PATH => dir($ENV{HOME},'.duckpan');
 has config_file => (
 	is => 'ro',
 	lazy => 1,
-	default => sub { defined $ENV{DUCKPAN_CONFIG_FILE} ? $ENV{DUCKPAN_CONFIG_FILE} : file(shift->config_path,'config.ini') },
+	default => sub { file(shift->config_path,'config.ini') },
 );
+has_env cache_path => DUCKPAN_CACHE_PATH => dir($ENV{HOME},'.duckpan','cache');
 
 sub set_config {
 	my ( $self, $config ) = @_;
