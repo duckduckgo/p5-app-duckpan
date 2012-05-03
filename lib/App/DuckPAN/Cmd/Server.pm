@@ -72,8 +72,7 @@ sub run {
 
 sub change_css {
 	my ( $self, $css ) = @_;
-	$css =~ s!url\("!url\("http://duckduckgo.com/!g;
-	$css =~ s!url\(!url\(http://duckduckgo.com/!g;
+	$css =~ s!url\(("?)!url\($1http://duckduckgo.com/!g;
 	return $css;
 }
 
