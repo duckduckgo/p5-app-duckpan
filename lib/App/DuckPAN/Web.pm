@@ -8,6 +8,7 @@ has blocks => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
 has page_spice => ( is => 'ro', required => 1 );
 has page_css => ( is => 'ro', required => 1 );
+has page_js => ( is => 'ro', required => 1 );
 
 sub run_psgi {
 	my ( $self, $env ) = @_;
@@ -22,6 +23,9 @@ sub request {
 	if ($request->param('duckduckhack_css')) {
 		$response->content_type('text/css');
 		$response->body($self->page_css);
+	} elsif ($request->param('duckduckhack_js')) {
+		$response->content_type('text/javascript');
+		$response->body($self->page_js);
 	} else {
 		$response->content_type('text/html');
 		$response->body($self->page_root);

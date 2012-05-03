@@ -21,6 +21,7 @@ sub run {
 	copy(file(dist_dir('App-DuckPAN'),'page_root.html'),file($self->app->cfg->cache_path,'page_root.html')) unless -f file($self->app->cfg->cache_path,'page_root.html');
 	copy(file(dist_dir('App-DuckPAN'),'page_spice.html'),file($self->app->cfg->cache_path,'page_spice.html')) unless -f file($self->app->cfg->cache_path,'page_share.html');
 	copy(file(dist_dir('App-DuckPAN'),'page.css'),file($self->app->cfg->cache_path,'page.css')) unless -f file($self->app->cfg->cache_path,'page.css');
+	copy(file(dist_dir('App-DuckPAN'),'page.js'),file($self->app->cfg->cache_path,'page.js')) unless -f file($self->app->cfg->cache_path,'page.js');
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
@@ -47,9 +48,17 @@ sub run {
 		print "\nCSS fetching failed, will just use cached version..."
 	}
 
+	my $fetch_page_js;
+	if ($fetch_page_js = get('http://duckduckgo.com/duckduck.js')) {
+		io(file($self->app->cfg->cache_path,'page.js'))->print($self->change_js($fetch_page_js));
+	} else {
+		print "\nJavaScript fetching failed, will just use cached version..."
+	}
+
 	my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
 	my $page_css = io(file($self->app->cfg->cache_path,'page.css'))->slurp;
+	my $page_js = io(file($self->app->cfg->cache_path,'page.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
 	print "\n\nYou can stop the webserver with Ctrl-C";
@@ -60,6 +69,7 @@ sub run {
 		page_root => $page_root,
 		page_spice => $page_spice,
 		page_css => $page_css,
+		page_js => $page_js,
 	);
 	my $runner = Plack::Runner->new(
 		loader => 'Restarter',
@@ -68,6 +78,11 @@ sub run {
 	);
 	$runner->loader->watch("./lib");
 	exit $runner->run;
+}
+
+sub change_js {
+	my ( $self, $js ) = @_;
+	return $self->change_css($js);
 }
 
 sub change_css {
@@ -104,8 +119,9 @@ sub change_html {
 
 	for (@script) {
 		if ($_->attr('src') && substr($_->attr('src'),0,1) eq '/') {
-			$_->attr('src','https://duckduckgo.com'.$_->attr('src'));
+			$_->attr('src','/?duckduckhack_js=1');
 		}
+		#$_->attr('src','https://duckduckgo.com'.$_->attr('src'));
 	}
 
 	return $self->change_css($root->as_HTML);
