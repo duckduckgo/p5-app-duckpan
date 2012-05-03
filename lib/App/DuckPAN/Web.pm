@@ -1,8 +1,11 @@
 package App::DuckPAN::Web;
 
 use Moo;
+use DDG::Request;
 use Plack::Request;
 use Plack::Response;
+use HTML::Entities;
+use HTML::TreeBuilder;
 
 has blocks => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
@@ -20,16 +23,47 @@ sub run_psgi {
 sub request {
 	my ( $self, $request ) = @_;
 	my $response = Plack::Response->new(200);
+	my $body;
 	if ($request->param('duckduckhack_css')) {
 		$response->content_type('text/css');
-		$response->body($self->page_css);
+		$body = $self->page_css;
 	} elsif ($request->param('duckduckhack_js')) {
 		$response->content_type('text/javascript');
-		$response->body($self->page_js);
+		$body = $self->page_js;
+	} elsif ($request->param('q')) {
+		my $query = $request->param('q');
+		Encode::_utf8_on($query);
+		my $ddg_request = DDG::Request->new( query_raw => $query );
+		my $result;
+		for (@{$self->blocks}) {
+			$result = $_->request($ddg_request);
+			last if $result;
+		}
+		my $page = $self->page_spice;
+		$page =~ s/duckduckhack-template-for-spice/$query/g;
+		if ($result) {
+
+		} else {
+			my $root = HTML::TreeBuilder->new;
+			$root->parse($self->page_root);
+			my $error_field = $root->look_down(
+				"id", "error_homepage"
+			);
+			$error_field->push_content("Sorry, no hit on your plugins");
+			$error_field->attr( id => "error_duckduckhack" );
+			my $text_field = $root->look_down(
+				"name", "q"
+			);
+			$text_field->attr( value => $query );
+			$page = $root->as_HTML;
+		}
+		$response->content_type('text/html');
+		$body = $page;
 	} else {
 		$response->content_type('text/html');
-		$response->body($self->page_root);
+		$body = $self->page_root;
 	}
+	$response->body($body);
 	return $response;
 }
 

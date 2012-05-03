@@ -118,10 +118,23 @@ sub change_html {
 	);
 
 	for (@script) {
-		if ($_->attr('src') && substr($_->attr('src'),0,1) eq '/') {
-			$_->attr('src','/?duckduckhack_js=1');
+		if (my $src = $_->attr('src')) {
+			if ($src =~ m/^\/d\d{3}\.js/) {
+				$_->attr('src','/?duckduckhack_js=1');
+			} elsif (substr($src,0,1) eq '/') {
+				$_->attr('src','https://duckduckgo.com'.$_->attr('src'));
+			}
 		}
-		#$_->attr('src','https://duckduckgo.com'.$_->attr('src'));
+	}
+
+	my @img = $root->look_down(
+		"_tag", "img"
+	);
+
+	for (@img) {
+		if ($_->attr('src')) {
+			$_->attr('src','https://duckduckgo.com'.$_->attr('src'));
+		}
 	}
 
 	return $self->change_css($root->as_HTML);
