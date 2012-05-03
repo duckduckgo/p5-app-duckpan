@@ -111,7 +111,7 @@ sub change_html {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
 			$_->attr('href','/?duckduckhack_css=1');
 		} elsif (substr($_->attr('href'),0,1) eq '/') {
-			$_->attr('href','https://duckduckgo.com'.$_->attr('href'));
+			$_->attr('href','http://duckduckgo.com'.$_->attr('href'));
 		}
 	}
 
@@ -124,7 +124,7 @@ sub change_html {
 			if ($src =~ m/^\/d\d{3}\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
 			} elsif (substr($src,0,1) eq '/') {
-				$_->attr('src','https://duckduckgo.com'.$_->attr('src'));
+				$_->attr('src','http://duckduckgo.com'.$_->attr('src'));
 			}
 		}
 	}
@@ -135,11 +135,16 @@ sub change_html {
 
 	for (@img) {
 		if ($_->attr('src')) {
-			$_->attr('src','https://duckduckgo.com'.$_->attr('src'));
+			$_->attr('src','http://duckduckgo.com'.$_->attr('src'));
 		}
 	}
 
-	return $self->change_css($root->as_HTML);
+	my $newhtml = $root->as_HTML;
+
+	$newhtml =~ s!/([ds])\.js\?!/?duckduckhack_ignore=1&!g;
+	$newhtml =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
+
+	return $self->change_css($newhtml);
 }
 
 1;

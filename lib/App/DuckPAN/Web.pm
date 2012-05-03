@@ -6,6 +6,8 @@ use Plack::Request;
 use Plack::Response;
 use HTML::Entities;
 use HTML::TreeBuilder;
+use Data::Printer;
+use URL::Encode qw( url_decode_utf8 );
 
 has blocks => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
@@ -24,7 +26,9 @@ sub request {
 	my ( $self, $request ) = @_;
 	my $response = Plack::Response->new(200);
 	my $body;
-	if ($request->param('duckduckhack_css')) {
+	if ($request->param('duckduckhack_ignore')) {
+		$body = "";
+	} elsif ($request->param('duckduckhack_css')) {
 		$response->content_type('text/css');
 		$body = $self->page_css;
 	} elsif ($request->param('duckduckhack_js')) {
@@ -36,13 +40,13 @@ sub request {
 		my $ddg_request = DDG::Request->new( query_raw => $query );
 		my $result;
 		for (@{$self->blocks}) {
-			$result = $_->request($ddg_request);
+			($result) = $_->request($ddg_request);
 			last if $result;
 		}
 		my $page = $self->page_spice;
 		$page =~ s/duckduckhack-template-for-spice/$query/g;
 		if ($result) {
-
+			p($result);
 		} else {
 			my $root = HTML::TreeBuilder->new;
 			$root->parse($self->page_root);
