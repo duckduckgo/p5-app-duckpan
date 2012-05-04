@@ -74,11 +74,11 @@ sub run {
 		page_js => $page_js,
 	);
 	my $runner = Plack::Runner->new(
-		loader => 'Restarter',
+		#loader => 'Restarter',
 		includes => ['lib'],
 		app => sub { $web->run_psgi(@_) },
 	);
-	$runner->loader->watch("./lib");
+	#$runner->loader->watch("./lib");
 	exit $runner->run;
 }
 
