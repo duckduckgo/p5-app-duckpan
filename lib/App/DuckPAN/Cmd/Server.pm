@@ -84,6 +84,8 @@ sub run {
 
 sub change_js {
 	my ( $self, $js ) = @_;
+	$js =~ s!/([ds])\.js\?!/?duckduckhack_ignore=1&!g;
+	$js =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
 	return $self->change_css($js);
 }
 
@@ -141,10 +143,7 @@ sub change_html {
 
 	my $newhtml = $root->as_HTML;
 
-	$newhtml =~ s!/([ds])\.js\?!/?duckduckhack_ignore=1&!g;
-	$newhtml =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
-
-	return $self->change_css($newhtml);
+	return $self->change_js($self->change_css($newhtml));
 }
 
 1;

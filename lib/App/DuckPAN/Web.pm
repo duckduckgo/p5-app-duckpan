@@ -8,12 +8,42 @@ use HTML::Entities;
 use HTML::TreeBuilder;
 use Data::Printer;
 use URL::Encode qw( url_decode_utf8 );
+use IO::All -utf8;
+use HTTP::Request;
+use LWP::UserAgent;
 
 has blocks => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
 has page_spice => ( is => 'ro', required => 1 );
 has page_css => ( is => 'ro', required => 1 );
 has page_js => ( is => 'ro', required => 1 );
+
+has _share_dir_hash => ( is => 'rw' );
+has _path_hash => ( is => 'rw' );
+
+has ua => (
+	is => 'ro',
+	default => sub {
+		LWP::UserAgent->new(
+			timeout => 5,
+			ssl_opts => { verify_hostname => 0 },
+		);
+	},
+);
+
+sub BUILD {
+	my ( $self ) = @_;
+	my %share_dir_hash;
+	my %path_hash;
+	for (@{$self->blocks}) {
+		for (@{$_->only_plugin_objs}) {
+			$share_dir_hash{$_->module_share_dir} = ref $_ if $_->can('module_share_dir');
+			$path_hash{$_->path} = ref $_ if $_->can('path');
+		}
+	}
+	$self->_share_dir_hash(\%share_dir_hash);
+	$self->_path_hash(\%path_hash);
+}
 
 sub run_psgi {
 	my ( $self, $env ) = @_;
@@ -24,9 +54,46 @@ sub run_psgi {
 
 sub request {
 	my ( $self, $request ) = @_;
+	my @path_parts = split('/',$request->request_uri);
+	shift @path_parts;
 	my $response = Plack::Response->new(200);
 	my $body;
-	if ($request->param('duckduckhack_ignore')) {
+	if (@path_parts && $path_parts[0] eq 'share') {
+		my $filename = pop @path_parts;
+		my $share_dir = join('/',@path_parts);
+		my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename);
+		$body = -f $filename_path ? io($filename_path)->slurp : "";
+	} elsif (@path_parts && $path_parts[0] eq 'js') {
+		for (keys %{$self->_path_hash}) {
+			if ($request->request_uri =~ m/^$_/g) {
+				my $path_remainder = $request->request_uri;
+				$path_remainder =~ s/^$_//;
+				my $spice_class = $self->_path_hash->{$_};
+				my $re = $spice_class->spice_from ? qr{$spice_class->spice_from} : qr{(.*)};
+				if (my @captures = $path_remainder =~ m/$re/) {
+					my $to = $spice_class->spice_to;
+					for (1..@captures) {
+						my $index = $_-1;
+						my $cap_from = '\$'.$_;
+						my $cap_to = $captures[$index];
+						$to =~ s/$cap_from/$cap_to/g;
+					}
+					my $callback = $spice_class->callback;
+					$to =~ s/{{callback}}/$callback/g;
+					p($to);
+					my $res = $self->ua->request(HTTP::Request->new(GET => $to));
+					if ($res->is_success) {
+						$body = $res->decoded_content;
+						$response->code($res->code);
+						$response->content_type($res->content_type);
+					} else {
+					    warn $res->status_line, "\n";
+					    $body = "";
+					}
+				}
+			}
+		}
+	} elsif ($request->param('duckduckhack_ignore')) {
 		$body = "";
 	} elsif ($request->param('duckduckhack_css')) {
 		$response->content_type('text/css');
@@ -47,6 +114,12 @@ sub request {
 		$page =~ s/duckduckhack-template-for-spice/$query/g;
 		if ($result) {
 			p($result);
+            my $call_extf = $result->caller->module_share_dir.'/spice.js';
+            my $call_extc = $result->caller->module_share_dir.'/spice.css';
+            my $call_ext = $result->call_path;
+            $page =~ s/####DUCKDUCKHACK-CALL-EXT####/$call_ext/g;
+            $page =~ s/####DUCKDUCKHACK-CALL-EXTC####/$call_extc/g;
+			$page =~ s/####DUCKDUCKHACK-CALL-EXTF####/$call_extf/g;
 		} else {
 			my $root = HTML::TreeBuilder->new;
 			$root->parse($self->page_root);
