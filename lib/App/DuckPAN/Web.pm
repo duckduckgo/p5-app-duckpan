@@ -122,16 +122,17 @@ sub request {
 		} else {
 			my $root = HTML::TreeBuilder->new;
 			$root->parse($self->page_root);
-			my $error_field = $root->look_down(
-				"id", "error_homepage"
-			);
-			$error_field->push_content("Sorry, no hit on your plugins");
-			$error_field->attr( id => "error_duckduckhack" );
+			# my $error_field = $root->look_down(
+			# 	"id", "error_homepage"
+			# );
+			# $error_field->push_content("Sorry, no hit on your plugins");
+			# $error_field->attr( id => "error_duckduckhack" );
 			my $text_field = $root->look_down(
 				"name", "q"
 			);
 			$text_field->attr( value => $query );
 			$page = $root->as_HTML;
+			$page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
 		}
 		$response->content_type('text/html');
 		$body = $page;
