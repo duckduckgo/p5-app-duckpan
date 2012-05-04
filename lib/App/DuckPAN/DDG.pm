@@ -16,7 +16,8 @@ sub get_blocks_from_current_dir {
 	my $finder = Module::Pluggable::Object->new(
 		search_path => ['lib/DDG/Spice','lib/DDG/Goodie'],
 	);
-	push @args, $finder->plugins;
+	my @plugins = $finder->plugins;
+	push @args, sort { $a cmp $b } @plugins;
 	@args = map {
 		$_ =~ s!/!::!g;
 		my @parts = split('::',$_);
