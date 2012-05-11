@@ -247,7 +247,7 @@ sub check_ddg {
 		my $installed_version = $self->get_local_ddg_version;
 		if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
 			print $installed_version;
-			print " (duckpan has ".$module->version.")";
+			print " (duckpan has ".$module->version.")" if $installed_version ne $module->version;
 		} else {
 			if ($installed_version) {
 				print "You got ".$installed_version.", latest is ".$module->version."!\n";
