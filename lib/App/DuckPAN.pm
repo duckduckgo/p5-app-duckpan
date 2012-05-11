@@ -174,7 +174,6 @@ sub check_requirements {
 	#$fail = 1 unless $self->check_locallib;
 	$fail = 1 unless $self->check_ddg;
 	$fail = 1 unless $self->check_git;
-	$fail = 1 unless $self->check_wget;
 	$fail = 1 unless $self->check_ssh;
 	if ($fail) {
 		return 1;
@@ -197,19 +196,6 @@ sub check_git {
 		} else {
 			print "Unknown version!"; $ok = 0;
 		}
-	} else {
-		print "No!"; $ok = 0;
-	}
-	print "\n";
-	return $ok;
-}
-
-sub check_wget {
-	my ( $self ) = @_;
-	my $ok = 1;
-	print "Checking for wget... ";
-	if (my $wget = which('wget')) {
-		print $wget;
 	} else {
 		print "No!"; $ok = 0;
 	}
