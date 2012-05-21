@@ -68,21 +68,24 @@ sub request {
 				my $path_remainder = $request->request_uri;
 				$path_remainder =~ s/^$_//;
 				my $spice_class = $self->_path_hash->{$_};
-				my $re = $spice_class->spice_from ? qr{$spice_class->spice_from} : qr{(.*)};
+				die "Spice tested here must have a rewrite..." unless $spice_class->has_rewrite;
+				my $rewrite = $spice_class->rewrite;
+				my $re = $rewrite->has_from ? qr{$rewrite->from} : qr{(.*)};
 				if (my @captures = $path_remainder =~ m/$re/) {
-					my $to = $spice_class->spice_to;
+					my $to = $rewrite->to;
 					for (1..@captures) {
 						my $index = $_-1;
 						my $cap_from = '\$'.$_;
 						my $cap_to = $captures[$index];
 						$to =~ s/$cap_from/$cap_to/g;
 					}
-					my $callback = $spice_class->callback;
-					$to =~ s/{{callback}}/$callback/g;
 					p($to);
 					my $res = $self->ua->request(HTTP::Request->new(GET => $to));
 					if ($res->is_success) {
 						$body = $res->decoded_content;
+						if ($rewrite->wrap_jsonp_callback && $rewrite->callback) {
+							$body = $rewrite->callback.'('.$body.');';
+						}
 						$response->code($res->code);
 						$response->content_type($res->content_type);
 					} else {

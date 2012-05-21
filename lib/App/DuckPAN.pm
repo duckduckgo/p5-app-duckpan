@@ -137,6 +137,7 @@ sub execute {
 				push @modules, $_;
 			} elsif (lc($_) eq 'duckpan' or lc($_) eq 'upgrade') {
 				push @modules, 'App::DuckPAN';
+				push @modules, 'DDG' if lc($_) eq 'upgrade';
 			} else {
 				push @left_args, $_;
 			}
