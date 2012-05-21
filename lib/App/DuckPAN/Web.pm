@@ -71,8 +71,9 @@ sub request {
 				die "Spice tested here must have a rewrite..." unless $spice_class->has_rewrite;
 				my $rewrite = $spice_class->rewrite;
 				my $re = $rewrite->has_from ? qr{$rewrite->from} : qr{(.*)};
+				p($path_remainder);
 				if (my @captures = $path_remainder =~ m/$re/) {
-					my $to = $rewrite->to;
+					my $to = $rewrite->parsed_to;
 					for (1..@captures) {
 						my $index = $_-1;
 						my $cap_from = '\$'.$_;
