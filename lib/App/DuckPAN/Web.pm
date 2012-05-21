@@ -78,7 +78,11 @@ sub request {
 						my $index = $_-1;
 						my $cap_from = '\$'.$_;
 						my $cap_to = $captures[$index];
-						$to =~ s/$cap_from/$cap_to/g;
+						if (defined $cap_to) {
+							$to =~ s/$cap_from/$cap_to/g;
+						} else {
+							$to =~ s/$cap_from//g;
+						}
 					}
 					p($to);
 					my $res = $self->ua->request(HTTP::Request->new(GET => $to));
