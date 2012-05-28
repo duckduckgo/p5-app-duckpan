@@ -28,7 +28,7 @@ sub run {
 
 	print "\n\nTrying to fetch current versions of the HTML from http://duckduckgo.com/\n\n";
 
-	my $hostname = defined $ENV{APP_DUCKPAN_SERVER_HOSTNAME} ? $ENV{APP_DUCKPAN_SERVER_HOSTNAME} : 'duckduckgo.com';
+	my $hostname = $self->app->server_hostname;
 
 	my $fetch_page_root;
 	if ($fetch_page_root = get('http://'.$hostname.'/')) {
@@ -103,6 +103,8 @@ sub change_html {
 
 	my $root = HTML::TreeBuilder->new;
 	$root->parse($html);
+
+	my $hostname = $self->app->server_hostname;
 
 	my @a = $root->look_down(
 		"_tag", "a"

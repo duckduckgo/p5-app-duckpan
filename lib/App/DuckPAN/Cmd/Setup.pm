@@ -16,7 +16,7 @@ option user => (
 	default => sub { shift->get_user }
 );
 
-sub get_user { shift->app->term->get_reply( prompt => 'What is your username on https://dukgo.com/ ? ' ) }
+sub get_user { shift->app->get_reply( 'What is your username on https://dukgo.com/ ? ' ) }
 
 option pass => (
 	is => 'rw',
@@ -25,7 +25,7 @@ option pass => (
 	default => sub { shift->get_pass }
 );
 
-sub get_pass { shift->app->term->get_reply( prompt => 'What is your password on https://dukgo.com/ ? ' ) }
+sub get_pass { shift->app->get_reply( 'What is your password on https://dukgo.com/ ? ' ) }
 
 option name => (
 	is => 'rw',
@@ -34,7 +34,7 @@ option name => (
 	default => sub { shift->get_name }
 );
 
-sub get_name { shift->app->term->get_reply( prompt => 'What is your name (real name not required) ? ' ) }
+sub get_name { shift->app->get_reply( 'What is your name (real name not required) ? ' ) }
 
 option email => (
 	is => 'rw',
@@ -44,7 +44,7 @@ option email => (
 	default => sub { shift->get_email }
 );
 
-sub get_email { shift->app->term->get_reply( prompt => 'What is your email (public in your release) ? ' ) }
+sub get_email { shift->app->get_reply( 'What is your email (public in your release) ? ' ) }
 
 sub run {
 	my ( $self ) = @_;

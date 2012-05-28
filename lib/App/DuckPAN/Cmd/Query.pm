@@ -14,7 +14,7 @@ sub run {
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
 	print "\n(Empty query for ending test)\n";
-	while (my $query = $self->app->term->get_reply( prompt => 'Query: ' ) ) {
+	while (my $query = $self->app->get_reply( 'Query: ' ) ) {
 		my $request = DDG::Request->new( query_raw => $query );
 		my $hit;
 		for (@blocks) {
