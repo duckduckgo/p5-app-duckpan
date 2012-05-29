@@ -158,7 +158,7 @@ sub request {
 		$response->content_type('text/html');
 		$body = $self->page_root;
 	}
-	Encode::_utf8_off($body)
+	Encode::_utf8_off($body);
 	$response->body($body);
 	return $response;
 }

@@ -2,10 +2,9 @@
 
 use strict;
 use warnings;
-use Test::More;
+use Test::LoadAllModules;
 
 BEGIN {
-    use_ok('App::DuckPAN');
+	all_uses_ok( search_path => 'App::DuckPAN' );
 }
 
-done_testing;
