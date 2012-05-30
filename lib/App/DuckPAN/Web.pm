@@ -10,6 +10,7 @@ use Data::Printer;
 use IO::All -utf8;
 use HTTP::Request;
 use LWP::UserAgent;
+use URI::Escape;
 
 has blocks => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
@@ -118,7 +119,10 @@ sub request {
 			last if $result;
 		}
 		my $page = $self->page_spice;
+		my $uri_encoded_query = uri_escape($query);
+		my $uri_encoded_ddh = uri_escape('duckduckhack-template-for-spice');
 		$page =~ s/duckduckhack-template-for-spice/$query/g;
+		$page =~ s/$uri_encoded_ddh/$uri_encoded_query/g;
 		if ($result) {
 			p($result);
             my $call_extf = $result->caller->module_share_dir.'/spice.js';
