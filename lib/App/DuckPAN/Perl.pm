@@ -38,18 +38,6 @@ sub setup {
 	$self->set_dzil_config($config);
 }
 
-=func get_local_version
-
-Returns a version object for the specified package.
-
-	my $version = App::DuckPAN::Perl::get_local_version('Moose');
-
-Returns C<undef> if the version was not defined or not installed.
-
-See L<< C<version.pm>'s documentation|version >> for more on version objects.
-
-=cut
-
 sub get_local_version {
 	my ( $self, $module ) = @_;
 	require Module::Data;
