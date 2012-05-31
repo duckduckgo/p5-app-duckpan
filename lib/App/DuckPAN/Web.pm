@@ -54,7 +54,7 @@ sub run_psgi {
 
 sub request {
 	my ( $self, $request ) = @_;
-	my @path_parts = split('/',$request->request_uri);
+	my @path_parts = split(/\/+/,$request->request_uri);
 	shift @path_parts;
 	my $response = Plack::Response->new(200);
 	my $body;
@@ -68,6 +68,8 @@ sub request {
 			if ($request->request_uri =~ m/^$_/g) {
 				my $path_remainder = $request->request_uri;
 				$path_remainder =~ s/^$_//;
+				$path_remainder =~ s/\/+/\//g;
+				$path_remainder =~ s/^\///;
 				my $spice_class = $self->_path_hash->{$_};
 				die "Spice tested here must have a rewrite..." unless $spice_class->has_rewrite;
 				my $rewrite = $spice_class->rewrite;
