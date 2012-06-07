@@ -18,11 +18,6 @@ sub header { my $version = shift->version; return <<"__EOT__"; }
 __EOT__
 
 sub help { return shift->header().<<'__EOT__'; }
-=> You need an account at https://dukgo.com/
-
-duckpan setup
--------------
- Initialize your DuckPAN development environment
 
 duckpan check
 -------------
@@ -54,16 +49,6 @@ duckpan help <command>
 duckpan faq
 -----------
  Frequently asked questions
-
-__EOT__
-
-1;
-
-sub goodie { return shift->header().<<'__EOT__'; }
-duckpan goodie new MyGoodie
-------------------------------------------------
- Starts a new goodie 'DDG::Goodie::MyGoodie' in 'p5-ddg-goodie-mygoodie'
- (may be renamed, will check if setup was run)
 
 __EOT__
 

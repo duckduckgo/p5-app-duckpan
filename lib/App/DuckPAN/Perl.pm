@@ -45,7 +45,9 @@ sub get_local_version {
 	{
 		local $@;
 		eval {
-			$v = Module::Data->new( $module )->version;
+			my $m = Module::Data->new( $module );
+			$m->require;
+			$v = $m->version;
 			1
 		} or return;
 	};

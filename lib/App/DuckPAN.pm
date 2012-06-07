@@ -241,13 +241,14 @@ sub get_local_ddg_version {
 sub check_ddg {
 	my ( $self ) = @_;
 	my $ok = 1;
+	my $installed_version = $self->get_local_ddg_version;
+	return $ok if $installed_version && $installed_version == '9.999';
 	print "Checking for latest DDG Perl package... ";
 	my $tempfile = tmpnam;
 	if (is_success(getstore($self->duckpan_packages,$tempfile))) {
 		my $packages = Parse::CPAN::Packages::Fast->new($tempfile);
 		my $module = $packages->package('DDG');
 		my $latest = $self->duckpan.'authors/id/'.$module->distribution->pathname;
-		my $installed_version = $self->get_local_ddg_version;
 		if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
 			print $installed_version;
 			print " (duckpan has ".$module->version.")" if $installed_version ne $module->version;

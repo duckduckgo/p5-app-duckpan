@@ -15,20 +15,36 @@ sub run {
 
 	print "\n(Empty query for ending test)\n";
 	while (my $query = $self->app->get_reply( 'Query: ' ) ) {
-		my $request = DDG::Request->new( query_raw => $query );
-		my $hit;
-		for (@blocks) {
-			my ($result) = $_->request($request);
-			if ($result) {
-				$hit = 1;
-				print "\n";
-				p($result);
-				print "\n";
-				last;
+		eval {
+			my $request = DDG::Request->new( query_raw => $query );
+			my $hit;
+			for (@blocks) {
+				my ($result) = $_->request($request);
+				if ($result) {
+					$hit = 1;
+					print "\n";
+					p($result);
+					print "\n";
+					last;
+				}
 			}
-		}
-		unless ($hit) {
-			print "\nSorry, no hit on your plugins\n\n";
+			unless ($hit) {
+				print "\nSorry, no hit on your plugins\n\n";
+			}
+		};
+		if ($@) {
+			my $error = $@;
+			if ($error =~ m/Malformed UTF-8 character/) {
+				print "\n[WARNING] You got a malformed utf8 error message, which normally means\n";
+				print "that you try to entered a special character on the query prompt, but your\n";
+				print "interface is not proper configured towards utf8. Please checkout the\n";
+				print "documentation of your terminal, ssh client or whatever client you use\n";
+				print "to access the shell of this system\n\n";
+				print "Here the original error message:\n\n";
+			} else {
+				print "\nCatched error:\n\n";
+			}
+			print $error."\n";
 		}
 	}
 	print "\n\n\\_o< Thanks for testing!\n\n";
