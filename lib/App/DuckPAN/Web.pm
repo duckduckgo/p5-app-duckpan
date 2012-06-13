@@ -128,8 +128,9 @@ sub request {
 		}
 		my $page = $self->page_spice;
 		my $uri_encoded_query = uri_escape($query, "^A-Za-z");
+		my $html_encoded_query = encode_entities($query);
 		my $uri_encoded_ddh = quotemeta(uri_escape('duckduckhack-template-for-spice', "^A-Za-z"));
-		$page =~ s/duckduckhack-template-for-spice/$query/g;
+		$page =~ s/duckduckhack-template-for-spice/$html_encoded_query/g;
 		$page =~ s/$uri_encoded_ddh/$uri_encoded_query/g;
 
 		if ($result) {
