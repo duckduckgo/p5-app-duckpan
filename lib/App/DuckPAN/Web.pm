@@ -96,6 +96,7 @@ sub request {
 							$body = $rewrite->callback.'('.$body.');';
 						}
 						elsif ($rewrite->wrap_string_callback && $rewrite->callback) {
+                            $body =~ s/(["\n])/\\$1/g;
 							$body = $rewrite->callback.'("'.$body.'");';
 						}
 						$response->code($res->code);
