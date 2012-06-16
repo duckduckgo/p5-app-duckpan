@@ -91,8 +91,12 @@ sub request {
 					my $res = $self->ua->request(HTTP::Request->new(GET => $to));
 					if ($res->is_success) {
 						$body = $res->decoded_content;
+                        warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $rewrite->wrap_jsonp_callback && $rewrite->wrap_string_callback;
 						if ($rewrite->wrap_jsonp_callback && $rewrite->callback) {
 							$body = $rewrite->callback.'('.$body.');';
+						}
+						elsif ($rewrite->wrap_string_callback && $rewrite->callback) {
+							$body = $rewrite->callback.'("'.$body.'");';
 						}
 						$response->code($res->code);
 						$response->content_type($res->content_type);
