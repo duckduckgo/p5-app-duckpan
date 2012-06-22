@@ -14,7 +14,6 @@ use File::Temp qw/ :POSIX /;
 use version;
 use Class::Load ':all';
 
-
 sub dzil_root { Dist::Zilla::Util->_global_config_root }
 sub dzil_config { file(shift->dzil_root,'config.ini') }
 
@@ -57,7 +56,7 @@ sub get_local_version {
 }
 
 sub cpanminus_install_error {
-	print_text(
+	shift->app->print_text(
 		"[ERROR] Failure on installation of modules!",
 		"This could have several reasons, for first you can just restart this installer, cause it could be a pure download problem. If this isnt the case, please read the build.log mentioned on the errors and see if you can fix the problem yourself. Otherwise, please report the problem via email to use at open\@duckduckgo.com with the build.log attached. If there is no build.log mentioned, just attach the output you see.",
 	);
@@ -79,15 +78,15 @@ sub duckpan_install {
 				local $@;
 				my $localver = $self->get_local_version($_);
 				if ($localver && $localver == version->parse($module->version)) {
-					print "You already have latest version of ".$_." with ".$localver."\n";
+					$self->app->print_text("You already have latest version of ".$_." with ".$localver."\n");
 				} elsif ($localver && $localver > version->parse($module->version)) {
-					print "You have a newer version of ".$_." with ".$localver." (duckpan has ".version->parse($module->version).")\n";
+					$self->app->print_text("You have a newer version of ".$_." with ".$localver." (duckpan has ".version->parse($module->version).")\n");
 				} else {
 					my $latest = $self->app->duckpan.'authors/id/'.$module->distribution->pathname;
 					push @to_install, $latest unless grep { $_ eq $latest } @to_install;
 				}
 			} else {
-				print "[ERROR] Can't find package ".$_." on ".$self->app->duckpan."\n";
+				$self->app->print_text("[ERROR] Can't find package ".$_." on ".$self->app->duckpan."\n");
 				$error = 1;
 			}
 		}
@@ -95,7 +94,7 @@ sub duckpan_install {
 		return 0 unless @to_install;
 		return system("cpanm ".join(" ",@to_install));
 	} else {
-		print "[ERROR] Can't reach duckpan at ".$self->app->duckpan."!\n";
+		$self->app->print_text("[ERROR] Can't reach duckpan at ".$self->app->duckpan."!\n");
 		return 1;
 	}
 }
