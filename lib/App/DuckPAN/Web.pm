@@ -6,11 +6,13 @@ use Plack::Request;
 use Plack::Response;
 use HTML::Entities;
 use HTML::TreeBuilder;
+use HTML::Element;
 use Data::Printer;
 use IO::All -utf8;
 use HTTP::Request;
 use LWP::UserAgent;
 use URI::Escape;
+use Data::Dumper;
 
 has blocks => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
@@ -39,9 +41,7 @@ sub BUILD {
 	my %rewrite_hash;
 	for (@{$self->blocks}) {
 		for (@{$_->only_plugin_objs}) {
-			if (!$_->does('DDG::IsSpice')) {
-				warn "duckpan server only supports DDG::IsSpice so far! (".(ref $_)." is not)";
-			} else {
+			if ($_->does('DDG::IsSpice')) {
 				$rewrite_hash{ref $_} = $_->rewrite if $_->has_rewrite;
 				$share_dir_hash{$_->module_share_dir} = ref $_ if $_->can('module_share_dir');
 				$path_hash{$_->path} = ref $_ if $_->can('path');
@@ -141,8 +141,9 @@ sub request {
 		$page =~ s/duckduckhack-template-for-spice/$html_encoded_query/g;
 		$page =~ s/$uri_encoded_ddh/$uri_encoded_query/g;
 
-		if ($result) {
-			p($result);
+		p($result) if $result;
+
+		if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
             my $call_extf = $result->caller->module_share_dir.'/spice.js';
             my $call_extc = $result->caller->module_share_dir.'/spice.css';
             my $call_ext = $result->call_path;
@@ -151,18 +152,25 @@ sub request {
 			$page =~ s/####DUCKDUCKHACK-CALL-EXTF####/$call_extf/g;
 		} else {
 			my $root = HTML::TreeBuilder->new;
-			$root->parse($self->page_root);
-			# my $error_field = $root->look_down(
-			# 	"id", "error_homepage"
-			# );
-			# $error_field->push_content("Sorry, no hit on your plugins");
-			# $error_field->attr( id => "error_duckduckhack" );
-			my $text_field = $root->look_down(
-				"name", "q"
-			);
-			$text_field->attr( value => $query );
-			$page = $root->as_HTML;
-			$page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
+			if ($result) {
+				$root->parse($page);
+				#my $dump = encode_entities(Dumper $result);
+				my $content = $root->look_down(
+					"id", "bottom_spacing2"
+				);
+				my $dump = HTML::Element->new('pre');
+				$dump->push_content(Dumper $result);
+				$content->insert_element($dump);
+				$page = $root->as_HTML;
+			} else {
+				$root->parse($self->page);
+				my $text_field = $root->look_down(
+					"name", "q"
+				);
+				$text_field->attr( value => $query );
+				$page = $root->as_HTML;
+				$page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
+			}
 		}
 		$response->content_type('text/html');
 		$body = $page;
