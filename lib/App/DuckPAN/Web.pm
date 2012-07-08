@@ -20,6 +20,7 @@ has page_js => ( is => 'ro', required => 1 );
 
 has _share_dir_hash => ( is => 'rw' );
 has _path_hash => ( is => 'rw' );
+has _rewrite_hash => ( is => 'rw' );
 
 has ua => (
 	is => 'ro',
@@ -35,14 +36,21 @@ sub BUILD {
 	my ( $self ) = @_;
 	my %share_dir_hash;
 	my %path_hash;
+	my %rewrite_hash;
 	for (@{$self->blocks}) {
 		for (@{$_->only_plugin_objs}) {
-			$share_dir_hash{$_->module_share_dir} = ref $_ if $_->can('module_share_dir');
-			$path_hash{$_->path} = ref $_ if $_->can('path');
+			if (!$_->does('DDG::IsSpice')) {
+				warn "duckpan server only supports DDG::IsSpice so far! (".(ref $_)." is not)";
+			} else {
+				$rewrite_hash{ref $_} = $_->rewrite if $_->has_rewrite;
+				$share_dir_hash{$_->module_share_dir} = ref $_ if $_->can('module_share_dir');
+				$path_hash{$_->path} = ref $_ if $_->can('path');
+			}
 		}
 	}
 	$self->_share_dir_hash(\%share_dir_hash);
 	$self->_path_hash(\%path_hash);
+	$self->_rewrite_hash(\%rewrite_hash);
 }
 
 sub run_psgi {
@@ -71,8 +79,8 @@ sub request {
 				$path_remainder =~ s/\/+/\//g;
 				$path_remainder =~ s/^\///;
 				my $spice_class = $self->_path_hash->{$_};
-				die "Spice tested here must have a rewrite..." unless $spice_class->has_rewrite;
-				my $rewrite = $spice_class->rewrite;
+				my $rewrite = $self->_rewrite_hash->{$spice_class};
+				die "Spice tested here must have a rewrite..." unless $rewrite;
 				my $from = $rewrite->from;
 				my $re = $rewrite->has_from ? qr{$from} : qr{(.*)};
 				if (my @captures = $path_remainder =~ m/$re/) {
