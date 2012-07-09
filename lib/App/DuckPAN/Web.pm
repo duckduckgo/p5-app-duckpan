@@ -2,6 +2,7 @@ package App::DuckPAN::Web;
 
 use Moo;
 use DDG::Request;
+use DDG::Test::Location;
 use Plack::Request;
 use Plack::Response;
 use HTML::Entities;
@@ -128,7 +129,10 @@ sub request {
 	} elsif ($request->param('q')) {
 		my $query = $request->param('q');
 		Encode::_utf8_on($query);
-		my $ddg_request = DDG::Request->new( query_raw => $query );
+		my $ddg_request = DDG::Request->new(
+			query_raw => $query,
+			location => test_location_by_env(),
+		);
 		my $result;
 		for (@{$self->blocks}) {
 			($result) = $_->request($ddg_request);
