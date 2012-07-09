@@ -19,6 +19,8 @@ sub run {
 	DDG::Request->import;
 	require DDG::Test::Location;
 	DDG::Test::Location->import;
+	require DDG::Test::Language;
+	DDG::Test::Language->import;
 
 	print "\n(Empty query for ending test)\n";
 	while (my $query = $self->app->get_reply( 'Query: ' ) ) {
@@ -26,6 +28,7 @@ sub run {
 			my $request = DDG::Request->new(
 				query_raw => $query,
 				location => test_location_by_env(),
+				language => test_language_by_env(),
 			);
 			my $hit;
 			for (@blocks) {

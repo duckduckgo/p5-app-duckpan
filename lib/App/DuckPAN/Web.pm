@@ -3,6 +3,7 @@ package App::DuckPAN::Web;
 use Moo;
 use DDG::Request;
 use DDG::Test::Location;
+use DDG::Test::Language;
 use Plack::Request;
 use Plack::Response;
 use HTML::Entities;
@@ -132,6 +133,7 @@ sub request {
 		my $ddg_request = DDG::Request->new(
 			query_raw => $query,
 			location => test_location_by_env(),
+			language => test_language_by_env(),
 		);
 		my $result;
 		for (@{$self->blocks}) {
@@ -158,7 +160,6 @@ sub request {
 			my $root = HTML::TreeBuilder->new;
 			if ($result) {
 				$root->parse($page);
-				#my $dump = encode_entities(Dumper $result);
 				my $content = $root->look_down(
 					"id", "bottom_spacing2"
 				);
