@@ -168,7 +168,7 @@ sub request {
 				$content->insert_element($dump);
 				$page = $root->as_HTML;
 			} else {
-				$root->parse($page);
+				$root->parse($self->page_root);
 				my $text_field = $root->look_down(
 					"name", "q"
 				);
