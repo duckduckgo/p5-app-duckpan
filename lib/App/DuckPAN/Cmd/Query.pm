@@ -5,6 +5,10 @@ with qw( App::DuckPAN::Cmd );
 
 use MooX::Options;
 use Data::Printer;
+use POE qw(Wheel::ReadLine);
+
+my $query;
+my $history_path;
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -22,8 +26,24 @@ sub run {
 	require DDG::Test::Language;
 	DDG::Test::Language->import;
 
+	# $history_path = $self->app->cache_path."/query_history";
+	# warn $self->app->cache_path;
+
 	print "\n(Empty query for ending test)\n";
-	while (my $query = $self->app->get_reply( 'Query: ' ) ) {
+	# while (my $query = $self->app->get_reply( 'Query: ' ) ) {
+	while (1) {
+		
+		POE::Session->create(
+	      inline_states=> {
+	        _start => \&setup_console,
+	        got_user_input => \&handle_user_input,
+	      }
+	    );
+
+	    POE::Kernel->run();
+
+	    last unless $query;
+		
 		eval {
 			my $request = DDG::Request->new(
 				query_raw => $query,
@@ -62,6 +82,31 @@ sub run {
 	}
 	print "\n\n\\_o< Thanks for testing!\n\n";
 	exit 0;
+}
+
+sub handle_user_input {
+  my ($input, $exception) = @_[ARG0, ARG1];
+  my $console = $_[HEAP]{console};
+
+  unless (defined $input) {
+    $_[KERNEL]->signal($_[KERNEL], "UIDESTROY");
+    return;
+  }
+
+  unless ($input eq ""){
+    $console->put("  You entered: $input");
+    $console->addhistory($input);
+    $console->write_history($history_path);
+  }
+  $query = $input;
+}
+ 
+sub setup_console {
+  $_[HEAP]{console} = POE::Wheel::ReadLine->new(
+    InputEvent => 'got_user_input'
+  );
+  $_[HEAP]{console}->read_history($history_path);
+  $_[HEAP]{console}->get("Query: ");
 }
 
 1;
