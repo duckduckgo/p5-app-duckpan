@@ -16,17 +16,19 @@ __END__
 
   duckpan check
   # Check for the requirements to make duckpan contributions
-  
+
   duckpan goodie test
   # Fire up your own CLI DuckDuckGo to test goodies
   # Use it in the zeroclickinfo-goodies repository root
-  
+
   duckpan help <command>
   # Getting help
 
-  # TODO  
-  duckpan release
   duckpan test
+  # Test your release
+
+  # TODO
+  duckpan release
   duckpan faq
   # TODO
 
