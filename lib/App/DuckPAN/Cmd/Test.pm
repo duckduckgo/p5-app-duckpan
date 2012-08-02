@@ -8,9 +8,16 @@ use MooX::Options;
 use Test::Harness;
 
 sub run {
-	my ( $self ) = @_;
+	my ( $self, @args ) = @_;
 
-	my @tests = <t/*.t>;
+	my @tests;
+
+	if (@args) {
+		map { my $t = "t/$_.t"; push @tests, $t if -f $t } @args;
+	} else {
+		@tests = <t/*.t>;
+	}
+
 	my @paths = qw(lib blib/lib blib/arch);
 
 	unshift @INC, map { File::Spec -> rel2abs($_) } @paths;
@@ -19,4 +26,3 @@ sub run {
 }
 
 1;
-
