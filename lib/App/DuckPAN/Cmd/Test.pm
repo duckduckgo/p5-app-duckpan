@@ -20,6 +20,8 @@ sub run {
 
 	my @paths = qw(lib blib/lib blib/arch);
 
+	$ENV{HARNESS_OPTIONS} = 'c';
+
 	unshift @INC, map { File::Spec -> rel2abs($_) } @paths;
 
 	runtests(@tests);
