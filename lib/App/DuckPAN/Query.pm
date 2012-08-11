@@ -62,12 +62,12 @@ sub run {
 			if ($error =~ m/Malformed UTF-8 character/) {
 				print "\n[WARNING] You got a malformed utf8 error message, which normally means\n";
 				print "that you try to entered a special character on the query prompt, but your\n";
-				print "interface is not proper configured towards utf8. Please checkout the\n";
+				print "interface is not properly configured for utf8. Please check out the\n";
 				print "documentation of your terminal, ssh client or whatever client you use\n";
 				print "to access the shell of this system\n\n";
 				print "Here the original error message:\n\n";
 			} else {
-				print "\nCatched error:\n\n";
+				print "\nCaught error:\n\n";
 			}
 			print $error."\n";
 		}
