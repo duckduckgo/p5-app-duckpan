@@ -13,7 +13,7 @@ sub run {
 			"Found a dist.ini, suggesting a Dist::Zilla distribution",
 		);
 		$self->app->perl->cpanminus_install_error
-			if (system("dzil authordeps 2>/dev/null | cpanm"));
+			if (system("dzil authordeps --missing 2>/dev/null | cpanm"));
 		$self->app->perl->cpanminus_install_error
 			if (system("dzil listdeps --missing 2>/dev/null | cpanm"));
 		$self->app->print_text(
