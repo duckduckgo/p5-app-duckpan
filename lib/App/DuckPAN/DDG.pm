@@ -14,7 +14,7 @@ sub get_blocks_from_current_dir {
 		exit 1;
 	}
 	my $finder = Module::Pluggable::Object->new(
-		search_path => ['lib/DDG/Spice','lib/DDG/Goodie'],
+		search_path => ['lib/DDG/Spice','lib/DDG/Goodie','lib/DDG/Fathead','lib/DDG/Longtail'],
 	);
 	my @plugins = $finder->plugins;
 	push @args, sort { $a cmp $b } @plugins;
@@ -25,7 +25,7 @@ sub get_blocks_from_current_dir {
 		join('::',@parts);
 	} @args;
 	unless (@args) {
-		print "\n[ERROR] No DDG::Goodie::* or DDG::Spice::* packages found\n";
+		print "\n[ERROR] No DDG::Goodie::*, DDG::Spice::*, DDG::Fathead::* or DDG::Longtail::* packages found\n";
 		print "\nHint: You must be in the root of your repository so that this works.\n\n";
 		exit 1;
 	}
