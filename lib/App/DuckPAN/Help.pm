@@ -40,7 +40,7 @@ duckpan release
 
 duckpan test
 ------------
- Test your release (will automatically gets fired before release) [TODO]
+ Test your release (will automatically get fired before release)
 
 duckpan help <command>
 ----------------------
