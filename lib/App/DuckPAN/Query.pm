@@ -80,10 +80,7 @@ sub handle_user_input {
   my ($input, $exception) = @_[ARG0, ARG1];
   my $console = $_[HEAP]{console};
 
-  unless (defined $input) {
-    $_[KERNEL]->signal($_[KERNEL], "UIDESTROY");
-    return;
-  }
+  exit 0 unless defined $input;
 
   unless ($input eq ""){
     $console->put("  You entered: $input");
