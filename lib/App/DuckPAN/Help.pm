@@ -22,7 +22,7 @@ sub help { return shift->header().<<'__EOT__'; }
 duckpan check
 -------------
  Check if you fulfill all requirements for the development
- environment (will automatically gets fired on setup)
+ environment (this is run automatically during setup)
 
 duckpan installdeps
 -------------
@@ -32,19 +32,19 @@ duckpan installdeps
 
 duckpan query
 -------------
- Test your plugins if they match a specific query (interactive)
+ Test goodies and spice interactively on the command line
 
-duckpan release
----------------
- Release the project of the current directory to DuckPAN [TODO]
+duckpan server
+--------------
+ Test spice on a local web server
 
 duckpan test
 ------------
- Test your release (will automatically gets fired before release) [TODO]
+ Test your release (this will run automatically before a release)
 
-duckpan help <command>
-----------------------
- More help about the specific commands
+duckpan release
+---------------
+ Release the project of the current directory to DuckPAN
 
 __EOT__
 
