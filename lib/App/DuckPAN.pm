@@ -254,11 +254,11 @@ sub check_ddg {
 			print " (duckpan has ".$module->version.")" if $installed_version ne $module->version;
 		} else {
 			if ($installed_version) {
-				print "You got ".$installed_version.", latest is ".$module->version."!\n";
+				print "You have version ".$installed_version.", latest is ".$module->version."!\n";
 			} else {
-				print "You dont have it installed at all, latest is ".$module->version."!\n";
+				print "You don't have DDG installed! Latest is ".$module->version."!\n";
 			}
-			print "[ERROR] Please install latest DDG with: duckpan DDG";
+			print "[ERROR] Please install the latest DDG package with: duckpan DDG\n";
 			$ok = 0;
 		}
 	} else {
