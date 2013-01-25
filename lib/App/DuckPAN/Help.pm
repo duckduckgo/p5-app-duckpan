@@ -46,10 +46,6 @@ duckpan help <command>
 ----------------------
  More help about the specific commands
 
-duckpan faq
------------
- Frequently asked questions
-
 __EOT__
 
 1;
