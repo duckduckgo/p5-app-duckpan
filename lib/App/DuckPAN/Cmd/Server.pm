@@ -11,6 +11,7 @@ use Path::Class;
 use IO::All -utf8;
 use LWP::Simple;
 use HTML::TreeBuilder;
+use Config::INI;
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -68,6 +69,9 @@ sub run {
 	print "\n\n";
 
 	require App::DuckPAN::Web;
+
+    my $env = Config::INI::Reader->read_file(file($self->app->cfg->cache_path, 'env.ini'));
+    map { $ENV{$_} = $env->{'_'}{$_}; } keys $env->{'_'};
 
 	my $web = App::DuckPAN::Web->new(
 		blocks => \@blocks,
