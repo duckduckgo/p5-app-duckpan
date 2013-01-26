@@ -16,8 +16,12 @@ sub get_blocks_from_current_dir {
 	my $finder = Module::Pluggable::Object->new(
 		search_path => ['lib/DDG/Spice','lib/DDG/Goodie','lib/DDG/Fathead','lib/DDG/Longtail'],
 	);
-	my @plugins = $finder->plugins;
-	push @args, sort { $a cmp $b } @plugins;
+	if (scalar @args == 0) {
+		my @plugins = $finder->plugins;
+		push @args, sort { $a cmp $b } @plugins;
+	} else {
+		@args = map { $_ = "lib::DDG::$_" unless m,^lib(::|/)DDG,; $_; } @args;
+	}
 	@args = map {
 		$_ =~ s!/!::!g;
 		my @parts = split('::',$_);
