@@ -39,6 +39,10 @@ duckpan env <name> <value>
  Add an environment variable that duckpan will remember. Useful for
  Spice API keys. Variables are stored in ~/.duckpan/env.ini
 
+duckpan env rm <name>
+---------------------
+ Remove an environment variable from duckpan
+
 duckpan release
 ---------------
  Release the project of the current directory to DuckPAN [TODO]
