@@ -19,6 +19,7 @@ use Term::UI;
 use Term::ReadLine;
 use Carp;
 use Encode;
+use Path::Class;
 
 our $VERSION ||= '0.000';
 
@@ -284,6 +285,11 @@ sub BUILD {
 		print "\n[ERROR] We dont support Win32\n\n";
 		exit 1;
 	}
+    my $env_config = file($self->cfg->config_path, 'env.ini');
+    if (-e $env_config) {
+        my $env = Config::INI::Reader->read_file(file($self->cfg->config_path, 'env.ini'));
+        map { $ENV{$_} = $env->{'_'}{$_}; } keys $env->{'_'} if $env->{'_'};
+    }
 }
 
 1;
