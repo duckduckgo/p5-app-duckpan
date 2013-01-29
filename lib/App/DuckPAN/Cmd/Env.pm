@@ -9,11 +9,16 @@ sub run {
     my ( $self, $name, $key ) = @_;
 
     my $config_file = file($self->app->cfg->cache_path, 'env.ini');
+    my $config = Config::INI::Reader->read_file($config_file);
 
     if (defined $name and $name eq 'key') {
-      my $config = Config::INI::Reader->read_file($config_file);
       map { print "$_ = $config->{'_'}{$_}\n" } keys $config->{'_'};
       exit 0;
+    }
+
+    if (defined $name and grep {$_ eq $name} keys $config->{'_'}) {
+      print STDERR "$name is already defined in env.ini\n";
+      return 1;
     }
 
     if (not defined $name or not defined $key) {
@@ -23,7 +28,7 @@ sub run {
       exit 1;
     }
 
-    my $config = { '_' => { "$name" => "$key" } };
+    $config = { '_' => { "$name" => "$key" } };
 
     open my $output, '>>', $config_file;
 
