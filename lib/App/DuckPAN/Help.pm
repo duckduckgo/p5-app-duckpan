@@ -25,7 +25,7 @@ duckpan check
  environment (will automatically gets fired on setup)
 
 duckpan installdeps
--------------
+-------------------
  Install all requirements of the specific DuckDuckHack project (if
  possible), like zeroclickinfo-spice, zeroclickinfo-goodie, duckduckgo
  or community-platform
@@ -33,6 +33,11 @@ duckpan installdeps
 duckpan query
 -------------
  Test your plugins if they match a specific query (interactive)
+
+duckpan env <name> <value>
+--------------------------
+ Add an environment variable that duckpan will remember. Useful for
+ Spice API keys. Variables are stored in ~/.duckpan/env.ini
 
 duckpan release
 ---------------
