@@ -8,17 +8,22 @@ with qw( App::DuckPAN::Cmd );
 sub run {
     my ( $self, $name, $key ) = @_;
 
-    my $config_file = file($self->app->cfg->cache_path, 'env.ini');
-    my $config = Config::INI::Reader->read_file($config_file);
+    my $config_file = file($self->app->cfg->config_path, 'env.ini');
 
-    if (defined $name and $name eq 'key') {
-      map { print "$_ = $config->{'_'}{$_}\n" } keys $config->{'_'};
-      exit 0;
+    if (not -e $config_file) {
+      open my $config, '>', $config_file;
+      close $config;
     }
 
-    if (defined $name and grep {$_ eq $name} keys $config->{'_'}) {
-      print STDERR "$name is already defined in env.ini\n";
-      return 1;
+    if (defined $name ) {
+      my $config = Config::INI::Reader->read_file($config_file);
+      if ($name eq 'key') {
+        map { print "$_ = $config->{'_'}{$_}\n" } keys $config->{'_'};
+        exit 0;
+      } elsif ($config->{'_'} and grep {$_ eq $name} keys $config->{'_'}) {
+        print STDERR "$name is already defined in env.ini\n";
+        exit 1;
+      }
     }
 
     if (not defined $name or not defined $key) {
@@ -28,7 +33,7 @@ sub run {
       exit 1;
     }
 
-    $config = { '_' => { "$name" => "$key" } };
+    my $config = { '_' => { "$name" => "$key" } };
 
     open my $output, '>>', $config_file;
 
