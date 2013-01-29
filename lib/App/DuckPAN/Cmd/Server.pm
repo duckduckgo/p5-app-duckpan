@@ -70,9 +70,6 @@ sub run {
 
 	require App::DuckPAN::Web;
 
-    my $env = Config::INI::Reader->read_file(file($self->app->cfg->cache_path, 'env.ini'));
-    map { $ENV{$_} = $env->{'_'}{$_}; } keys $env->{'_'};
-
 	my $web = App::DuckPAN::Web->new(
 		blocks => \@blocks,
 		page_root => $page_root,
