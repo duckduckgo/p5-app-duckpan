@@ -37,18 +37,7 @@ __END__
 
 =head1 DESCRIPTION
 
-L<DuckPAN|http://duckpan.org/> is a project of L<DuckDuckGo|https://duckduckgo.com/>
-trying to make a release platform for the contributions to DuckDuckGo. DuckDuckGo
-is a search engine, using so a so called Zero-click Info to spice the search result
-with a very specific result, for example 2+2 or 200 USD to EUR. In this concept
-there is like a nearly unlimited option of what contributions are possible. Beside
-gathering those Zero-click Info plugins, we also want to use it to store all
-released style projects of DuckDuckGo (for example opensource browser plugins and
-the other user contributed tools).
-
-We are still in the buildup of all this, but you may contact us in the channel
-mentioned in the SUPPORT section down under. So anything can change, but we try to
-keep this client and already implemented features stable.
+L<App::DuckPAN> for more informations.
 
 =head1 SEE ALSO
 
