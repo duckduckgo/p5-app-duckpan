@@ -39,7 +39,7 @@ sub run {
 	}
 
 	my $fetch_page_spice;
-	if ($fetch_page_spice = get('http://'.$hostname.'/?q=duckduckhack-template-for-spice')) {
+	if ($fetch_page_spice = get('http://'.$hostname.'/?q=duckduckhack-template-for-spice2')) {
 		io(file($self->app->cfg->cache_path,'page_spice.html'))->print($self->change_html($fetch_page_spice));
 	} else {
 		print "\nSpice-Template fetching failed, will just use cached version..."

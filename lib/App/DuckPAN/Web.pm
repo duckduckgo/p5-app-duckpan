@@ -140,48 +140,86 @@ sub request {
 			location => test_location_by_env(),
 			language => test_language_by_env(),
 		);
-		my $result;
+
+		my @results = ();
+		my @calls_nrj = ();
+		my @calls_nrc = ();
+		my @calls_script = ();
+
+
 		for (@{$self->blocks}) {
-			($result) = $_->request($ddg_request);
-			last if $result;
+		    push(@results,$_->request($ddg_request));
 		}
+
+
+
 		my $page = $self->page_spice;
 		my $uri_encoded_query = uri_escape_utf8($query, "^A-Za-z");
 		my $html_encoded_query = encode_entities($query);
-		my $uri_encoded_ddh = quotemeta(uri_escape('duckduckhack-template-for-spice', "^A-Za-z"));
-		$page =~ s/duckduckhack-template-for-spice/$html_encoded_query/g;
+		my $uri_encoded_ddh = quotemeta(uri_escape('duckduckhack-template-for-spice2', "^A-Za-z0-9"));
+		$page =~ s/duckduckhack-template-for-spice2/$html_encoded_query/g;
 		$page =~ s/$uri_encoded_ddh/$uri_encoded_query/g;
 
-		p($result) if $result;
+		# For debugging query replacement.
+#		p($uri_encoded_ddh);
+#		p($page);
 
-		if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
-            my $call_extf = $result->caller->module_share_dir.'/spice.js';
-            my $call_extc = $result->caller->module_share_dir.'/spice.css';
-            my $call_ext = $result->call_path;
-            $page =~ s/####DUCKDUCKHACK-CALL-EXT####/$call_ext/g;
-            $page =~ s/####DUCKDUCKHACK-CALL-EXTC####/$call_extc/g;
-			$page =~ s/####DUCKDUCKHACK-CALL-EXTF####/$call_extf/g;
-		} else {
-			my $root = HTML::TreeBuilder->new;
-			if ($result) {
-				$root->parse($page);
-				my $content = $root->look_down(
-					"id", "bottom_spacing2"
-				);
-				my $dump = HTML::Element->new('pre');
-				$dump->push_content(Dumper $result);
-				$content->insert_element($dump);
-				$page = $root->as_HTML;
-			} else {
-				$root->parse($self->page_root);
-				my $text_field = $root->look_down(
-					"name", "q"
-				);
-				$text_field->attr( value => $query );
-				$page = $root->as_HTML;
-				$page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
-			}
+		my $root = HTML::TreeBuilder->new;
+		$root->parse($page);
+
+		foreach my $result (@results) {
+
+		    # Info for terminal.
+		    p($result) if $result;
+
+		    # NOTE -- this isn't designed to have both goodies and spice at once.
+
+		    if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
+			push (@calls_script, $result->caller->module_share_dir.'/spice.js');
+			push (@calls_nrc, $result->caller->module_share_dir.'/spice.css');
+			push (@calls_nrj, $result->call_path);
+
+		    } else {
+			my $content = $root->look_down(
+			    "id", "bottom_spacing2"
+			    );
+			my $dump = HTML::Element->new('pre');
+			$dump->push_content(Dumper $result);
+			$content->insert_element($dump);
+			$page = $root->as_HTML;
+		    }
+
 		}
+
+		if (!scalar(@results)) {
+
+		    print "NO RESULTS\n";
+
+		    $root = HTML::TreeBuilder->new;
+		    $root->parse($self->page_root);
+		    my $text_field = $root->look_down(
+			"name", "q"
+			);
+		    $text_field->attr( value => $query );
+		    $page = $root->as_HTML;
+		    $page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
+		}
+ 
+
+		if (@calls_nrj) {
+
+		    print "REPLACING SPICE CALLS\n";
+
+		    my $calls_nrj = join(";",map { "nrj('".$_."')" } @calls_nrj) . ';';
+		    my $calls_nrc = join(";",map { "nrc('".$_."')" } @calls_nrc) . ';';
+		    my $calls_script = join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script);
+
+		    $page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
+		    $page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
+		    $page =~ s/####DUCKDUCKHACK-CALL-SCRIPT####/$calls_script/g;
+		}
+
+
 		$response->content_type('text/html');
 		$body = $page;
     } elsif ($request->param('u') && $path_parts[0] eq 'iu') {
