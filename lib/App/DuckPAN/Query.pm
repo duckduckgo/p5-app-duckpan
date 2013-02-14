@@ -44,10 +44,10 @@ sub run {
 			);
 			my $hit;
 			for my $b (@blocks) {
-				for ($_->request($request)) {
+				for ($b->request($request)) {
 					$hit = 1;
 					print "\n";
-					p($result);
+					p($_);
 					print "\n";
 				}
 			}
