@@ -43,14 +43,12 @@ sub run {
 				language => test_language_by_env(),
 			);
 			my $hit;
-			for (@blocks) {
-				my ($result) = $_->request($request);
-				if ($result) {
+			for my $b (@blocks) {
+				for ($_->request($request)) {
 					$hit = 1;
 					print "\n";
 					p($result);
 					print "\n";
-					last;
 				}
 			}
 			unless ($hit) {
