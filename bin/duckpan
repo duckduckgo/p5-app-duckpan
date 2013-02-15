@@ -4,7 +4,6 @@
 
 $|=1;
 
-use utf8::all;
 use App::DuckPAN;
 App::DuckPAN->new_with_cmd;
 
