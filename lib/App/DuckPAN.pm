@@ -313,28 +313,35 @@ __END__
 
 =head1 SYNPOSIS
 
-  # You need an account at https://dukgo.com/
-
   duckpan check
   # Check for the requirements to make duckpan contributions
   
-  duckpan goodie test
+  duckpan query
   # Fire up your own CLI DuckDuckGo to test goodies
   # Use it in the zeroclickinfo-goodies repository root
+
+  duckpan server
+  # Fire up your own Webserver that acts like DuckDuckGo to test
+  # spice (and goodies if you like). Use it in the
+  # zeroclickinfo-spice repository root
   
   duckpan help <command>
   # Getting help
 
   # TODO  
-  duckpan release
   duckpan test
-  duckpan faq
+  #######
+
+  # For the followings you need an account at https://dukgo.com/
+
   # TODO
+  duckpan release
+  #######
 
   # BETA
   duckpan setup
   # Setup your environment for using Dist::Zilla::Plugin::UploadToDuckPAN
-  # BETA
+  #######
 
 =head1 DESCRIPTION
 
