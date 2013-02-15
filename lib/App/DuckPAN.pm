@@ -57,7 +57,17 @@ sub _ua_string {
 
 option http_proxy => (
 	is => 'ro',
-	predicate => 'has_http_proxy',
+	predicate => 1,
+);
+
+option config => (
+	is => 'ro',
+	predicate => 1,
+);
+
+option cache => (
+	is => 'ro',
+	predicate => 1,
 );
 
 has term => (
@@ -92,16 +102,16 @@ sub _build_http {
 
 has server_hostname => (
 	is => 'ro',
-	builder => 1,
 	lazy => 1,
+	builder => 1,
 );
 
 sub _build_server_hostname { defined $ENV{APP_DUCKPAN_SERVER_HOSTNAME} ? $ENV{APP_DUCKPAN_SERVER_HOSTNAME} : 'duckduckgo.com' }
 
-has config => (
+has cfg => (
 	is => 'ro',
-	builder => '_build_config',
 	lazy => 1,
+	builder => 1,
 	handles => [qw(
 		config_path
 		config_file
@@ -109,9 +119,14 @@ has config => (
 		get_config
 	)]
 );
-sub cfg { shift->config(@_) }
 
-sub _build_config { App::DuckPAN::Config->new }
+sub _build_cfg {
+	my ( $self ) = @_;
+	App::DuckPAN::Config->new(
+		$self->has_config ? ( config_path => $self->config ) : (),
+		$self->has_cache ? ( cache_path => $self->cache ) : (),
+	);
+}
 
 has help => (
 	is => 'ro',
