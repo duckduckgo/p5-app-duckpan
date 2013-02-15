@@ -31,14 +31,12 @@ is($app->perl->get_local_version('App::DuckPAN'),$version,'Checking get_local_ve
 isa_ok($app->help,'App::DuckPAN::Help');
 
 ###############################################################
-isa_ok($app->ddg,'App::DuckPAN::DDG');
-
-###############################################################
 isa_ok($app->cfg,'App::DuckPAN::Config');
 
 SKIP: {
-	skip "No DDG installed yet", 1 unless try_load_class('DDG');
+	skip "No DDG installed yet", 2 unless try_load_class('DDG');
 	my $ddg_version = $DDG::VERSION;
+	isa_ok($app->ddg,'App::DuckPAN::DDG');
 	is($app->get_local_ddg_version,$ddg_version,'Checking get_local_ddg_version');
 }
 
