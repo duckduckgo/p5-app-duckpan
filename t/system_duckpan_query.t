@@ -7,6 +7,7 @@ use Test::Expect;
 use Test::Script::Run;
 use File::chdir;
 use Dir::Self;
+use File::FindLib '../lib';
 
 use Data::Dumper;
 
