@@ -207,9 +207,6 @@ sub request {
  
 
 		if (@calls_nrj) {
-
-		    print "REPLACING SPICE CALLS\n";
-
 		    my $calls_nrj = join(";",map { "nrj('".$_."')" } @calls_nrj) . ';';
 		    my $calls_nrc = join(";",map { "nrc('".$_."')" } @calls_nrc) . ';';
 		    my $calls_script = join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script);
