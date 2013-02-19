@@ -1,4 +1,5 @@
 package App::DuckPAN::Web;
+# ABSTRACT: Webserver for duckpan server
 
 use Moo;
 use DDG::Request;

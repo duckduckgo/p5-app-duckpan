@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Setup;
+# ABSTRACT: Setting up your dukgo.com Account on your duckpan client
 
 use Moo;
 with qw( App::DuckPAN::Cmd );

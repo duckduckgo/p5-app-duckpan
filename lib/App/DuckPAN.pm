@@ -324,7 +324,7 @@ __END__
   # Fire up your own Webserver that acts like DuckDuckGo to test
   # spice (and goodies if you like). Use it in the
   # zeroclickinfo-spice repository root
-  
+
   duckpan help <command>
   # Getting help
 

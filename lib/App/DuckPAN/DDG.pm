@@ -1,4 +1,5 @@
 package App::DuckPAN::DDG;
+# ABSTRACT: DDG related functionality of duckpan
 
 use Moo;
 with 'App::DuckPAN::HasApp';

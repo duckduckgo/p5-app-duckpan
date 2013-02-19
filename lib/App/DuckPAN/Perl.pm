@@ -1,4 +1,5 @@
 package App::DuckPAN::Perl;
+# ABSTRACT: Perl related functionality for duckpan
 
 use Moo;
 with 'App::DuckPAN::HasApp';

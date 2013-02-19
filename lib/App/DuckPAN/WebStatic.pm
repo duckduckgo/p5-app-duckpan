@@ -1,4 +1,5 @@
 package App::DuckPAN::WebStatic;
+# ABSTRACT: Webserver for duckpan static
 
 use Moo;
 use IO::All -utf8;

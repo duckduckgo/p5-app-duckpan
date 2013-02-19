@@ -1,4 +1,5 @@
 package App::DuckPAN::Config;
+# ABSTRACT: Configuration class of the duckpan client
 
 use Moo;
 use MooX::HasEnv;

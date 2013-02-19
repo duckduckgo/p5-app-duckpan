@@ -1,4 +1,5 @@
 package App::DuckPAN::Query;
+# ABSTRACT: Main application/loop for duckpan query
 
 use Moo;
 

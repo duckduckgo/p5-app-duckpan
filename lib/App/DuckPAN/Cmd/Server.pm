@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Server;
+# ABSTRACT: Starting up the webserver to test plugins
 
 use Moo;
 with qw( App::DuckPAN::Cmd );

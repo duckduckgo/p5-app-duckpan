@@ -1,4 +1,5 @@
 package App::DuckPAN::CmdBase::Env;
+# ABSTRACT: Base class for ENV related functionality of duckpan (duckpan env and duckpan rm)
 
 use MooX qw( Options );
 use Path::Class;

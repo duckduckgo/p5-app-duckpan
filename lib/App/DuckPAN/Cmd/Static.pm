@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Static;
+# ABSTRACT: Starting up the static webserver
 
 use Moo;
 with qw( App::DuckPAN::Cmd );

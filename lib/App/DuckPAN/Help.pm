@@ -1,4 +1,5 @@
 package App::DuckPAN::Help;
+# ABSTRACT: Contains the main help page
 
 use Moo;
 

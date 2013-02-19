@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd;
+# ABSTRACT: Base class for commands of DuckPAN
 
 use Moo::Role;
 

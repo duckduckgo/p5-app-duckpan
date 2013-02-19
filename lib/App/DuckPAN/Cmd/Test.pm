@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Test;
+# ABSTRACT: Command for running the tests of this library
 
 use MooX qw( Options );
 with qw( App::DuckPAN::Cmd );
