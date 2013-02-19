@@ -63,7 +63,7 @@ sub show_usage {
   my ( $self ) = @_;
   if (keys %{$self->load_env_ini}) {
     print STDOUT "# ENV variables added so far:\n";
-    $self->show_env($_) for (keys %{$self->load_env_ini});
+    $self->show_env($_) for (sort keys %{$self->load_env_ini});
     print STDOUT "\n";
   }
   printf STDERR "Usage:\n";
