@@ -13,7 +13,11 @@ sub run {
   }
   $name = uc($name);
   if (defined $value) {
-    $self->set_env($name,$value);
+    if ($name eq 'RM') {
+      $self->rm_env($value);
+    } else {
+      $self->set_env($name,$value);
+    }
   } else {
     $self->show_env($name);
   }
