@@ -1,6 +1,10 @@
 package App::DuckPAN;
 # ABSTRACT: The DuckDuckGo DuckPAN client
 
+{ # Fooling CPAN
+  package App::Duckpan;
+}
+
 use Moo;
 use MooX::Cmd;
 use MooX::Options;
