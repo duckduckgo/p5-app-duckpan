@@ -11,42 +11,44 @@ use Path::Class;
 use Dir::Self;
 use Data::Dumper;
 
-chdir( __DIR__ );
+# temporary deactivated
 
-my $query = join ' ', Test::Script::Run::get_perl_cmd('duckpan', 'env');
+# chdir( __DIR__ );
 
-my $config_file = dir(home, '.duckpan', 'env.ini');
-my $test_var = 'DUCKPAN_TEST_VAR';
-my $test_val = 'duckpan_test_val';
+# my $query = join ' ', Test::Script::Run::get_perl_cmd('duckpan', 'env');
 
-sub callDuckPAN { unshift @_, 'env'; run_script( 'duckpan', \@_ ) }
+# my $config_file = dir(home, '.duckpan', 'env.ini');
+# my $test_var = 'DUCKPAN_TEST_VAR';
+# my $test_val = 'duckpan_test_val';
 
-sub grepEnv {
-  my ( $var, $val, $needle, $count, $msg ) = @_;
-  open my $ini, '<', $config_file;
-  my @new_env = map { chomp } grep /$var = $val/, <$ini>;
-  ok( scalar @new_env == $count, $msg );
-  close $ini;
-}
+# sub callDuckPAN { unshift @_, 'env'; run_script( 'duckpan', \@_ ) }
 
-callDuckPAN($test_var, $test_val);
-grepEnv($test_var, $test_val, "$test_var = $test_val", 1,
-        'added new environment variable to ~/.duckpan/env.ini');
+# sub grepEnv {
+#   my ( $var, $val, $needle, $count, $msg ) = @_;
+#   open my $ini, '<', $config_file;
+#   my @new_env = map { chomp } grep /$var = $val/, <$ini>;
+#   ok( scalar @new_env == $count, $msg );
+#   close $ini;
+# }
 
-my ($return, $out, $err) = callDuckPAN();
-open my $ini, '<', $config_file;
-my $expected = join "", "# ENV variables added so far:\n",
-                 (sort map { s/ = (.*)$/='$1'/; "export $_" } <$ini>), "\n";
-my $usage = "Usage:\n"
-          . "      add ENV:\tduckpan env <name> <value>\n"
-          . "      get ENV:\tduckpan env <name>\n"
-          . "   remove ENV:\tduckpan rm <name>\n";
-is($out, $expected, 'got current env variables from `duckpan env`');
-is($err, $usage, 'got usage from `duckpan env` on stderr');
-close $ini;
+# callDuckPAN($test_var, $test_val);
+# grepEnv($test_var, $test_val, "$test_var = $test_val", 1,
+#         'added new environment variable to ~/.duckpan/env.ini');
 
-callDuckPAN('rm', $test_var);
-grepEnv($test_var, $test_val, "$test_var = $test_val", 0,
-        'deleted new environment variable from ~/.duckpan/env.ini');
+# my ($return, $out, $err) = callDuckPAN();
+# open my $ini, '<', $config_file;
+# my $expected = join "", "# ENV variables added so far:\n",
+#                  (sort map { s/ = (.*)$/='$1'/; "export $_" } <$ini>), "\n";
+# my $usage = "Usage:\n"
+#           . "      add ENV:\tduckpan env <name> <value>\n"
+#           . "      get ENV:\tduckpan env <name>\n"
+#           . "   remove ENV:\tduckpan rm <name>\n";
+# is($out, $expected, 'got current env variables from `duckpan env`');
+# is($err, $usage, 'got usage from `duckpan env` on stderr');
+# close $ini;
+
+# callDuckPAN('rm', $test_var);
+# grepEnv($test_var, $test_val, "$test_var = $test_val", 0,
+#         'deleted new environment variable from ~/.duckpan/env.ini');
 
 done_testing;
