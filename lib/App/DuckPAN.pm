@@ -317,50 +317,70 @@ __END__
 
 =head1 SYNPOSIS
 
+L<DuckDuckGo|http://duckpan.org/> is a release platform for
+L<DuckDuckGo|https://duckduckgo.com/> open source code.
+
+DuckPAN also contains a suite of tools for testing and debugging ZeroClickInfo
+plugins.
+
+=head2 INSTALL COMMANDS
+
+DuckPAN is an application built to provide developers a testing environment
+for the ZeroClickInfo Plugins. It allows users to test plugin triggers,
+and lets you preview their visual design. 
+
+  duckpan installdeps
+  # Install all requirements of the specific DuckDuckHack project (if
+  # possible), like zeroclickinfo-spice, zeroclickinfo-goodie, duckduckgo
+  # or community-platform
+
   duckpan check
-  # Check for the requirements to make duckpan contributions
-  
+  # Check if you fulfill all requirements for the development
+  # environment (this is run automatically during setup)
+
+=head2 PLUGIN TESTING
+
   duckpan query
-  # Fire up your own CLI DuckDuckGo to test goodies
-  # Use it in the zeroclickinfo-goodies repository root
+  # Test goodies and spice triggers interactively on the command line
 
   duckpan server
-  # Fire up your own Webserver that acts like DuckDuckGo to test
-  # spice (and goodies if you like). Use it in the
-  # zeroclickinfo-spice repository root
+  # Test spice plugins on a local web server (for design/layout purposes)
 
-  duckpan help <command>
-  # Getting help
+=head2 ADVANCED FEATURES
 
-  # TODO  
-  duckpan test
-  #######
+  duckpan env
+  # View env commands and also shows the env variables currently stored in ~/.duckpan/env.ini
 
-  # For the followings you need an account at https://dukgo.com/
+  duckpan env <name> <value>
+  # Add an environment variable that duckpan will remember. Useful for
+  # spice API keys. Variables are stored in ~/.duckpan/env.ini
 
-  # TODO
+  duckpan env <name>
+  # Retrieve the matching key for a given env variable.
+
+  duckpan env rm <name>
+  # Remove an environment variable from duckpan
+
+  # For the followings you need an account at L<https://dukgo.com/>
+
   duckpan release
-  #######
+  # Release the project of the current directory to DuckPAN
 
-  # BETA
   duckpan setup
+  # BETA FEATURE
   # Setup your environment for using Dist::Zilla::Plugin::UploadToDuckPAN
-  #######
 
-=head1 DESCRIPTION
+=head1 SUPPORT
+ 
+Issue Tracker: L<https://github.com/duckduckgo/p5-app-duckpan/issues>
 
-L<DuckPAN|http://duckpan.org/> is a project of L<DuckDuckGo|https://duckduckgo.com/>
-trying to make a release platform for the contributions to DuckDuckGo. DuckDuckGo
-is a search engine, using so a so called Zero-click Info to spice the search result
-with a very specific result, for example 2+2 or 200 USD to EUR. In this concept
-there is like a nearly unlimited option of what contributions are possible. Beside
-gathering those Zero-click Info plugins, we also want to use it to store all
-released style projects of DuckDuckGo (for example opensource browser plugins and
-the other user contributed tools).
+IRC: #duckduckgo on irc.freenode.net (join us!)
 
-We are still in the buildup of all this, but you may contact us in the channel
-mentioned in the SUPPORT section down under. So anything can change, but we try to
-keep this client and already implemented features stable.
+=head1 CONTRIBUTE
+
+Pull requests and additional contributors are welcome
+
+L<https://github.com/duckduckgo/p5-app-duckpan>
 
 =head1 SEE ALSO
 
@@ -371,18 +391,3 @@ L<https://github.com/duckduckgo>
 L<https://dukgo.com>
 
 L<http://duckpan.org>
-
-=head1 SUPPORT
-
-IRC
-
-  Join us on #duckduckgo on irc.freenode.net
-
-Repository
-
-  https://github.com/duckduckgo/p5-app-duckpan
-  Pull request and additional contributors are welcome
- 
-Issue Tracker
-
-  https://github.com/duckduckgo/p5-app-duckpan/issues
