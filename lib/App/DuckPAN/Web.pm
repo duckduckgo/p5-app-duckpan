@@ -176,7 +176,15 @@ sub request {
 		    # NOTE -- this isn't designed to have both goodies and spice at once.
 
 		    if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
-			push (@calls_script, $result->caller->module_share_dir.'/spice.js');
+
+			if (-f $result->caller->module_share_dir.'/xspice.js'){
+				push (@calls_script, $result->caller->module_share_dir.'/xspice.js');
+			} else {
+				push (@calls_script, $result->caller->module_share_dir.'/spice.js');
+			}
+			if (-f $result->caller->module_share_dir.'/template.js'){
+				push (@calls_script, $result->caller->module_share_dir.'/template.js');
+			}
 			push (@calls_nrc, $result->caller->module_share_dir.'/spice.css');
 			push (@calls_nrj, $result->call_path);
 

@@ -53,17 +53,50 @@ sub run {
 		print "\nCSS fetching failed, will just use cached version..."
 	}
 
-	my $fetch_page_js;
-	if ($fetch_page_js = get('http://'.$hostname.'/duckduck.js')) {
-		io(file($self->app->cfg->cache_path,'page.js'))->print($self->change_js($fetch_page_js));
+	my $fetch_duckduck_js;
+	if ($fetch_duckduck_js = get('http://'.$hostname.'/duckduck.js')) {
+		io(file($self->app->cfg->cache_path,'duckduck.js'))->print($self->change_js($fetch_duckduck_js));
 	} else {
 		print "\nJavaScript fetching failed, will just use cached version..."
+	}
+
+	my $fetch_handlebars_js;
+	if ($fetch_handlebars_js = get('http://'.$hostname.'/js/handlebars.runtime.js')) {
+		io(file($self->app->cfg->cache_path,'handlebars.runtime.js'))->print($fetch_handlebars_js);
+	} else {
+		print "\nHandlebars fetching failed, will just use cached version..."
+	}
+
+	my $fetch_template_js;
+	if ($fetch_template_js = get('http://'.$hostname.'/spice2/default.handlebars.js')) {
+		io(file($self->app->cfg->cache_path,'template.js'))->print($fetch_template_js);
+	} else {
+		print "\nHandlebars fetching failed, will just use cached version..."
+	}
+
+	my $fetch_spice2_js;
+	if ($fetch_spice2_js = get('http://'.$hostname.'/spice2/spice2.js')) {
+		io(file($self->app->cfg->cache_path,'spice2.js'))->print($fetch_spice2_js);
+	} else {
+		print "\nHandlebars fetching failed, will just use cached version..."
+	}
+
+	my $fetch_jquery_js;
+	if ($fetch_jquery_js = get('http://'.$hostname.'/js/jquery/jquery-1.8.2.min.js')) {
+		io(file($self->app->cfg->cache_path,'jquery.js'))->print($fetch_jquery_js);
+	} else {
+		print "\nHandlebars fetching failed, will just use cached version..."
 	}
 
 	my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
 	my $page_css = io(file($self->app->cfg->cache_path,'page.css'))->slurp;
-	my $page_js = io(file($self->app->cfg->cache_path,'page.js'))->slurp;
+	my $duckduck_js = io(file($self->app->cfg->cache_path,'duckduck.js'))->slurp;
+	my $handlebars_js = io(file($self->app->cfg->cache_path,'handlebars.runtime.js'))->slurp;
+	my $template_js = io(file($self->app->cfg->cache_path,'template.js'))->slurp;
+	my $spice2_js = io(file($self->app->cfg->cache_path,'spice2.js'))->slurp;
+	my $jquery_js = io(file($self->app->cfg->cache_path,'jquery.js'))->slurp;
+	my $page_js = $duckduck_js . $handlebars_js . $template_js . $spice2_js . $jquery_js;
 
 	print "\n\nStarting up webserver...";
 	print "\n\nYou can stop the webserver with Ctrl-C";
