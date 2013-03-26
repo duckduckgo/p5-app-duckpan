@@ -62,7 +62,7 @@ sub run {
 
 	my $fetch_handlebars_js;
 	if ($fetch_handlebars_js = get('http://'.$hostname.'/js/handlebars.runtime.js')) {
-		io(file($self->app->cfg->cache_path,'handlebars.runtime.js'))->print($fetch_handlebars_js);
+		io(file($self->app->cfg->cache_path,'handlebars-full.min.js'))->print($fetch_handlebars_js);
 	} else {
 		print "\nHandlebars fetching failed, will just use cached version..."
 	}
