@@ -20,6 +20,8 @@ use Data::Dumper;
 has blocks => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
 has page_spice => ( is => 'ro', required => 1 );
+# 03.26.13 - Should be required once spice2 integration is complete
+has page_spice_template => ( is => 'ro', required => 0 );
 has page_css => ( is => 'ro', required => 1 );
 has page_js => ( is => 'ro', required => 1 );
 
@@ -146,6 +148,7 @@ sub request {
 		my @calls_nrj = ();
 		my @calls_nrc = ();
 		my @calls_script = ();
+		my @calls_template = ();
 
 
 		for (@{$self->blocks}) {
@@ -179,11 +182,9 @@ sub request {
 
 			if (-f $result->caller->module_share_dir.'/xspice.js'){
 				push (@calls_script, $result->caller->module_share_dir.'/xspice.js');
+				push (@calls_template, $result->caller->module_share_dir.'/template.js');
 			} else {
 				push (@calls_script, $result->caller->module_share_dir.'/spice.js');
-			}
-			if (-f $result->caller->module_share_dir.'/template.js'){
-				push (@calls_script, $result->caller->module_share_dir.'/template.js');
 			}
 			push (@calls_nrc, $result->caller->module_share_dir.'/spice.css');
 			push (@calls_nrj, $result->call_path);
@@ -218,6 +219,7 @@ sub request {
 		    my $calls_nrj = join(";",map { "nrj('".$_."')" } @calls_nrj) . ';';
 		    my $calls_nrc = join(";",map { "nrc('".$_."')" } @calls_nrc) . ';';
 		    my $calls_script = join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script);
+		    $calls_script .= join("",map { "<script class='duckduckhack_template' type='text/JavaScript' src='".$_."'></script>" } @calls_template);
 
 		    $page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
 		    $page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
