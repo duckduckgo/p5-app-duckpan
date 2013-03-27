@@ -22,6 +22,7 @@ has page_root => ( is => 'ro', required => 1 );
 has page_spice => ( is => 'ro', required => 1 );
 has page_css => ( is => 'ro', required => 1 );
 has page_js => ( is => 'ro', required => 1 );
+has server_hostname => ( is => 'ro', required => 0 );
 
 has _share_dir_hash => ( is => 'rw' );
 has _path_hash => ( is => 'rw' );
@@ -66,6 +67,7 @@ sub run_psgi {
 
 sub request {
 	my ( $self, $request ) = @_;
+	my $hostname = $self->server_hostname;
 	my @path_parts = split(/\/+/,$request->request_uri);
 	shift @path_parts;
 	my $response = Plack::Response->new(200);
@@ -163,8 +165,8 @@ sub request {
 		$page =~ s/$uri_encoded_ddh/$uri_encoded_query/g;
 
 		# For debugging query replacement.
-#		p($uri_encoded_ddh);
-#		p($page);
+		#p($uri_encoded_ddh);
+		#p($page);
 
 		my $root = HTML::TreeBuilder->new;
 		$root->parse($page);
@@ -234,31 +236,39 @@ sub request {
 				"<script class='duckduckhack_template' name='$template_name' type='text/x-handlebars-template'>$template_content</script>"
 			} @calls_template);
 
-		$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
-		$page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
-		$page =~ s/####DUCKDUCKHACK-CALL-SCRIPT####/$calls_script/g;
-	}
+			$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
+			$page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
+			$page =~ s/####DUCKDUCKHACK-CALL-SCRIPT####/$calls_script/g;
+		}
 
+		$response->content_type('text/html');
+		$body = $page;
 
-	$response->content_type('text/html');
-	$body = $page;
-} elsif ($request->param('u') && $path_parts[0] eq 'iu') {
-	my $res = $self->ua->request(HTTP::Request->new(GET => "http://duckduckgo.com".$request->request_uri));
-	if ($res->is_success) {
-		$body = $res->decoded_content;
-		$response->code($res->code);
-		$response->content_type($res->content_type);
+	} elsif ($request->param('u') && $path_parts[0] eq 'iu') {
+		my $res = $self->ua->request(HTTP::Request->new(GET => "http://".$hostname.$request->request_uri));
+		if ($res->is_success) {
+			$body = $res->decoded_content;
+			$response->code($res->code);
+			$response->content_type($res->content_type);
+		} else {
+			warn $res->status_line, "\n";
+			$body = "";
+		}
 	} else {
-		warn $res->status_line, "\n";
-		$body = "";
+		my $res = $self->ua->request(HTTP::Request->new(GET => "http://".$hostname.$request->request_uri));
+		if ($res->is_success) {
+			$body = $res->decoded_content;
+			$response->code($res->code);
+			$response->content_type($res->content_type);
+		} else {
+			warn $res->status_line, "\n";
+			$body = "";
+		}
 	}
-} else {
-	$response->content_type('text/html');
-	$body = $self->page_root;
-}
-Encode::_utf8_off($body);
-$response->body($body);
-return $response;
+
+	Encode::_utf8_off($body);
+	$response->body($body);
+	return $response;
 }
 
 1;
