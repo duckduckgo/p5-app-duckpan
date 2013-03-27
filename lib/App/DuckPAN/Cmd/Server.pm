@@ -87,6 +87,7 @@ sub run {
 		page_spice => $page_spice,
 		page_css => $page_css,
 		page_js => $page_js,
+		server_hostname => $hostname,
 	);
 	my $runner = Plack::Runner->new(
 		#loader => 'Restarter',
