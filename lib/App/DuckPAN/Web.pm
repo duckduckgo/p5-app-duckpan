@@ -20,8 +20,6 @@ use Data::Dumper;
 has blocks => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
 has page_spice => ( is => 'ro', required => 1 );
-# 03.26.13 - Should be required once spice2 integration is complete
-has page_spice_template => ( is => 'ro', required => 0 );
 has page_css => ( is => 'ro', required => 1 );
 has page_js => ( is => 'ro', required => 1 );
 
@@ -108,21 +106,21 @@ sub request {
 						));
 					if ($res->is_success) {
 						$body = $res->decoded_content;
-                        warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $rewrite->wrap_jsonp_callback && $rewrite->wrap_string_callback;
+						warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $rewrite->wrap_jsonp_callback && $rewrite->wrap_string_callback;
 						if ($rewrite->wrap_jsonp_callback && $rewrite->callback) {
 							$body = $rewrite->callback.'('.$body.');';
 						}
 						elsif ($rewrite->wrap_string_callback && $rewrite->callback) {
-                            $body =~ s/"/\\"/g;
-                            $body =~ s/\n/\\n/g;
-                            $body =~ s/\R//g;
+							$body =~ s/"/\\"/g;
+							$body =~ s/\n/\\n/g;
+							$body =~ s/\R//g;
 							$body = $rewrite->callback.'("'.$body.'");';
 						}
 						$response->code($res->code);
 						$response->content_type($res->content_type);
 					} else {
-					    warn $res->status_line, "\n";
-					    $body = "";
+						warn $res->status_line, "\n";
+						$body = "";
 					}
 				}
 			}
@@ -152,7 +150,7 @@ sub request {
 
 
 		for (@{$self->blocks}) {
-		    push(@results,$_->request($ddg_request));
+			push(@results,$_->request($ddg_request));
 		}
 
 
@@ -173,79 +171,93 @@ sub request {
 
 		foreach my $result (@results) {
 
-		    # Info for terminal.
-		    p($result) if $result;
+			# Info for terminal.
+			p($result) if $result;
 
-		    # NOTE -- this isn't designed to have both goodies and spice at once.
+			# NOTE -- this isn't designed to have both goodies and spice at once.
 
-		    if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
+			if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
 
-			if (-f $result->caller->module_share_dir.'/xspice.js'){
-				push (@calls_script, $result->caller->module_share_dir.'/xspice.js');
-				push (@calls_template, $result->caller->module_share_dir.'/template.js');
+				if (-f $result->caller->module_share_dir.'/xspice.js'){
+					push (@calls_script, $result->caller->module_share_dir.'/xspice.js');
+				} else {
+					push (@calls_script, $result->caller->module_share_dir.'/spice.js');
+				}
+				push (@calls_nrc, $result->caller->module_share_dir.'/spice.css');
+				
+				my $io = io($result->caller->module_share_dir);
+				my @files = @$io;
+				foreach (@files){
+					if ($_->filename =~ '^.+handlebars$'){
+						push (@calls_template, $_);
+					}
+				}
+				push (@calls_nrj, $result->call_path);
+
 			} else {
-				push (@calls_script, $result->caller->module_share_dir.'/spice.js');
+				my $content = $root->look_down(
+					"id", "bottom_spacing2"
+					);
+				my $dump = HTML::Element->new('pre');
+				$dump->push_content(Dumper $result);
+				$content->insert_element($dump);
+				$page = $root->as_HTML;
 			}
-			push (@calls_nrc, $result->caller->module_share_dir.'/spice.css');
-			push (@calls_nrj, $result->call_path);
-                    } else {
-			my $content = $root->look_down(
-			    "id", "bottom_spacing2"
-			    );
-			my $dump = HTML::Element->new('pre');
-			$dump->push_content(Dumper $result);
-			$content->insert_element($dump);
-			$page = $root->as_HTML;
-		    }
-
 		}
 
 		if (!scalar(@results)) {
 
-		    print "NO RESULTS\n";
+			print "NO RESULTS\n";
 
-		    $root = HTML::TreeBuilder->new;
-		    $root->parse($self->page_root);
-		    my $text_field = $root->look_down(
+			$root = HTML::TreeBuilder->new;
+			$root->parse($self->page_root);
+			my $text_field = $root->look_down(
 			"name", "q"
 			);
-		    $text_field->attr( value => $query );
-		    $page = $root->as_HTML;
-		    $page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
+			$text_field->attr( value => $query );
+			$page = $root->as_HTML;
+			$page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
 		}
  
 
 		if (@calls_nrj) {
-		    my $calls_nrj = join(";",map { "nrj('".$_."')" } @calls_nrj) . ';';
-		    my $calls_nrc = join(";",map { "nrc('".$_."')" } @calls_nrc) . ';';
-		    my $calls_script = join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script);
-		    $calls_script .= join("",map { "<script class='duckduckhack_template' type='text/JavaScript' src='".$_."'></script>" } @calls_template);
+			my $calls_nrj = join(";",map { "nrj('".$_."')" } @calls_nrj) . ';';
+			my $calls_nrc = join(";",map { "nrc('".$_."')" } @calls_nrc) . ';';
+			my $calls_script = join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script);
+			
+			my ($template_name, $template_content);
+			$calls_script .= join("",map {
+				$template_name = $_->filename;
+				$template_name =~ s/.handlebars//g;
+				$template_content = $_->all;
+				"<script class='duckduckhack_template' name='$template_name' type='text/x-handlebars-template'>$template_content</script>"
+			} @calls_template);
 
-		    $page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
-		    $page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
-		    $page =~ s/####DUCKDUCKHACK-CALL-SCRIPT####/$calls_script/g;
-		}
-
-
-		$response->content_type('text/html');
-		$body = $page;
-    } elsif ($request->param('u') && $path_parts[0] eq 'iu') {
-        my $res = $self->ua->request(HTTP::Request->new(GET => "http://duckduckgo.com".$request->request_uri));
-        if ($res->is_success) {
-            $body = $res->decoded_content;
-            $response->code($res->code);
-            $response->content_type($res->content_type);
-        } else {
-            warn $res->status_line, "\n";
-            $body = "";
-        }
-	} else {
-		$response->content_type('text/html');
-		$body = $self->page_root;
+		$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
+		$page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
+		$page =~ s/####DUCKDUCKHACK-CALL-SCRIPT####/$calls_script/g;
 	}
-	Encode::_utf8_off($body);
-	$response->body($body);
-	return $response;
+
+
+	$response->content_type('text/html');
+	$body = $page;
+} elsif ($request->param('u') && $path_parts[0] eq 'iu') {
+	my $res = $self->ua->request(HTTP::Request->new(GET => "http://duckduckgo.com".$request->request_uri));
+	if ($res->is_success) {
+		$body = $res->decoded_content;
+		$response->code($res->code);
+		$response->content_type($res->content_type);
+	} else {
+		warn $res->status_line, "\n";
+		$body = "";
+	}
+} else {
+	$response->content_type('text/html');
+	$body = $self->page_root;
+}
+Encode::_utf8_off($body);
+$response->body($body);
+return $response;
 }
 
 1;
