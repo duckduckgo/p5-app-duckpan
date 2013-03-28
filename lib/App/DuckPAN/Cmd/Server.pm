@@ -30,8 +30,7 @@ sub run {
 		'handlebars.min.js'      => { name => 'Handlebars.js', file_path => '/js/handlebars.min.js' },
 		'default.handlebars.js'  => { name => 'Default Spice2 Template', file_path => '/spice2/default.handlebars.js' },
 		'spice2.js'              => { name => 'Spice2.js', file_path => '/spice2/spice2.js' },
-		'carousel.handlebars.js' => { name => 'Default Spice2 Carousel Template', file_path => '/spice2/carousel.handlebars.js' },
-		'carousel-in.js'         => { name => 'Default Carousel Javascript', file_path => '/spice2/carousel-in.js' },
+		'carousel.js'         => { name => 'Default Carousel Javascript', file_path => '/spice2/carousel.js' },
 		'spice2_duckpan.js'      => { name => 'Spice2 DuckPAN javascript', file_path => '/spice2/spice2_duckpan.js' }
 	);
 
@@ -71,7 +70,7 @@ sub run {
 	$page_js .= io(file($self->app->cfg->cache_path,'default.handlebars.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'spice2.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'carousel.handlebars.js'))->slurp;
-	$page_js .= io(file($self->app->cfg->cache_path,'carousel-in.js'))->slurp;
+	$page_js .= io(file($self->app->cfg->cache_path,'carousel.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'spice2_duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
