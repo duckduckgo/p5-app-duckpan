@@ -10,9 +10,14 @@ use File::ShareDir::ProjectDistDir;
 use File::Copy;
 use Path::Class;
 use IO::All -utf8;
-use LWP::Simple;
 use HTML::TreeBuilder;
 use Config::INI;
+
+use LWP::UserAgent;
+use LWP::Protocol::http;
+
+use HTTP::Message;
+use HTTP::Request::Common;
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -28,9 +33,7 @@ sub run {
 		'duckduck.js'            => { name => 'DuckDuckGo Javascript', file_path => '/duckduck.js' },
 		'jquery.js'              => { name => 'jQuery', file_path => '/js/jquery/jquery-1.8.2.min.js' },
 		'handlebars.js'          => { name => 'Handlebars.js', file_path => '/js/handlebars-1.0.0-rc.3.js' },
-#		'default.handlebars.js'  => { name => 'Default Spice2 Template', file_path => '/spice2/default.handlebars.js' },
 		'spice2.min.js'          => { name => 'Spice2.js', file_path => '/spice2/spice2.min.js' },
-#		'carousel.js'            => { name => 'Default Carousel Javascript', file_path => '/spice2/carousel.js' },
 		'spice2_duckpan.js'      => { name => 'Spice2 DuckPAN javascript', file_path => '/spice2/spice2_duckpan.js' }
 	);
 
@@ -39,26 +42,39 @@ sub run {
 	print "\n\nTrying to fetch current versions of the HTML from http://duckduckgo.com/\n\n";
 
 	my $hostname = $self->app->server_hostname;
-	my $temp;
 
-	foreach (keys %spice_files){
-		copy(file(dist_dir('App-DuckPAN'),$_),file($self->app->cfg->cache_path,$_)) unless -f file($self->app->cfg->cache_path,$_);
+	# Create a user agent object
+	my $ua = LWP::UserAgent->new;
+	$ua->timeout(1);
+	$ua->agent("DuckPAN/0.1 ");
+	$ua->max_redirect(6);
 
-		if ($temp = get('http://'.$hostname.$spice_files{$_}{"file_path"})) {
-			
-			if ($_ =~ m/js/){
-				io(file($self->app->cfg->cache_path,$_))->print($self->change_js($temp));
-			} elsif  ($_ =~ m/css/){
-				io(file($self->app->cfg->cache_path,$_))->print($self->change_css($temp));
-			} else {
-				io(file($self->app->cfg->cache_path,$_))->print($self->change_html($temp));
-			}
-		} else {
-			print "\n". $spice_files{$_}{"name"} . " fetching failed, will just use cached version...";
+	foreach my $file_name (keys %spice_files){
+		copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name)) unless -f file($self->app->cfg->cache_path,$file_name);
+		
+		my $path = $spice_files{$file_name}{'file_path'};
+		my $url = 'http://'.$hostname.''.$path;
+		my $res = $ua->request(GET $url, ('Accept-Encoding' => HTTP::Message::decodable));
+
+		if ($res->is_success){
+
+				my $content = $res->decoded_content(charset => 'none');
+
+				if ($file_name =~ m/js/){
+					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_js($content));
+				} elsif  ($file_name =~ m/css/){
+					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_css($content));
+				} else {
+					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_html($content));
+				}
+		} else {			
+			#print $res->status_line, "\n";
+			print "\n".$spice_files{$file_name}{'name'}." fetching failed, will just use cached version...";
 		}
 	}
 
 	my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
+
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
 	my $page_css = io(file($self->app->cfg->cache_path,'page.css'))->slurp;
 	
@@ -67,10 +83,7 @@ sub run {
 	my $page_js = io(file($self->app->cfg->cache_path,'duckduck.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'jquery.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'handlebars.js'))->slurp;
-#	$page_js .= io(file($self->app->cfg->cache_path,'default.handlebars.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'spice2.min.js'))->slurp;
-#	$page_js .= io(file($self->app->cfg->cache_path,'carousel.handlebars.js'))->slurp;
-#$page_js .= io(file($self->app->cfg->cache_path,'carousel.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'spice2_duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";

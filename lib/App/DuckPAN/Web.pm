@@ -243,16 +243,6 @@ sub request {
 		$response->content_type('text/html');
 		$body = $page;
 
-	} elsif ($request->param('u') && $path_parts[0] eq 'iu') {
-		my $res = $self->ua->request(HTTP::Request->new(GET => "http://".$hostname.$request->request_uri));
-		if ($res->is_success) {
-			$body = $res->decoded_content;
-			$response->code($res->code);
-			$response->content_type($res->content_type);
-		} else {
-			warn $res->status_line, "\n";
-			$body = "";
-		}
 	} else {
 		my $res = $self->ua->request(HTTP::Request->new(GET => "http://".$hostname.$request->request_uri));
 		if ($res->is_success) {
