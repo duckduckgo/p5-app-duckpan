@@ -87,6 +87,7 @@ sub run {
 	$page_js .= io(file($self->app->cfg->cache_path,'spice2_duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
+	print "\n\n **** NOTE: THIS IS AN EXPERIMENAL VERSION OF DUCKPAN FOR SPICE2 ****";
 	print "\n\nYou can stop the webserver with Ctrl-C";
 	print "\n\n";
 	
