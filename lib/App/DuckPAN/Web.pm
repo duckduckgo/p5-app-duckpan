@@ -179,18 +179,21 @@ sub request {
 			# NOTE -- this isn't designed to have both goodies and spice at once.
 
 			if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
-
-				if (-f $result->caller->module_share_dir.'/xspice.js'){
-					push (@calls_script, $result->caller->module_share_dir.'/xspice.js');
-				} else {
-					push (@calls_script, $result->caller->module_share_dir.'/spice.js');
-				}
-				push (@calls_nrc, $result->caller->module_share_dir.'/spice.css');
 				
+				my $filename = $result->caller->module_share_dir;
+				$filename =~ s/share\/spice\///g;
+				$filename =~ s/\//\_/g;
+
 				my $io = io($result->caller->module_share_dir);
 				my @files = @$io;
 				foreach (@files){
-					if ($_->filename =~ '^.+handlebars$'){
+					if ($_->filename =~ /$filename\.js$/){
+						push (@calls_nrj, $_);
+					
+					}	elsif ($_->filename =~ /$filename\.css$/){
+						push (@calls_nrc, $_);
+					
+					} elsif ($_->filename =~ /^.+handlebars$/){
 						push (@calls_template, $_);
 					}
 				}
