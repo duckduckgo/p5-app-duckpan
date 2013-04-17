@@ -71,8 +71,8 @@ sub request {
 	my $response = Plack::Response->new(200);
 	my $body;
 	if (@path_parts && $path_parts[0] eq 'share') {
-		my $filename = pop @path_parts;
-		my $share_dir = join('/',@path_parts);
+                my $share_dir = join('/', @path_parts[0..2]);
+                my $filename = join('/', @path_parts[3..$#path_parts]);
 		my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename);
 		$body = -f $filename_path ? io($filename_path)->slurp : "";
 	} elsif (@path_parts && $path_parts[0] eq 'js') {
@@ -179,8 +179,14 @@ sub request {
 			push (@calls_script, $result->caller->module_share_dir.'/spice.js');
 			push (@calls_nrc, $result->caller->module_share_dir.'/spice.css');
 			push (@calls_nrj, $result->call_path);
-
-		    } else {
+		    } 
+                    elsif (defined $result->{html}) {
+                        my $content = $root->look_down("id", "zero_click_abstract");
+                        my $zci = HTML::Element->new('div');
+                        $zci->push_content($result->{html} || $result->{answer});
+                        $content->insert_element($zci);
+                        $page = $root->as_HTML;
+                    } else {
 			my $content = $root->look_down(
 			    "id", "bottom_spacing2"
 			    );
