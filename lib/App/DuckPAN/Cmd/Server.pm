@@ -33,15 +33,14 @@ sub run {
 		'duckduck.js'            => { name => 'DuckDuckGo Javascript', file_path => '/duckduck.js' },
 		'jquery.js'              => { name => 'jQuery', file_path => '/js/jquery/jquery-1.8.2.min.js' },
 		'handlebars.js'          => { name => 'Handlebars.js', file_path => '/js/handlebars-1.0.0-rc.3.js' },
-		'spice2.min.js'          => { name => 'Spice2.js', file_path => '/spice2/spice2.min.js' },
+		'spice2_latest.js'          => { name => 'Spice2.js', file_path => '/spice2/spice2_latest.js' },
 		'spice2_duckpan.js'      => { name => 'Spice2 DuckPAN javascript', file_path => '/spice2/spice2_duckpan.js' }
 	);
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-	print "\n\nTrying to fetch current versions of the HTML from http://duckduckgo.com/\n\n";
-
 	my $hostname = $self->app->server_hostname;
+	print "\n\nTrying to fetch current versions of the HTML from http://$hostname/\n\n";
 
 	# Create a user agent object
 	my $ua = LWP::UserAgent->new;
@@ -83,7 +82,7 @@ sub run {
 	my $page_js = io(file($self->app->cfg->cache_path,'duckduck.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'jquery.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'handlebars.js'))->slurp;
-	$page_js .= io(file($self->app->cfg->cache_path,'spice2.min.js'))->slurp;
+	$page_js .= io(file($self->app->cfg->cache_path,'spice2_latest.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'spice2_duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
