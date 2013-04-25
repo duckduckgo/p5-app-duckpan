@@ -18,3 +18,5 @@ install:
    - dzil listdeps | grep -vP '[^\w:]' | cpanm --verbose
 script:
    - dzil smoke --release --author
+notifications:
+   email: false
