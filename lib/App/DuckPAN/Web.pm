@@ -101,8 +101,6 @@ sub request {
 							$to =~ s/$cap_from//g;
 						}
 					}
-					# Make sure we replace ${dollar} to $.
-					$to =~ s/\$\{dollar\}/\$/g;
 					p($to);
 					my $res = $self->ua->request(HTTP::Request->new(
 						GET => $to,
