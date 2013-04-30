@@ -65,6 +65,8 @@ sub run_psgi {
 	return $response->finalize;
 }
 
+my $has_common_js = 0;
+
 sub request {
 	my ( $self, $request ) = @_;
 	my $hostname = $self->server_hostname;
@@ -72,11 +74,26 @@ sub request {
 	shift @path_parts;
 	my $response = Plack::Response->new(200);
 	my $body;
+
 	if (@path_parts && $path_parts[0] eq 'share') {
-		my $share_dir = join('/', @path_parts[0..2]);
-		my $filename = join('/', @path_parts[3..$#path_parts]);
+		my $filename = pop @path_parts;
+		my $share_dir = join('/',@path_parts);
+
+		if ($filename =~ /\.js$/ and
+			$has_common_js and
+			$share_dir =~ /(share\/spice\/([^\/]+)\/?)(.*)/){
+
+			my $parent_dir = $1;
+			my $parent_name = $2;
+			my $common_js = $parent_dir."$parent_name.js";
+
+			$body = io($common_js)->slurp;
+			warn "\nAppended $common_js to $filename\n\n";
+		}
+
 		my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename);
-		$body = -f $filename_path ? io($filename_path)->slurp : "";
+		$body .= -f $filename_path ? io($filename_path)->slurp : "";
+
 	} elsif (@path_parts && $path_parts[0] eq 'js') {
 		for (keys %{$self->_path_hash}) {
 			if ($request->request_uri =~ m/^$_/g) {
@@ -150,12 +167,9 @@ sub request {
 		my @calls_script = ();
 		my @calls_template = ();
 
-
 		for (@{$self->blocks}) {
 			push(@results,$_->request($ddg_request));
 		}
-
-
 
 		my $page = $self->page_spice;
 		my $uri_encoded_query = uri_escape_utf8($query, "^A-Za-z");
@@ -179,20 +193,43 @@ sub request {
 			# NOTE -- this isn't designed to have both goodies and spice at once.
 
 			if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
-				
-				my $filename = $result->caller->module_share_dir;
+
+				my $io;
+				my @files;
+				my $share_dir = $result->caller->module_share_dir;
+				my @path = split(/\/+/, $share_dir);
+				my $filename = $path[-1];
+
+				if (scalar(@path) > 3 and
+					$share_dir =~ /(share\/spice\/([^\/]+)\/?)(.*)/){
+
+					my $parent_dir = $1;
+					my $parent_name = $2;
+					my $common_js = $parent_dir."$parent_name.js";
+
+					unless ($has_common_js) {
+						$has_common_js = 1 if (-f $common_js);
+					}
+
+				 	@files = map { $_ } grep {
+					       $_->name =~ /^.+handlebars$/
+					   } io($parent_dir)->all_files;
+				}
+
 				$filename =~ s/share\/spice\///g;
 				$filename =~ s/\//\_/g;
 
-				my $io = io($result->caller->module_share_dir);
-				my @files = @$io;
+				$io = io($result->caller->module_share_dir);
+				push(@files, @$io);
+
 				foreach (@files){
+
 					if ($_->filename =~ /$filename\.js$/){
 						push (@calls_nrj, $_);
-					
-					}	elsif ($_->filename =~ /$filename\.css$/){
+
+					} elsif ($_->filename =~ /$filename\.css$/){
 						push (@calls_nrc, $_);
-					
+
 					} elsif ($_->filename =~ /^.+handlebars$/){
 						push (@calls_template, $_);
 					}
@@ -223,13 +260,13 @@ sub request {
 			$page = $root->as_HTML;
 			$page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
 		}
- 
+
 
 		if (@calls_nrj) {
 			my $calls_nrj = join(";",map { "nrj('".$_."')" } @calls_nrj) . ';';
 			my $calls_nrc = join(";",map { "nrc('".$_."')" } @calls_nrc) . ';';
 			my $calls_script = join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script);
-			
+
 			my ($template_name, $template_content);
 			$calls_script .= join("",map {
 				$template_name = $_->filename;
