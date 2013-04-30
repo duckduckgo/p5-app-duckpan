@@ -33,7 +33,7 @@ sub run {
 		'duckduck.js'            => { name => 'DuckDuckGo Javascript', file_path => '/duckduck.js' },
 		'jquery.js'              => { name => 'jQuery', file_path => '/js/jquery/jquery-1.8.2.min.js' },
 		'handlebars.js'          => { name => 'Handlebars.js', file_path => '/js/handlebars-1.0.0-rc.3.js' },
-		'spice2_latest.js'          => { name => 'Spice2.js', file_path => '/spice2/spice2_latest.js' },
+		'spice2_latest.js'       => { name => 'Spice2.js', file_path => '/spice2/spice2_latest.js' },
 		'spice2_duckpan.js'      => { name => 'Spice2 DuckPAN javascript', file_path => '/spice2/spice2_duckpan.js' }
 	);
 
