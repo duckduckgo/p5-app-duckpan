@@ -20,9 +20,26 @@ sub run {
 		$self->app->print_text(
 			"Everything fine!",
 		);
-
-		print "\a"; usleep 225000; print "\a";
+	} elsif (-f 'Makefile.PL') {
+		$self->app->print_text(
+			"Found a Makefile.PL",
+		);
+		system("perl Makefile.PL");
+		system("make install");
+	} elsif (-f 'Build.PL') {
+		$self->app->print_text(
+			"Found a Build.PL",
+		);
+		system("perl Build.PL");
+		system("./Build install");
+	} elsif (-f 'Makefile') {
+		$self->app->print_text(
+			"Found a Makefile",
+		);
+		system("make install");
 	}
+
+	print "\a"; usleep 225000; print "\a";
 
 }
 
