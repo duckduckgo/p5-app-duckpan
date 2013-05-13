@@ -4,6 +4,7 @@ use Moo;
 with qw( App::DuckPAN::Cmd );
 
 use MooX::Options;
+use Time::HiRes qw( usleep );
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -19,6 +20,8 @@ sub run {
 		$self->app->print_text(
 			"Everything fine!",
 		);
+
+		print "\a"; usleep 225000; print "\a";
 	}
 
 }
