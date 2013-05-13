@@ -24,19 +24,14 @@ sub run {
 		$self->app->print_text(
 			"Found a Makefile.PL",
 		);
-		system("perl Makefile.PL");
-		system("make install");
+		$self->app->perl->cpanminus_install_error
+			if (system("cpanm --quiet --notest --skip-satisfied --installdeps ."));
 	} elsif (-f 'Build.PL') {
 		$self->app->print_text(
 			"Found a Build.PL",
 		);
-		system("perl Build.PL");
-		system("./Build install");
-	} elsif (-f 'Makefile') {
-		$self->app->print_text(
-			"Found a Makefile",
-		);
-		system("make install");
+		$self->app->perl->cpanminus_install_error
+			if (system("cpanm --quiet --notest --skip-satisfied --installdeps ."));
 	}
 
 	print "\a"; usleep 225000; print "\a";
