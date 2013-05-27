@@ -173,20 +173,26 @@ sub request {
 		    # Info for terminal.
 		    p($result) if $result;
 
-		    # NOTE -- this isn't designed to have both goodies and spice at once.
 
 		    if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
 			push (@calls_script, $result->caller->module_share_dir.'/spice.js');
 			push (@calls_nrc, $result->caller->module_share_dir.'/spice.css');
 			push (@calls_nrj, $result->call_path);
                     } else {
-			my $content = $root->look_down(
-			    "id", "bottom_spacing2"
-			    );
-			my $dump = HTML::Element->new('pre');
-			$dump->push_content(Dumper $result);
-			$content->insert_element($dump);
-			$page = $root->as_HTML;
+				my $content = $root->look_down(
+					"id", "bottom_spacing2"
+				);
+				my $dump = HTML::Element->new('div', 'id' => "zero_click_abstract", 'class' => "zero_click_answer highlight_1");
+				if ($result->heading) {
+					my $heading = HTML::Element->new('div', 
+									'id' => 'zero_click_header', 
+									'class' => 'highlight_1');
+					$heading->push_content($result->heading);
+					$content->push_content($heading);
+				}
+				$dump->push_content($result->html || $result->answer);
+				$content->insert_element($dump);
+				$page = $root->as_HTML('');
 		    }
 
 		}
