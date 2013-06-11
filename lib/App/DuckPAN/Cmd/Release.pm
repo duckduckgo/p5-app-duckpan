@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Release;
+# ABSTRACT: Release the distribution of the current directory
 
 use MooX qw( Options );
 with qw( App::DuckPAN::Cmd );

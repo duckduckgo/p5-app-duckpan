@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Install;
+# ABSTRACT: Install the distribution in current directory
 
 use Moo;
 with qw( App::DuckPAN::Cmd );

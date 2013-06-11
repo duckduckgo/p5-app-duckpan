@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Check;
+# ABSTRACT: Command for checking the requirements
 
 use Moo;
 with qw( App::DuckPAN::Cmd );

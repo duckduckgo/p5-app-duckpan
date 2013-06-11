@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Installdeps;
+# ABSTRACT: Regular way to install requirements with tests
 
 use Moo;
 with qw( App::DuckPAN::Cmd );

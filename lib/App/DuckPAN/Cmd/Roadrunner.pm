@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Roadrunner;
+# ABSTRACT: Install requirements as fast as possible
 
 use Moo;
 with qw( App::DuckPAN::Cmd );

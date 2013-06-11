@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Env;
+# ABSTRACT: Get or set ENV variables for the plugins
 
 use Moo;
 extends 'App::DuckPAN::CmdBase::Env';

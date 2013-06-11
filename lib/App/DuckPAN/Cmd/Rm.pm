@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Rm;
+# ABSTRACT: Remove an ENV variable
 
 use Moo;
 extends 'App::DuckPAN::CmdBase::Env';

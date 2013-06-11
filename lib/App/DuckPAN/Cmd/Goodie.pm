@@ -1,4 +1,5 @@
 package App::DuckPAN::Cmd::Goodie;
+# ABSTRACT: DEPRECATED
 
 use Moo;
 with qw( App::DuckPAN::Cmd );
