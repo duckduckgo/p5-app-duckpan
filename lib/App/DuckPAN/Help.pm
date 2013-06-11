@@ -48,6 +48,10 @@ duckpan env rm <name>
 ---------------------
  Remove an environment variable from duckpan
 
+duckpan poupload
+---------------
+ Upload a po file to the Community Platform (Translation manager only)
+
 duckpan release
 ---------------
  Release the project of the current directory to DuckPAN [TODO]

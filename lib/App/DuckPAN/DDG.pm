@@ -7,6 +7,18 @@ with 'App::DuckPAN::HasApp';
 use Module::Pluggable::Object;
 use Class::Load ':all';
 
+sub get_dukgo_user_pass {
+	my ( $self ) = @_;
+	my $config = $self->app->perl->get_dzil_config;
+	unless (defined $config->{'%DUKGO'}) {
+		shift->app->print_text(
+			"[ERROR] No configuration found for your https://dukgo.com/ username and password, please use: 'dzil setup' first!",
+		);
+		exit 1;
+	}
+	return $config->{'%DUKGO'}->{username}, $config->{'%DUKGO'}->{password};
+}
+
 sub get_blocks_from_current_dir {
 	my ( $self, @args ) = @_;
 	unless ($self->app->get_local_ddg_version) {
