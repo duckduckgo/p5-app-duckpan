@@ -52,6 +52,10 @@ duckpan poupload
 ---------------
  Upload a po file to the Community Platform (Translation manager only)
 
+duckpan publisher
+---------------
+ Live testing of duckduckgo-publisher
+
 duckpan release
 ---------------
  Release the project of the current directory to DuckPAN [TODO]
