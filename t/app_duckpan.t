@@ -21,11 +21,8 @@ my $app = App::DuckPAN->new(
 isa_ok($app,'App::DuckPAN');
 is(dir($app->cfg->config_path)->cleanup->resolve->stringify,$tempdir,"Checking temp config path of App::DuckPAN");
 isa_ok($app->http,'LWP::UserAgent');
-
-SKIP: {
-    skip "Custom server set", 1 if $ENV{APP_DUCKPAN_SERVER_HOSTNAME};
-    is($app->server_hostname, 'duckduckgo.com','Checking for known servers *.duckduckgo.com');
-}
+delete $ENV{APP_DUCKPAN_SERVER_HOSTNAME};
+is($app->server_hostname, 'duckduckgo.com','Checking for known servers *.duckduckgo.com');
 
 ###############################################################
 isa_ok($app->perl,'App::DuckPAN::Perl');
