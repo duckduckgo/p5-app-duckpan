@@ -9,6 +9,32 @@ use MooX::Options;
 use Path::Class;
 use Plack::Handler::Starman;
 
+for (qw( duckduckgo dontbubbleus donttrackus whatisdnt fixtracking )) {
+	option $_ => (
+		is => 'ro',
+		format => 's',
+		predicate => 1,
+	);
+}
+
+option dontbubbleus => (
+	is => 'ro',
+	format => 's',
+	predicate => 1,
+);
+
+option donttrackus => (
+	is => 'ro',
+	format => 's',
+	predicate => 1,
+);
+
+option domain => (
+	is => 'ro',
+	format => 's',
+	predicate => 1,
+);
+
 sub run {
 	my ( $self, @args ) = @_;
 
@@ -24,24 +50,24 @@ sub run {
 	my %sites = (
 		duckduckgo => {
 			port => 5000,
-			url => "http://duckduckgo.com/",
+			url => $self->has_duckduckgo ? $self->duckduckgo : "http://duckduckgo.com/",
 		},
 		dontbubbleus => {
 			port => 5001,
-			url => "http://dontbubble.us/",
+			url => $self->has_dontbubbleus ? $self->dontbubbleus : "http://dontbubble.us/",
 		},
 		donttrackus => {
 			port => 5002,
-			url => "http://donttrack.us/",
+			url => $self->has_donttrackus ? $self->donttrackus : "http://donttrack.us/",
 		},	
 		whatisdnt => {
 			port => 5003,
-			url => "http://whatisdnt.com/",
+			url => $self->has_whatisdnt ? $self->whatisdnt : "http://whatisdnt.com/",
 		},
-		#fixtracking => {
-		#	port => 5004,
-		#	url => "http://fixtracking.com/",
-		#},
+		fixtracking => {
+			port => 5004,
+			url => $self->has_fixtracking ? $self->fixtracking : "http://fixtracking.com/",
+		},
 	);
 
 	for (keys %sites) {
