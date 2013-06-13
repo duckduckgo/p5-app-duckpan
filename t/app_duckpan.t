@@ -7,6 +7,8 @@ use File::Temp qw/ tempdir /;
 use Path::Class;
 use Class::Load ':all';
 
+delete $ENV{APP_DUCKPAN_SERVER_HOSTNAME};
+
 use App::DuckPAN;
 
 my $version = $App::DuckPAN::VERSION;
@@ -21,8 +23,7 @@ my $app = App::DuckPAN->new(
 isa_ok($app,'App::DuckPAN');
 is(dir($app->cfg->config_path)->cleanup->resolve->stringify,$tempdir,"Checking temp config path of App::DuckPAN");
 isa_ok($app->http,'LWP::UserAgent');
-delete $ENV{APP_DUCKPAN_SERVER_HOSTNAME};
-is($app->server_hostname, 'duckduckgo.com','Checking for known servers *.duckduckgo.com');
+is($app->server_hostname, 'duckduckgo.com','Checking for default server duckduckgo.com');
 
 ###############################################################
 isa_ok($app->perl,'App::DuckPAN::Perl');
