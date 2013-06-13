@@ -17,24 +17,6 @@ for (qw( duckduckgo dontbubbleus donttrackus whatisdnt fixtracking )) {
 	);
 }
 
-option dontbubbleus => (
-	is => 'ro',
-	format => 's',
-	predicate => 1,
-);
-
-option donttrackus => (
-	is => 'ro',
-	format => 's',
-	predicate => 1,
-);
-
-option domain => (
-	is => 'ro',
-	format => 's',
-	predicate => 1,
-);
-
 sub run {
 	my ( $self, @args ) = @_;
 
