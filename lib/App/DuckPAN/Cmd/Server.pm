@@ -10,14 +10,9 @@ use File::ShareDir::ProjectDistDir;
 use File::Copy;
 use Path::Class;
 use IO::All -utf8;
+use LWP::Simple;
 use HTML::TreeBuilder;
 use Config::INI;
-
-use LWP::UserAgent;
-use LWP::Protocol::http;
-
-use HTTP::Message;
-use HTTP::Request::Common;
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -42,31 +37,25 @@ sub run {
 	my $hostname = $self->app->server_hostname;
 	print "\n\nTrying to fetch current versions of the HTML from http://$hostname/\n\n";
 
-	# Create a user agent object
-	my $ua = LWP::UserAgent->new;
-	$ua->timeout(1);
-	$ua->agent("DuckPAN/0.1 ");
-	$ua->max_redirect(6);
-
 	foreach my $file_name (keys %spice_files){
 		copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name)) unless -f file($self->app->cfg->cache_path,$file_name);
-		
+
 		my $path = $spice_files{$file_name}{'file_path'};
 		my $url = 'http://'.$hostname.''.$path;
-		my $res = $ua->request(GET $url, ('Accept-Encoding' => HTTP::Message::decodable));
+		my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
 		if ($res->is_success){
 
 				my $content = $res->decoded_content(charset => 'none');
 
-				if ($file_name =~ m/js/){
+				if ($file_name =~ m/\.js$/){
 					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_js($content));
-				} elsif  ($file_name =~ m/css/){
+				} elsif  ($file_name =~ m/\.css$/){
 					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_css($content));
 				} else {
 					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_html($content));
 				}
-		} else {			
+		} else {
 			#print $res->status_line, "\n";
 			print "\n".$spice_files{$file_name}{'name'}." fetching failed, will just use cached version...";
 		}
@@ -76,7 +65,7 @@ sub run {
 
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
 	my $page_css = io(file($self->app->cfg->cache_path,'page.css'))->slurp;
-	
+
 	# Concatenate all JS files
 	# Order matters because of dependencies
 	my $page_js = io(file($self->app->cfg->cache_path,'duckduck.js'))->slurp;
@@ -86,10 +75,8 @@ sub run {
 	$page_js .= io(file($self->app->cfg->cache_path,'spice2_duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
-	print "\n\n **** NOTE: THIS IS AN EXPERIMENAL VERSION OF DUCKPAN FOR SPICE2 ****";
 	print "\n\nYou can stop the webserver with Ctrl-C";
 	print "\n\n";
-	
 
 	require App::DuckPAN::Web;
 
