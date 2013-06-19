@@ -74,7 +74,7 @@ sub request {
 
 	if (defined $site->fullpath_files->{$file}) {
 		print 'Request '.$request->path_info.' uses '.$file.' from DDG::Publisher...'."\n";
-		$body = $site->fullpath_files->{$file}->content;
+		$body = $site->fullpath_files->{$file}->uncached_content;
 		$response->code("200");
 		$response->content_type('text/html');
 	} else {
@@ -84,8 +84,8 @@ sub request {
 			$response->code($res->code);
 			$response->content_type($res->content_type);
 		} else {
-			warn $res->status_line, "\n";
-			$body = "";
+			$body = "GET ".$url.$request->request_uri.": ".$res->status_line;
+			warn $body, "\n";
 		}
 	}
 

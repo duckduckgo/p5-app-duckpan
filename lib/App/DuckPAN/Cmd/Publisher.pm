@@ -52,8 +52,8 @@ sub run {
 		},
 	);
 
-	for (keys %sites) {
-		print "Serving ".$sites{$_}->{url}." on ".$sites{$_}->{port}."\n";
+	for (sort { $sites{$a}->{port} <=> $sites{$b}->{port} } keys %sites) {
+		print "Serving on port ".$sites{$_}->{port}.": ".$sites{$_}->{url}."\n";
 	}
 
 	print "\n\n";
