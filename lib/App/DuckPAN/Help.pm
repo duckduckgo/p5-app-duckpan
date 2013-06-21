@@ -21,9 +21,10 @@ __EOT__
 sub help { return shift->header().<<'__EOT__'; }
 Usage:
 
-- duckpan check
-    Check if you fulfill all requirements for the development
-    environment (this is run automatically during setup)
+duckpan check
+------------
+ Check if you fulfill all requirements for the development
+ environment (this is run automatically during setup)
 
 duckpan installdeps
 -------------------
@@ -48,21 +49,19 @@ duckpan env rm <name>
 ---------------------
  Remove an environment variable from duckpan
 
-duckpan poupload
----------------
- Upload a po file to the Community Platform (Translation manager only)
+duckpan test
+------------
+ Test your release (this will run automatically before a release)
 
 duckpan publisher
 ---------------
  Live testing of duckduckgo-publisher
 
-duckpan release
----------------
- Release the project of the current directory to DuckPAN [TODO]
+**Note: The following commands require a dukgo account
 
-duckpan test
-------------
- Test your release (this will run automatically before a release)
+duckpan poupload
+---------------
+ Upload a po file to the Community Platform (Translation manager only)
 
 duckpan release
 ---------------

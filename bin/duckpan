@@ -15,26 +15,44 @@ __END__
   # Check for the requirements to make duckpan contributions
   
   duckpan query
-  # Fire up your own CLI DuckDuckGo to test goodies
-  # Use it in the zeroclickinfo-goodies repository root
+  # Fire up your own CLI DuckDuckGo to test plugin triggers
+  # Use it in the zeroclickinfo-goodies or zeroclickinfo-spice repository root
 
   duckpan server
   # Fire up your own Webserver that acts like DuckDuckGo to test
   # spice (and goodies if you like). Use it in the
-  # zeroclickinfo-spice repository root
+  # zeroclickinfo-spice repository root or zeroclickinfo-goodies
   
   duckpan help <command>
-  # Getting help
+  # Display the various duckpan commands
 
-  # TODO  
   duckpan test
-  #######
+  # Test your release (this will run automatically before a release)
+	
+	duckpan installdeps
+	# Install all requirements of the specific DuckDuckHack project (if
+	# possible), like zeroclickinfo-spice, zeroclickinfo-goodie, duckduckgo
+	# or community-platform
 
-  # For the followings you need an account at https://dukgo.com/
+  duckpan env <name> <value>
+  # Add an environment variable that duckpan will remember. Useful for
+  # spice API keys. Variables are stored in ~/.duckpan/env.ini
 
-  # TODO
+  duckpan env rm <name>
+  # Remove an environment variable from duckpan
+
+  #
+	# NOTE: For the followings you need an account at https://dukgo.com/
+	#
+
+  duckpan poupload
+  # Upload a po file to the Community Platform (Translation manager only)
+
+  duckpan publisher
+  # Live testing of duckduckgo-publisher
+
   duckpan release
-  #######
+  # Release the project of the current directory to DuckPAN
 
   # BETA
   duckpan setup
