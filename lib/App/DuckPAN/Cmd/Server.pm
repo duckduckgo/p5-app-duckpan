@@ -17,6 +17,7 @@ use Config::INI;
 sub run {
 	my ( $self, @args ) = @_;
 
+	exit 1 unless $self->app->check_app_duckpan;
 	exit 1 unless $self->app->check_ddg;
 
 	dir($self->app->cfg->cache_path)->mkpath unless -d $self->app->cfg->cache_path;

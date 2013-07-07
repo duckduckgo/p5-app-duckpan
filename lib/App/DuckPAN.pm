@@ -22,7 +22,7 @@ use Carp;
 use Encode;
 use Path::Class;
 
-our $VERSION ||= '0.000';
+our $VERSION ||= '9.999';
 
 option dukgo_login => (
 	is => 'ro',
@@ -253,6 +253,40 @@ sub check_ssh {
 sub get_local_ddg_version {
 	my ( $self ) = @_;
 	return $self->perl->get_local_version('DDG');
+}
+
+sub get_local_app_duckpan_version {
+	my ( $self ) = @_;
+	return $self->perl->get_local_version('App::DuckPAN');
+}
+
+sub check_app_duckpan {
+	my ( $self ) = @_;
+	my $ok = 1;
+	my $installed_version = $self->get_local_app_duckpan_version;
+	return $ok if $installed_version && $installed_version == '9.999';
+	print "Checking for latest App::DuckPAN ... ";
+	my $tempfile = tmpnam;
+	if (is_success(getstore($self->duckpan_packages,$tempfile))) {
+		my $packages = Parse::CPAN::Packages::Fast->new($tempfile);
+		my $module = $packages->package('App::DuckPAN');
+		my $latest = $self->duckpan.'authors/id/'.$module->distribution->pathname;
+		if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
+			print $installed_version;
+			print " (duckpan has ".$module->version.")" if $installed_version ne $module->version;
+		} else {
+			if ($installed_version) {
+				print "You have version ".$installed_version.", latest is ".$module->version."!\n";
+			}
+			print "[ERROR] Please install the latest App::DuckPAN package with: duckpan upgrade\n";
+			$ok = 0;
+		}
+	} else {
+		print "[ERROR] Can't download ".$self->duckpan_packages;
+		$ok = 0;
+	}
+	print "\n";
+	return $ok;
 }
 
 sub check_ddg {
