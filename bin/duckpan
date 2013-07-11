@@ -22,6 +22,10 @@ __END__
   # Fire up your own Webserver that acts like DuckDuckGo to test
   # spice (and goodies if you like). Use it in the
   # zeroclickinfo-spice repository root or zeroclickinfo-goodies
+
+  duckpan installdeps
+  # Installs dependencies of the distribution in the current directory.
+  # Use mainly with DDG zeroclickinfo-*, but it works with anything dzil.
   
   duckpan help <command>
   # Display the various duckpan commands
