@@ -94,7 +94,7 @@ sub request {
 		my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename);
 		$body .= -f $filename_path ? io($filename_path)->slurp : "";
 
-	} elsif (@path_parts && $path_parts[0] eq 'js') {
+	} elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
 		for (keys %{$self->_path_hash}) {
 			if ($request->request_uri =~ m/^$_/g) {
 				my $path_remainder = $request->request_uri;
