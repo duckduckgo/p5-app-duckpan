@@ -35,6 +35,7 @@ has ua => (
 			agent => "Mozilla/5.0", #User Agent required for some API's (eg. Vimeo, IsItUp)
 			timeout => 5,
 			ssl_opts => { verify_hostname => 0 },
+			env_proxy => 1,
 		);
 	},
 );
