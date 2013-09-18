@@ -9,7 +9,7 @@ use MooX::Options;
 use Path::Class;
 use Plack::Handler::Starman;
 
-for (qw( duckduckgo dontbubbleus donttrackus whatisdnt fixtracking )) {
+for (qw( duckduckgo dontbubbleus donttrackus whatisdnt fixtracking duckduckhack )) {
 	option $_ => (
 		is => 'ro',
 		format => 's',
@@ -49,6 +49,10 @@ sub run {
 		fixtracking => {
 			port => 5004,
 			url => $self->has_fixtracking ? $self->fixtracking : "http://fixtracking.com/",
+		},
+		duckduckhack => {
+			port => 5005,
+			url => $self->has_duckduckhack ? $self->duckduckhack : "http://duckduckhack.com/",
 		},
 	);
 
