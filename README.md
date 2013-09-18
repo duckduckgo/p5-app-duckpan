@@ -100,7 +100,7 @@ curl http://duckpan.org/install.pl | perl
 
 If you didn't have a local::lib before running the install script, you will need to run the script twice. It should tell you when like this:
 
-```txt
+```shell
 please now re-login to your user account and run it again!
 ```
 
