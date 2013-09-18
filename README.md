@@ -122,20 +122,20 @@ If during the course of your DuckPAN install you run into errors, don't panic, t
 
 First, try running the install command again (`curl http://duckpan.org/install.pl | perl`), this often solves issues related to any dependencies.
 
-If that doesn't work you can either investigate the build.log and see what's wrong. It might be a depencency issue which you can resolve by manually installing whichever deepenciy is missing via `cpanm` .
+If that doesn't work you should investigate the build.log and see what's wrong. It might be a depencency issue which you can resolve by manually installing whichever dependency is missing via `cpanm`.
 
-If you're unsure about the build.log or you still can't get it to work try add `--notest` to the DuckPAN install comman:
+If it still won't install with `cpanm` try adding `--notest` to the cpanm command:
 
 ```shell
-curl http://duckpan.org/install.pl | perl --notest
+cpanm Test::More --notest
 ```
 
 If that still doesn't work you can also try using `--force`:
 ```shell
-curl http://duckpan.org/install.pl | perl --force
+cpanm Test::More --force
 ```
 
-If this ***still*** doesn't work, please create a GitHub Issue in the DuckPAN Repo [here](https://github.com/duckduckgo/p5-app-duckpan/issues). Be sure to paste the contents of your `build.log` and we'll work with you to try and solve any problem.
+If this ***still*** doesn't work, please create a GitHub Issue in the DuckPAN Repo [here](https://github.com/duckduckgo/p5-app-duckpan/issues). Be sure to paste the contents of your `build.log` and also let us know the details of your OS (`$ uname -a` is great). Once you've made the issue, we'll work with you to try and solve any problems you're having.
 
 ## Using DuckPAN
 
