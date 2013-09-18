@@ -15,10 +15,9 @@ That being said, we are more than willing to help you debug any installation pro
 ## Getting Started
 The easiest way to get started with DuckPAN is to either:
 
-a) Use our DuckDuckHack development virtual machine image (see below)
-b) Download and install [Ubuntu](http://www.ubuntu.com/download) yourself
-
-You can also download and install a different Linux distro, but as mentioned, we don't recommend this.
+- Use our DuckDuckHack development virtual machine image (see below)
+- Download and install [Ubuntu](http://www.ubuntu.com/download) yourself
+- or download and install a different Linux distro, but as mentioned, you may run into issues
 
 If you're going to use our VM please continue reading, if not, go setup you OS and continue with the DuckPAN [installation instructions](#installing-duckpan) below.
 
