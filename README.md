@@ -1,33 +1,32 @@
 # DuckPAN
 **The DuckDuckHack Testing Tool**
 
-DuckPAN is an application built to provide developers a testing environment for the DuckDuckHack Instant Answers. It allows users to test instant answer triggers, and lets you preview their visual design and output.
+DuckPAN is an application built to provide developers a testing environment for the DuckDuckHack Instant Answers. It allows you to test instant answer triggers, and lets you preview their visual design and output.
 
 ## Disclaimer
-Currently, DuckPAN has been developed on, and works well with **Ubuntu**. More specifically we regularly build, test and run DuckPAN on **Ubuntu 10.04**. We have also successfully installed and run DuckPAN on newer Ubuntu releases ie. Ubuntu 12.04, 12.10, and 13.04.
+Currently, DuckPAN has been developed on, and works well with **Ubuntu**. More specifically we regularly build, test and run DuckPAN on **Ubuntu 12.04**. We have also successfully installed and run DuckPAN on older and newer Ubuntu releaseses, e.g. Ubuntu 10.04, 12.10, and 13.04.
 
-Developers have also been successful running DuckPAN on other Linux distros (eg. Arch, Debian), but **we make no promises that it will work outside of Ubuntu**.
+Developers have also been successful running DuckPAN on other Linux distros (e.g. Arch, Debian), but **we make no promises that it will work outside of Ubuntu**.
 
-As well, there have been reported issues with installing DuckPAN on Mac OSX, so we don't recommend you go down that path.
+As well, there have been reported issues with installing DuckPAN on Mac OSX and Windows, so we don't recommend you go down that path.
 
 That being said, we are more than willing to help you debug any installation problems, so please come to us with your problems and we'll try to get your issues sorted out.
 
 ## Getting Started
 The easiest way to get started with DuckPAN is to either:
 
-- Use our DuckDuckHack development virtual machine image (see below)
-- Download and install [Ubuntu](http://www.ubuntu.com/download) yourself
-- or download and install a different Linux distro, but as mentioned, you may run into issues
+- Use our DuckDuckHack development virtual machine image (see below);
+- Download and install [Ubuntu](http://www.ubuntu.com/download) yourself; or
+- Download and install a different Linux distro, but as mentioned, you may run into issues.
 
-If you're going to use our VM please continue reading, if not, go setup you OS and continue with the DuckPAN [installation instructions](#installing-duckpan) below.
+If you're going to use our VM please continue reading. If not, go setup your OS and continue with the DuckPAN [installation instructions](#installing-duckpan) below.
 
 ## DuckDuckHack Development Virtual Machine
-The purpose of our DuckDuckHack VM is to provide a sandbox for instant answer development that is quick to set up and start working on.
+The purpose of our DuckDuckHack VM is to provide a sandbox for DuckDuckHack Instant Answer development that is quick to set up and start working on.
 
 #### DDH VM Breakdown
 - Ubuntu 12.04 LTS
 - Perl 5.16.3 (managed by Perlbrew)
-- Perlbrew
 - build-essential (for make, gcc, cc, etc)
 - cpanminus (managed by Perlbrew)
 - App::DuckPAN
@@ -46,7 +45,7 @@ ddh-vmw.rar:
 MD5: 95ad9acfacadb4b0cb0cf23ffaa3516e  
 https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
 
-#### Coming Soon
+#### Roadmap
 - Headless virtual machine
 - Vagrant support
 - Docker support
