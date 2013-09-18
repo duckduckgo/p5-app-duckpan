@@ -24,7 +24,7 @@ If you're going to use our VM please continue reading, if not, go setup you OS a
 ## DuckDuckHack Development Virtual Machine
 The purpose of our DuckDuckHack VM is to provide a sandbox for instant answer development that is quick to set up and start working on.
 
-### DDH VM Breakdown
+#### DDH VM Breakdown
 - Ubuntu 12.04 LTS
 - Perl 5.16.3 (managed by Perlbrew)
 - Perlbrew
@@ -36,17 +36,17 @@ The purpose of our DuckDuckHack VM is to provide a sandbox for instant answer de
 - Firefox (Configured via fixtracking.com)
 - Platform specific virtualization guest tools (optimizes hardware emulation)
 
-### For VirtualBox hosts
-ddh-vbox.rar
-MD5: 1734373cbecc5820bb7d18406eb42854
+#### For VirtualBox hosts
+ddh-vbox.rar  
+MD5: 1734373cbecc5820bb7d18406eb42854  
 https://ddg-community.s3.amazonaws.com/ddh-vbox.rar
 
-### For VMWare hosts
-ddh-vmw.rar:
-MD5: 95ad9acfacadb4b0cb0cf23ffaa3516e
+#### For VMWare hosts
+ddh-vmw.rar:  
+MD5: 95ad9acfacadb4b0cb0cf23ffaa3516e  
 https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
 
-### Coming Soon
+#### Coming Soon
 - Headless virtual machine
 - Vagrant support
 - Docker support
@@ -55,11 +55,11 @@ https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
 ## Using the Virtual Machine
 To use the Virtual Machine you will need to download and install **VirtualBox**, **VMWare Workstation** or **VMWare Player**, depending on your current OS.
 
-### VirtualBox (free)
-Website: https://www.virtualbox.org/
+#### VirtualBox (free)
+Website: https://www.virtualbox.org/  
 Supports: Windows, OSX, Linux
 
-#### Setup Instructions
+##### Setup Instructions
 1. Download the rar and verify the checksum--decompress: This archive contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files. 
 
 2. Open VirtualBox, click "File" and then click "Import Appliance"
@@ -68,18 +68,18 @@ Supports: Windows, OSX, Linux
 
 4. Click "Import"
 
-### VMWare Player (free)
-Website: https://www.vmware.com/products/player/
+#### VMWare Player (free)
+Website: https://www.vmware.com/products/player/  
 Supports: Windows, Linux
 
-#### Setup Instructions
+##### Setup Instructions
 1.Download the rar and verify the checksum--decompress: This contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
 
 2.Open VMWare Player, and click "Open a Virtual Machine"
 
 3.Choose a storage path for the Virtual Machine -- click "Import"
 
-### Happy Hacking!
+#### Happy Hacking!
 Once you have installed the virtual machine you should be able to startup the VM and login. The **username** is `dax` and the **password** is `duckduckhack`.
 
 **The DuckPAN client has already been installed for you. ** You can now clone the instant answer repos and start developing/testing.
