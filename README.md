@@ -84,7 +84,7 @@ Once you have installed the virtual machine you should be able to startup the VM
 - **username** : `dax`
 - **password** : `duckduckhack`
 
-**The DuckPAN client has already been installed for you. ** You can now clone the instant answer repos and start developing/testing.
+**The DuckPAN client has already been installed for you.** You can now clone the instant answer repos and start developing/testing.
 
 ## Installing DuckPAN
 
