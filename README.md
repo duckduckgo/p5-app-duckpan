@@ -80,7 +80,9 @@ Supports: Windows, Linux
 3.Choose a storage path for the Virtual Machine -- click "Import"
 
 #### Happy Hacking!
-Once you have installed the virtual machine you should be able to startup the VM and login. The **username** is `dax` and the **password** is `duckduckhack`.
+Once you have installed the virtual machine you should be able to startup the VM and login with the following credentials: 
+- **username** : `dax`
+- **password** : `duckduckhack`
 
 **The DuckPAN client has already been installed for you. ** You can now clone the instant answer repos and start developing/testing.
 
