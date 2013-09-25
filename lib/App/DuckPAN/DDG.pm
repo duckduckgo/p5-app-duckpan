@@ -13,8 +13,6 @@ with 'App::DuckPAN::HasApp';
 
 use Module::Pluggable::Object;
 use Class::Load ':all';
-use DDG::App::Attribution;
-use Class::Inspector;
 use Module::Load;
 use DDG::Meta::Information;
 use List::MoreUtils qw(zip);
