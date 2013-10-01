@@ -309,12 +309,16 @@ sub request {
 		if (@calls_template) {
 			my ($template_name, $template_content);
 				$calls_script .= join("",map {
-				
-				if (ref $_ eq 'DDG::ZeroClickInfo::Spice') {
+
+				# Check if our array is full of template files
+				if (ref $_ eq 'IO::All::File') {
+
 					$template_name = $_->filename;
 					$template_name =~ s/.handlebars//g;
 					$template_content = $_->all;
 					"<script class='duckduckhack_spice_template' name='$template_name' type='text/plain'>$template_content</script>"
+
+				# Check if array contains a goodie result
 				} elsif (ref $_ eq 'DDG::ZeroClickInfo') {
 					$template_name = $_->answer_type;
 					$template_content = exists $_->{html} ? $_->html : $_->answer;
