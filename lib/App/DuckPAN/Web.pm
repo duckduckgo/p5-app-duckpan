@@ -188,6 +188,24 @@ sub request {
 		my $root = HTML::TreeBuilder->new;
 		$root->parse($page);
 
+		# Check for no results
+		if (!scalar(@results)) {
+
+			print "NO RESULTS\n";
+
+			$root = HTML::TreeBuilder->new;
+			$root->parse($self->page_root);
+			my $text_field = $root->look_down(
+			"name", "q"
+			);
+			$text_field->attr( value => $query );
+			$page = $root->as_HTML;
+			$page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
+		}
+
+		# Iterate over results,
+		# checking if result is a Spice or Goodie
+		# and sets up the page content accordingly
 		foreach my $result (@results) {
 
 			# Info for terminal.
@@ -195,6 +213,9 @@ sub request {
 
 			# NOTE -- this isn't designed to have both goodies and spice at once.
 
+			# Check if we have a Spice result
+			# if so grab the associated JS, Handlebars and CSS
+			# and add them to correct arrays for injection into page
 			if (ref $result eq 'DDG::ZeroClickInfo::Spice') {
 
 				my $io;
@@ -228,7 +249,7 @@ sub request {
 				foreach (@files){
 
 					if ($_->filename =~ /$filename\.js$/){
-						push (@calls_nrj, $_);
+						push (@calls_script, $_);
 
 					} elsif ($_->filename =~ /$filename\.css$/){
 						push (@calls_nrc, $_);
@@ -239,7 +260,16 @@ sub request {
 				}
 				push (@calls_nrj, $result->call_path);
 
+			# Check if we have a Goodie result
+			} elsif ( ref $result eq 'DDG::ZeroClickInfo' ){
+
+				# my $encoded = encode_json \$result;
+				push (@calls_template, $result);
+
+			# If not Spice or Goodie,
+			# inject raw Dumper() output from into page
 			} else {
+
 				my $content = $root->look_down(
 					"id", "bottom_spacing2"
 					);
@@ -250,38 +280,53 @@ sub request {
 			}
 		}
 
-		if (!scalar(@results)) {
-
-			print "NO RESULTS\n";
-
-			$root = HTML::TreeBuilder->new;
-			$root->parse($self->page_root);
-			my $text_field = $root->look_down(
-			"name", "q"
-			);
-			$text_field->attr( value => $query );
-			$page = $root->as_HTML;
-			$page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
+		# Setup various script tags:
+		#   calls_script : spice js files
+		#   calls_nrj : proxied spice api calls
+		#   calls_nrc : spice css calls
+		#   calls_templates : spice handlebars templates or goodie result
+		
+		my ($calls_script, $calls_nrj, $calls_nrc);
+		
+		if (@calls_nrj){
+			$calls_nrj = join(";",map { "nrj('".$_."')" } @calls_nrj) . ';';
+		} else {
+			$calls_nrj = '';
+		}
+		
+		if (@calls_nrc){
+			$calls_nrc = join(";",map { "nrc('".$_."')" } @calls_nrc) . ';';
+		} else {
+			$calls_nrc = '';
+		}
+		
+		if (@calls_script){
+			$calls_script = join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script);
+		} else {
+			$calls_script = '';
 		}
 
-
-		if (@calls_nrj) {
-			my $calls_nrj = join(";",map { "nrj('".$_."')" } @calls_nrj) . ';';
-			my $calls_nrc = join(";",map { "nrc('".$_."')" } @calls_nrc) . ';';
-			my $calls_script = join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script);
-
+		if (@calls_template) {
 			my ($template_name, $template_content);
-			$calls_script .= join("",map {
-				$template_name = $_->filename;
-				$template_name =~ s/.handlebars//g;
-				$template_content = $_->all;
-				"<script class='duckduckhack_template' name='$template_name' type='text/x-handlebars-template'>$template_content</script>"
-			} @calls_template);
+				$calls_script .= join("",map {
+				
+				if (ref $_ eq 'DDG::ZeroClickInfo::Spice') {
+					$template_name = $_->filename;
+					$template_name =~ s/.handlebars//g;
+					$template_content = $_->all;
+					"<script class='duckduckhack_spice_template' name='$template_name' type='text/plain'>$template_content</script>"
+				} elsif (ref $_ eq 'DDG::ZeroClickInfo') {
+					$template_name = $_->answer_type;
+					$template_content = exists $_->{html} ? $_->html : $_->answer;
+					"<script class='duckduckhack_goodie' name='$template_name' type='text/plain'>$template_content</script>"
+				}
 
-			$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
-			$page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
-			$page =~ s/####DUCKDUCKHACK-CALL-SCRIPT####/$calls_script/g;
+			} @calls_template);
 		}
+
+		$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
+		$page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
+		$page =~ s/####DUCKDUCKHACK-CALL-SCRIPT####/$calls_script/g;
 
 		$response->content_type('text/html');
 		$body = $page;
