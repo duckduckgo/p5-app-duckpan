@@ -285,42 +285,37 @@ sub request {
 		#   calls_nrc : spice css calls
 		#   calls_templates : spice handlebars templates or goodie result
 		
-		my ($calls_script, $calls_nrj, $calls_nrc);
-		
-		if (@calls_nrj){
-			$calls_nrj = join(";",map { "nrj('".$_."')" } @calls_nrj) . ';';
-		} else {
-			$calls_nrj = '';
-		}
-		
-		if (@calls_nrc){
-			$calls_nrc = join(";",map { "nrc('".$_."')" } @calls_nrc) . ';';
-		} else {
-			$calls_nrc = '';
-		}
-		
-		if (@calls_script){
-			$calls_script = join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script);
-		} else {
-			$calls_script = '';
-		}
+		my $calls_nrj = (scalar @calls_nrj)	?	join(";",map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
+		my $calls_nrc = (scalar @calls_nrc) ? join(";",map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
+		my $calls_script = (scalar @calls_script)
+			? join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script)
+			: '';
 
 		if (@calls_template) {
 			my ($template_name, $template_content);
 				$calls_script .= join("",map {
 
-				# Check if our array is full of template files
-				if (ref $_ eq 'IO::All::File') {
+				my $result = $_;
 
-					$template_name = $_->filename;
+				# Check if our array is full of template files
+				if (ref $result eq 'IO::All::File') {
+
+					# Give the script tag a name based on the template name
+					# e.g. filename: hacker_news.handlebars
+					# creates <script ... name=hacker_news>...</script>
+					$template_name = $result->filename;
 					$template_name =~ s/.handlebars//g;
-					$template_content = $_->all;
+					$template_content = $result->all;
 					"<script class='duckduckhack_spice_template' name='$template_name' type='text/plain'>$template_content</script>"
 
 				# Check if array contains a goodie result
-				} elsif (ref $_ eq 'DDG::ZeroClickInfo') {
+				} elsif (ref $result eq 'DDG::ZeroClickInfo') {
 
-					my $goodie = $_;
+					my $goodie = $result;
+
+					# Loop over all possible getter for DDG::ZeroClickInfo
+					# If exists, push into hash,
+					# JSON encode and inject into script tag
 					my @getters = qw(abstract abstract_text abstract_source abstract_url image heading answer answer_type definition definition_source definition_url html related_topics_sections results type redirect);
 
 					my %result_data = map {
@@ -331,7 +326,7 @@ sub request {
 
 					$template_name = $_->has_answer_type ? $_->answer_type : "unnamed-goodie";
 					$template_content =  encode_json \%result_data;
-					"<script class='duckduckhack_goodie' name='$template_name' type='text/plain'>$template_content</script>";
+					"<script class='duckduckhack_goodie' name='$template_name' type='application/json'>$template_content</script>";
 				}
 
 			} @calls_template);
