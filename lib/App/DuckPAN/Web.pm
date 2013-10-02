@@ -15,6 +15,7 @@ use IO::All -utf8;
 use HTTP::Request;
 use LWP::UserAgent;
 use URI::Escape;
+use JSON;
 use Data::Dumper;
 
 has blocks => ( is => 'ro', required => 1 );
@@ -262,8 +263,6 @@ sub request {
 
 			# Check if we have a Goodie result
 			} elsif ( ref $result eq 'DDG::ZeroClickInfo' ){
-
-				# my $encoded = encode_json \$result;
 				push (@calls_template, $result);
 
 			# If not Spice or Goodie,
@@ -320,9 +319,19 @@ sub request {
 
 				# Check if array contains a goodie result
 				} elsif (ref $_ eq 'DDG::ZeroClickInfo') {
-					$template_name = $_->answer_type;
-					$template_content = exists $_->{html} ? $_->html : $_->answer;
-					"<script class='duckduckhack_goodie' name='$template_name' type='text/plain'>$template_content</script>"
+
+					my $goodie = $_;
+					my @getters = qw(abstract abstract_text abstract_source abstract_url image heading answer answer_type definition definition_source definition_url html related_topics_sections results type redirect);
+
+					my %result_data = map {
+						my $has_func = 'has_'.$_;
+						my $func = $_;
+						$goodie->$has_func ? ( $_ => $goodie->$func ) : ();
+					} @getters;
+
+					$template_name = $_->has_answer_type ? $_->answer_type : "unnamed-goodie";
+					$template_content =  encode_json \%result_data;
+					"<script class='duckduckhack_goodie' name='$template_name' type='text/plain'>$template_content</script>";
 				}
 
 			} @calls_template);
