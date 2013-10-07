@@ -2,6 +2,15 @@
 # PODNAME: duckpan
 # ABSTRACT: Command line tool for using the DuckPAN of DuckDuckGo
 
+my @libs;
+BEGIN {
+    use Getopt::Long;
+    Getopt::Long::Configure 'bundling';
+    GetOptions 'include|I=s' => \@libs;
+    @libs = split ',', join ',', @libs;
+}
+use lib @libs;
+
 $|=1;
 
 use App::DuckPAN;
@@ -57,6 +66,12 @@ __END__
 
   duckpan release
   # Release the project of the current directory to DuckPAN
+
+  duckpan -Ilib
+  # Preload an external library - intended for use during DuckPAN development.
+  # Example usage inside a Goodie or Spice repository, loading edited
+  # p5-app-duckpan modules:
+      duckpan -I../p5-app-duckpan/lib server
 
   # BETA
   duckpan setup
