@@ -2,6 +2,15 @@
 # PODNAME: duckpan
 # ABSTRACT: Command line tool for using the DuckPAN of DuckDuckGo
 
+my @libs;
+BEGIN {
+    use Getopt::Long;
+    Getopt::Long::Configure 'bundling';
+    GetOptions 'include|I=s' => \@libs;
+    @libs = split ',', join ',', @libs;
+}
+use lib @libs;
+
 $|=1;
 
 use App::DuckPAN;
