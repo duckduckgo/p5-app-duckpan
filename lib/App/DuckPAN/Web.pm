@@ -351,7 +351,6 @@ sub request {
 		}
 	}
 
-	Encode::_utf8_off($body);
 	$response->body($body);
 	return $response;
 }
