@@ -89,6 +89,9 @@ sub request {
 		}
 	}
 
+	# This could cause issues with incorrectly encoded data as Plack expects a
+	# raw bytestream. We should find the root of this issue and reencode
+	# offending strings.
 	Encode::_utf8_off($body);
 	$response->body($body);
 	return $response;
