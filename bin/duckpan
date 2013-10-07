@@ -67,6 +67,9 @@ __END__
   duckpan release
   # Release the project of the current directory to DuckPAN
 
+  duckpan -Ilib
+  # Preload an external library - intended for use during DuckPAN development
+
   # BETA
   duckpan setup
   # Setup your environment for using Dist::Zilla::Plugin::UploadToDuckPAN
