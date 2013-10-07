@@ -68,7 +68,10 @@ __END__
   # Release the project of the current directory to DuckPAN
 
   duckpan -Ilib
-  # Preload an external library - intended for use during DuckPAN development
+  # Preload an external library - intended for use during DuckPAN development.
+  # Example usage inside a Goodie or Spice repository, loading edited
+  # p5-app-duckpan modules:
+      duckpan -I../p5-app-duckpan/lib server
 
   # BETA
   duckpan setup
