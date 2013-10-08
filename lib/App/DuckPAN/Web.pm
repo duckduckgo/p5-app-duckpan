@@ -158,7 +158,7 @@ sub request {
 	} elsif ($request->param('duckduckhack_js')) {
 		$response->content_type('text/javascript');
 		$body = $self->page_js;
-	} elsif ($request->param('q')) {
+	} elsif ($request->param('q') && $request->path_info eq '/') {
 		my $query = $request->param('q');
 		Encode::_utf8_on($query);
 		my $ddg_request = DDG::Request->new(
