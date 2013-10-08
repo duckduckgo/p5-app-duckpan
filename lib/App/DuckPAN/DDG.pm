@@ -92,7 +92,12 @@ sub camel_to_underscore {
 }
 
 
-sub get_blocks_for_test_from_current_dir {
+# Similar function to get_blocks_from_current_dir
+# Unlike get_blocks though this is collects information about plugins
+# Used specifically to test plugin correctness 
+
+
+sub get_plugin_info_from_current_dir {
 	my ( $self, @args ) = @_;
 	unless ($self->app->get_local_ddg_version) {
 		print "\n[ERROR] You need to have the DDG distribution installed\n";
@@ -147,6 +152,7 @@ sub get_blocks_for_test_from_current_dir {
 		    . $plugin_share .'.js';
 		my $css_path = 'share/spice/'. $plugin_share . '/'
 		    . $plugin_share .'.css';
+		# Collect assets information for spice plugin
 		$plugin_info->{'handlebar_path'} = $handlebar_path;
 		$plugin_info->{'js_path'} = $js_path;
 		$plugin_info->{'css_path'} = $css_path;

@@ -34,7 +34,9 @@ sub run {
 	);
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
-	my @shared_assets = @{$self->app->ddg->get_blocks_for_test_from_current_dir(@args)};
+	my @shared_assets = @{$self->app->ddg->get_plugin_info_from_current_dir(@args)};
+	# In case of spice plugin verify if assets are available 
+	# Warn developer of asset status
 	foreach (@shared_assets)
 	{
 	    my $plugin_details = $_;
