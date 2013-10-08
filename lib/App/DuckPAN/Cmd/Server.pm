@@ -39,13 +39,17 @@ sub run {
 	# Warn developer of asset status
 	foreach (@shared_assets)
 	{
-	    my $plugin_details = $_;
-	    my $handlebar_path = $plugin_details->{'handlebar_path'};
-	    my $js_path = $plugin_details->{'js_path'};
-	    my $css_path = $plugin_details->{'css_path'};
-	    print "WARNING: $handlebar_path does not exist\n" if ! -e $handlebar_path;
-	    print "WARNING: $js_path does not exist\n" if ! -e $js_path;
-	    print "INFO: $css_path does not exist \n" if ! -e $css_path;
+	    my $pd = $_;
+	    my $name = $pd->{'name'};
+	    if ($name =~ /Spice/)
+	    {
+		my $handlebar_path = $pd->{'handlebar_path'};
+		my $js_path = $pd->{'js_path'};
+		my $css_path = $pd->{'css_path'};
+		print "WARNING: $handlebar_path does not exist\n" if ! -e $handlebar_path;
+		print "WARNING: $js_path does not exist\n" if ! -e $js_path;
+		print "INFO: $css_path does not exist \n" if ! -e $css_path;
+	    }
 	}
 	my $hostname = $self->app->server_hostname;
 	print "\n\nTrying to fetch current versions of the HTML from http://$hostname/\n\n";
