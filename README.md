@@ -4,7 +4,7 @@
 DuckPAN is an application built to provide developers a testing environment for DuckDuckHack Instant Answers. It allows you to test instant answer triggers and preview their visual design and output.
 
 ## Disclaimer
-Currently, DuckPAN has been developed on, and works well with **Ubuntu**. More specifically, we regularly build, test and run DuckPAN on **Ubuntu 12.04**. We have also successfully installed and run DuckPAN on older and newer Ubuntu releaseses, e.g. Ubuntu 10.04, 12.10, and 13.04.
+Currently, DuckPAN has been developed on, and works well with **Ubuntu**. More specifically, we regularly build, test and run DuckPAN on **Ubuntu 12.04**. We have also successfully installed and run DuckPAN on older and newer Ubuntu releases, e.g. Ubuntu 10.04, 12.10, and 13.04.
 
 Developers have also been successful running DuckPAN on other Linux distros (e.g. Arch, Debian), but **we make no promises that it will work outside of Ubuntu**.
 
