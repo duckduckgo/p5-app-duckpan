@@ -13,6 +13,7 @@ use IO::All -utf8;
 use LWP::Simple;
 use HTML::TreeBuilder;
 use Config::INI;
+use Data::Dumper;
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -33,17 +34,33 @@ sub run {
 	);
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
-
+	my @shared_assets = @{$self->app->ddg->get_plugin_info_from_current_dir(@args)};
+	# In case of spice plugin verify if assets are available 
+	# Warn developer of asset status
+	foreach (@shared_assets)
+	{
+	    my $pd = $_;
+	    my $name = $pd->{'name'};
+	    if ($name =~ /Spice/)
+	    {
+		my $handlebar_path = $pd->{'handlebar_path'};
+		my $js_path = $pd->{'js_path'};
+		my $css_path = $pd->{'css_path'};
+		print "WARNING: $handlebar_path does not exist\n" if ! -e $handlebar_path;
+		print "WARNING: $js_path does not exist\n" if ! -e $js_path;
+		print "INFO: $css_path does not exist \n" if ! -e $css_path;
+	    }
+	}
 	my $hostname = $self->app->server_hostname;
 	print "\n\nTrying to fetch current versions of the HTML from http://$hostname/\n\n";
-
+	
 	foreach my $file_name (keys %spice_files){
 		copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name)) unless -f file($self->app->cfg->cache_path,$file_name);
-
+		
 		my $path = $spice_files{$file_name}{'file_path'};
 		my $url = 'http://'.$hostname.''.$path;
 		my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
-
+		
 		if ($res->is_success){
 
 				my $content = $res->decoded_content(charset => 'none');
