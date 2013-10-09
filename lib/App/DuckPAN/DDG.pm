@@ -48,7 +48,7 @@ sub get_blocks_from_current_dir {
 	}
 	require lib;
 	lib->import('lib');
-	print "\nUsing the following DDG plugins:\n\n";
+	print "\nUsing the following DDG instant answers:\n\n";
 	for (@args) {
 		load_class($_);
 		print " - ".$_;
