@@ -13,6 +13,7 @@ use IO::All -utf8;
 use LWP::Simple;
 use HTML::TreeBuilder;
 use Config::INI;
+use POSIX;
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -35,20 +36,22 @@ sub run {
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
 	my $hostname = $self->app->server_hostname;
-	print "\n\nTrying to fetch current versions of the HTML from http://$hostname/\n\n";
+	print "\n\nChecking for updates of the HTML from http://$hostname/\n\n";
 
 	foreach my $file_name (keys %spice_files){
-		copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name)) unless -f file($self->app->cfg->cache_path,$file_name);
+        my $cache_file_path = file($self->app->cfg->cache_path, $file_name);
+		copy(file(dist_dir('App-DuckPAN'), $file_name), $cache_file_path) unless -f $cache_file_path;
 		next unless defined $spice_files{$file_name}{'file_path'};
 
+        my $mtime = strftime("%a, %d %b %Y %H:%M:%S", gmtime((stat($cache_file_path))[9])) . ' GMT';
 		my $path = $spice_files{$file_name}{'file_path'};
 		my $url = 'http://'.$hostname.''.$path;
-		my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
+        my $req = HTTP::Request->new(GET => $url);
+        $req->header('If-Modified-Since' => $mtime);
+		my $res = $self->app->http->request($req);
 
-		if ($res->is_success){
-
+		if ($res->code eq '200'){
 				my $content = $res->decoded_content(charset => 'none');
-
 				if ($file_name =~ m/\.js$/){
 					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_js($content));
 				} elsif  ($file_name =~ m/\.css$/){
@@ -56,9 +59,8 @@ sub run {
 				} else {
 					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_html($content));
 				}
-		} else {
-			#print $res->status_line, "\n";
-			print "\n".$spice_files{$file_name}{'name'}." fetching failed, will just use cached version...";
+		} elsif ($res->code ne '304') {
+			print "$spice_files{$file_name}{'name'} fetching failed, will just use cached version...";
 		}
 	}
 
