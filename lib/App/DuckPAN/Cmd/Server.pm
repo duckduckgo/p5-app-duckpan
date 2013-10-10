@@ -13,7 +13,7 @@ use IO::All -utf8;
 use LWP::Simple;
 use HTML::TreeBuilder;
 use Config::INI;
-use POSIX;
+use POSIX ();
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -43,7 +43,7 @@ sub run {
 		copy(file(dist_dir('App-DuckPAN'), $file_name), $cache_file_path) unless -f $cache_file_path;
 		next unless defined $spice_files{$file_name}{'file_path'};
 
-        my $mtime = strftime("%a, %d %b %Y %H:%M:%S", gmtime((stat($cache_file_path))[9])) . ' GMT';
+        my $mtime = POSIX::strftime("%a, %d %b %Y %H:%M:%S", gmtime((stat($cache_file_path))[9])) . ' GMT';
 		my $path = $spice_files{$file_name}{'file_path'};
 		my $url = 'http://'.$hostname.''.$path;
         my $req = HTTP::Request->new(GET => $url);
