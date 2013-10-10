@@ -29,6 +29,7 @@ sub run {
 		'duckduck.js'               => { name => 'DuckDuckGo Javascript', file_path => '/duckduck.js' },
 		'handlebars.js'             => { name => 'Handlebars.js', file_path => '/js/handlebars-1.0.0-rc.3.js' },
 		'spice2_duckpan.js'         => { name => 'Spice2.js', file_path => '/spice2/spice2_duckpan.js' },
+		'duckpan.js'                => { name => 'Duckpan.js'},
 	);
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
@@ -38,6 +39,7 @@ sub run {
 
 	foreach my $file_name (keys %spice_files){
 		copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name)) unless -f file($self->app->cfg->cache_path,$file_name);
+		next unless defined $spice_files{$file_name}{'file_path'};
 
 		my $path = $spice_files{$file_name}{'file_path'};
 		my $url = 'http://'.$hostname.''.$path;
