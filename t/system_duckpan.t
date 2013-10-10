@@ -15,7 +15,7 @@ my $version = $App::DuckPAN::VERSION;
 {
 	my ( $return, $out, $err ) = run_script( 'duckpan', [] );
 
-	like($out,qr/Usage:/, 'duckpan without arguments gives out usage');
+	like($out,qr/DUCKPAN/, 'duckpan without arguments gives out usage');
 	like($out,qr/$version/, 'duckpan without arguments gives out right version');
 
 	is($err,"",'duckpan gives out nothing on STDERR');
