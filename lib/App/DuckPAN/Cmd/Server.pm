@@ -29,7 +29,6 @@ sub run {
 		'duckduck.js'               => { name => 'DuckDuckGo Javascript', file_path => '/duckduck.js' },
 		'handlebars.js'             => { name => 'Handlebars.js', file_path => '/js/handlebars-1.0.0-rc.3.js' },
 		'spice2_duckpan.js'         => { name => 'Spice2.js', file_path => '/spice2/spice2_duckpan.js' },
-		'spice2_duckpan_compile.js' => { name => 'Spice2 DuckPAN compile script', file_path => '/spice2/spice2_duckpan_compile.js' }
 	);
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
@@ -71,7 +70,7 @@ sub run {
 	my $page_js = io(file($self->app->cfg->cache_path,'duckduck.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'handlebars.js'))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'spice2_duckpan.js'))->slurp;
-	$page_js .= io(file($self->app->cfg->cache_path,'spice2_duckpan_compile.js'))->slurp;
+	$page_js .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
 	print "\n\nYou can stop the webserver with Ctrl-C";
