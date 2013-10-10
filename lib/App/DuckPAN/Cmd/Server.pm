@@ -13,6 +13,10 @@ use IO::All -utf8;
 use LWP::Simple;
 use HTML::TreeBuilder;
 use Config::INI;
+use Data::Printer;
+use Data::Dumper;
+
+my ($page_js_filename, $page_css_filename, $spice_js_filename, $hostname);
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -22,32 +26,35 @@ sub run {
 
 	dir($self->app->cfg->cache_path)->mkpath unless -d $self->app->cfg->cache_path;
 
-	my %spice_files = (
-		'page_root.html'            => { name => 'DuckDuckGo HTML', file_path => '/' },
-		'page_spice.html'           => { name => 'DuckDuckGo Spice-Template', file_path => '/?q=duckduckhack-template-for-spice2' },
-		'page.css'                  => { name => 'DuckDuckGo CSS', file_path => '/style.css' },
-		'duckduck.js'               => { name => 'DuckDuckGo Javascript', file_path => '/duckduck.js' },
+	my %assets = (
+		'page_root.html'            => { name => 'DuckDuckGo Landing Page', file_path => '/' },
+		'page_spice.html'           => { name => 'DuckDuckGo SERP', file_path => '/?q=duckduckhack-template-for-spice2' },
 		'handlebars.js'             => { name => 'Handlebars.js', file_path => '/js/handlebars-1.0.0-rc.3.js' },
-		'spice2_duckpan.js'         => { name => 'Spice2.js', file_path => '/spice2/spice2_duckpan.js' },
-		'duckpan.js'                => { name => 'Duckpan.js'},
+		'duckpan.js'                => { }
 	);
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-	my $hostname = $self->app->server_hostname;
+	$hostname = $self->app->server_hostname;
 	print "\n\nTrying to fetch current versions of the HTML from http://$hostname/\n\n";
 
-	foreach my $file_name (keys %spice_files){
-		copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name)) unless -f file($self->app->cfg->cache_path,$file_name);
-		next unless defined $spice_files{$file_name}{'file_path'};
+	for my $file_name (keys %assets) {
 
-		my $path = $spice_files{$file_name}{'file_path'};
+		copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name)) unless -f file($self->app->cfg->cache_path,$file_name);
+
+		next unless defined $assets{$file_name}{'file_path'};
+
+		my $path = $assets{$file_name}{'file_path'};
 		my $url = 'http://'.$hostname.''.$path;
 		my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
 		if ($res->is_success){
 
 				my $content = $res->decoded_content(charset => 'none');
+
+				if ($file_name eq "page_spice.html") {
+					$self->get_assets($content);
+				};
 
 				if ($file_name =~ m/\.js$/){
 					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_js($content));
@@ -56,22 +63,22 @@ sub run {
 				} else {
 					io(file($self->app->cfg->cache_path,$file_name))->print($self->change_html($content));
 				}
+
 		} else {
 			#print $res->status_line, "\n";
-			print "\n".$spice_files{$file_name}{'name'}." fetching failed, will just use cached version...";
+			print "\n".$assets{$file_name}{'name'}." fetching failed, will just use cached version...";
 		}
 	}
 
 	my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
-
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
-	my $page_css = io(file($self->app->cfg->cache_path,'page.css'))->slurp;
+	my $page_css = io(file($self->app->cfg->cache_path,$page_css_filename))->slurp;
 
 	# Concatenate all JS files
 	# Order matters because of dependencies
-	my $page_js = io(file($self->app->cfg->cache_path,'duckduck.js'))->slurp;
+	my $page_js = io(file($self->app->cfg->cache_path,$page_js_filename))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'handlebars.js'))->slurp;
-	$page_js .= io(file($self->app->cfg->cache_path,'spice2_duckpan.js'))->slurp;
+	$page_js .= io(file($self->app->cfg->cache_path,$spice_js_filename))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
@@ -106,7 +113,7 @@ sub change_js {
 
 sub change_css {
 	my ( $self, $css ) = @_;
-	$css =~ s!url\(("?)!url\($1http://duckduckgo.com/!g;
+	$css =~ s!url\(("?)!url\($1http://$hostname/!g;
 	return $css;
 }
 
@@ -140,7 +147,7 @@ sub change_html {
 
 	for (@script) {
 		if (my $src = $_->attr('src')) {
-			if ($src =~ m/^\/d\d{3,4}\.js/) {
+			if ($src =~ m/^\/d\d{4}\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
 			} elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$hostname.''.$_->attr('src'));
@@ -161,6 +168,65 @@ sub change_html {
 	my $newhtml = $root->as_HTML;
 
 	return $self->change_js($self->change_css($newhtml));
+}
+
+sub get_assets {
+	my ($self, $html ) = @_;
+	
+	my $root = HTML::TreeBuilder->new;
+	$root->parse($html);
+
+	my @script = $root->look_down(
+		"_tag", "script"
+	);
+
+	my @link = $root->look_down(
+		"_tag", "link"
+	);
+
+	for (@script) {
+		if (my $src = $_->attr('src')) {
+			if ($src =~ m/^\/(d\d{4}\.js)/) {
+				$page_js_filename = $1;
+			} elsif ($src =~ m/^\/spice2\/(spice2_duckpan_\d{1,3}\.js)/) {
+				$spice_js_filename = $1;
+			}
+		}
+	}
+
+	for (@link) {
+		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
+			if (my $href = $_->attr('href')) {
+				if ($href =~ m/^\/(s\d{3}\.css)/) {
+					$page_css_filename = $1;
+				}
+			}
+		}
+	}
+
+	for my $curr_asset ($page_js_filename, $page_css_filename, $spice_js_filename) {
+		my $curr_asset_path = $curr_asset =~ qr/spice2/ ? "/spice2/".$curr_asset : "/".$curr_asset;
+
+		unless (-f file($self->app->cfg->cache_path,$curr_asset)) {
+			my $path = $curr_asset_path;
+			my $url = 'http://'.$hostname.''.$curr_asset_path;
+			my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
+
+			if ($res->is_success) {
+				my $content = $res->decoded_content(charset => 'none');
+
+
+				if ($curr_asset =~ m/\.js$/){
+					io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_js($content));
+				} elsif  ($curr_asset =~ m/\.css$/){
+					io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_css($content));
+				} else {
+					io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_html($content));
+				}
+		} else {
+			print "\n".$curr_asset." fetching failed, will just use cached version...";
+		}
+	}
 }
 
 1;
