@@ -215,7 +215,6 @@ sub get_assets {
 			if ($res->is_success) {
 				my $content = $res->decoded_content(charset => 'none');
 
-
 				if ($curr_asset =~ m/\.js$/){
 					io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_js($content));
 				} elsif  ($curr_asset =~ m/\.css$/){
@@ -223,8 +222,10 @@ sub get_assets {
 				} else {
 					io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_html($content));
 				}
-		} else {
-			print "\n".$curr_asset." fetching failed, will just use cached version...";
+
+			} else {
+				print "\n".$curr_asset." fetching failed, will just use cached version...";
+			}
 		}
 	}
 }
