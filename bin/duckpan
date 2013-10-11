@@ -4,8 +4,7 @@
 
 my @libs;
 BEGIN {
-    use Getopt::Long;
-    Getopt::Long::Configure 'bundling';
+    use Getopt::Long qw/:config bundling pass_through/;
     GetOptions 'include|I=s' => \@libs;
     @libs = split ',', join ',', @libs;
 }
