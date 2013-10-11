@@ -147,7 +147,7 @@ sub change_html {
 
 	for (@script) {
 		if (my $src = $_->attr('src')) {
-			if ($src =~ m/^\/d\d{4}\.js/) {
+			if ($src =~ m/^\/d\d+\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
 			} elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$hostname.''.$_->attr('src'));
@@ -186,9 +186,9 @@ sub get_assets {
 
 	for (@script) {
 		if (my $src = $_->attr('src')) {
-			if ($src =~ m/^\/(d\d{4}\.js)/) {
+			if ($src =~ m/^\/(d\d+\.js)/) {
 				$page_js_filename = $1;
-			} elsif ($src =~ m/^\/spice2\/(spice2_duckpan_\d{1,3}\.js)/) {
+			} elsif ($src =~ m/^\/spice2\/(spice2_duckpan_\d{3,4}\.js)/) {
 				$spice_js_filename = $1;
 			}
 		}
@@ -197,7 +197,7 @@ sub get_assets {
 	for (@link) {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
 			if (my $href = $_->attr('href')) {
-				if ($href =~ m/^\/(s\d{3}\.css)/) {
+				if ($href =~ m/^\/(s\d+\.css)/) {
 					$page_css_filename = $1;
 				}
 			}
