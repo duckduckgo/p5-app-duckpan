@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    console.log("Spice2 Duckpan Compile!");
+    console.log("Executing Duckpan.js...");
     var $script, name, content;
 
     // array of spice template <script>
