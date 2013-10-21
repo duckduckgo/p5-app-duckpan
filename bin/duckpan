@@ -3,6 +3,7 @@
 # ABSTRACT: Command line tool for using the DuckPAN of DuckDuckGo
 
 my @libs;
+
 BEGIN {
     use Getopt::Long qw/:config bundling pass_through/;
     GetOptions 'include|I=s' => \@libs;
@@ -17,71 +18,70 @@ App::DuckPAN->new_with_cmd;
 
 __END__
 
-=head1 SYNPOSIS
+=head1 Duckpan
 
-  duckpan check
-  # Check for the requirements to make duckpan contributions
-  
-  duckpan query
-  # Fire up your own CLI DuckDuckGo to test plugin triggers
-  # Use it in the zeroclickinfo-goodies or zeroclickinfo-spice repository root
+Duckpan is DuckDuckGo instant answer plugin testing platform. 
 
-  duckpan server
-  # Fire up your own Webserver that acts like DuckDuckGo to test
-  # spice (and goodies if you like). Use it in the
-  # zeroclickinfo-spice repository root or zeroclickinfo-goodies
+=head2 SYNPOSIS
 
-  duckpan installdeps
-  # Installs dependencies of the distribution in the current directory.
-  # Use mainly with DDG zeroclickinfo-*, but it works with anything dzil.
-  
-  duckpan help <command>
-  # Display the various duckpan commands
+B<duckpan server> command as an instance if run at toplevel directory of goodies or spice code base will allow testing of plugins in local environment. Test and verify functionality before requesting merging for production. B<Duckpan> is designed to be as similar to L<https://www.duckduckgo.com> as possible. 
 
-  duckpan test
-  # Test your release (this will run automatically before a release)
+=head2 INSTALLATION
+
+The installation requires some dependencies according to plugin platform being tested. C<duckpan installdeps> fulfilling these dependencies. The dependencies are installed in current directory. This command is meant to be used DDG zeroclickinfo-* code base.
+
+=head2 COMMANDS
+
+B<duckpan check>:
+    Check for the requirements to make duckpan contributions
+
+B<duckpan query>:  
+    Query is a command line tool for testing the plugin triggers. It can be used to test zeroclickinfo-goodies plugins.
+
+B<duckpan server>:
+    Server runs a local webserver very similar to DuckDuckGo production environment. It can be used to test zeroclickinfo-goodies and zeroclickinfo-spice plugins. 
+     
+B<duckpan help>:
+    Help shows you this page which briefly describes duckpan tool and its features.
+
+B<duckpan test>:
+    Test your release (this will run automatically before a release).
 	
-	duckpan installdeps
-	# Install all requirements of the specific DuckDuckHack project (if
-	# possible), like zeroclickinfo-spice, zeroclickinfo-goodie, duckduckgo
-	# or community-platform
+B<duckpan poupload>:
+    Upload a po file to the Community Platform (Translation manager only).
 
-  duckpan env <name> <value>
-  # Add an environment variable that duckpan will remember. Useful for
-  # spice API keys. Variables are stored in ~/.duckpan/env.ini
+B<duckpan publisher>:
+    Live testing of duckduckgo-publisher.
 
-  duckpan env rm <name>
-  # Remove an environment variable from duckpan
+B<duckpan release>:
+    Release the project of the current directory to DuckPAN.
 
-  #
-	# NOTE: For the followings you need an account at https://dukgo.com/
-	#
+B<duckpan setup>:
+  Still in beta setup helps setting environment for using Dist::Zilla::Plugin::UploadToDuckPAN.
 
-  duckpan poupload
-  # Upload a po file to the Community Platform (Translation manager only)
 
-  duckpan publisher
-  # Live testing of duckduckgo-publisher
+=head2 ENVIRONMENT
 
-  duckpan release
-  # Release the project of the current directory to DuckPAN
+B<duckpan env name value>
+    Add an environment variable that duckpan will remember. Useful for
+    spice API keys. Variables are stored in ~/.duckpan/env.ini
 
-  duckpan -Ilib
-  # Preload an external library - intended for use during DuckPAN development.
-  # Example usage inside a Goodie or Spice repository, loading edited
-  # p5-app-duckpan modules:
-      duckpan -I../p5-app-duckpan/lib server
+B<duckpan env rm name>
+    Remove an environment variable from duckpan. 
 
-  # BETA
-  duckpan setup
-  # Setup your environment for using Dist::Zilla::Plugin::UploadToDuckPAN
-  #######
 
-=head1 DESCRIPTION
+
+=head2 PARAMETERS  
+  
+B<duckpan -Ilib>:
+    Preload an external library intended for use while developing plugin development. For example loading modified duckpan modules C<duckpan -I../p5-app-duckpan/lib server>
+
+
+=head2 DESCRIPTION
 
 See L<App::DuckPAN> for more information.
 
-=head1 SEE ALSO
+=head2 SEE ALSO
 
 L<https://duckduckgo.com>
 
@@ -91,17 +91,27 @@ L<https://dukgo.com>
 
 L<http://duckpan.org>
 
-=head1 SUPPORT
 
-IRC
+=head2 CONTRIBUTION
 
-  Join us on #duckduckgo on irc.freenode.net
 
-Repository
+We welcome and encourage contributions from our community. Please visit L<http://duckduckhack.com/> to contribute your ideas, code samples, new sources of plugin data or just express your appreciation of what we are trying to do.
+   
 
-  https://github.com/duckduckgo/p5-app-duckpan
-  Pull request and additional contributors are welcome
- 
-Issue Tracker
+
+
+=head2 SUPPORT
+
+
+B<IRC>
+
+  We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
+
+B<Repository>
+
+  L<https://github.com/duckduckgo/p5-app-duckpan>
+    
+B<Issue Tracker>
 
   https://github.com/duckduckgo/p5-app-duckpan/issues
+
