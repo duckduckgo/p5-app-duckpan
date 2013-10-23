@@ -8,13 +8,11 @@ my $history_path;
 use Env qw( DP_NOCOLOR);
 # By setting the environment variable DP_NOCOLOR or ANSI_COLORS_DISABLED
 # change the behaviour of query printer on console. 
-if ($DP_NOCOLOR)
-{
+if ($DP_NOCOLOR) {
     require Data::Printer;
     import Data::Printer colored => 0;
 }
-else
-{
+else {
     require Data::Printer;
     import Data::Printer;
 }
