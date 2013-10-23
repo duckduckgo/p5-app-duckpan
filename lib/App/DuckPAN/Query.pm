@@ -5,8 +5,17 @@ use Moo;
 
 my $query;
 my $history_path;
-
-use Data::Printer;
+use Env qw( DP_NOCOLOR);
+# By setting the environment variable DP_NOCOLOR or ANSI_COLORS_DISABLED
+# change the behaviour of query printer on console. 
+if ($DP_NOCOLOR) {
+    require Data::Printer;
+    import Data::Printer colored => 0;
+}
+else {
+    require Data::Printer;
+    import Data::Printer;
+}
 use POE qw( Wheel::ReadLine );
 
 sub run {
