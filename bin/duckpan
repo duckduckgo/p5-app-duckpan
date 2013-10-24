@@ -18,100 +18,98 @@ App::DuckPAN->new_with_cmd;
 
 __END__
 
-=head1 Duckpan
+=pod
 
-Duckpan is DuckDuckGo instant answer plugin testing platform. 
+=head1 DuckPAN
+
+The DuckDuckHack Testing Tool
 
 =head2 SYNPOSIS
 
-B<duckpan server> command as an instance if run at toplevel directory of goodies or spice code base will allow testing of plugins in local environment. Test and verify functionality before requesting merging for production. B<Duckpan> is designed to be as similar to L<https://www.duckduckgo.com> as possible. 
+DuckPAN is an application built to provide developers a testing environment for DuckDuckHack Instant Answers. It allows you to test instant answer triggers and preview their visual design and output.
 
 =head2 INSTALLATION
 
-The installation requires some dependencies according to plugin platform being tested. C<duckpan installdeps> fulfilling these dependencies. The dependencies are installed in current directory. This command is meant to be used DDG zeroclickinfo-* code base.
+Please see L<https://github.com/duckduckgo/p5-app-duckpan#installing-duckpan> for all information regarding the installation of DuckPAN.
 
 =head2 COMMANDS
 
 B<duckpan check>:
-    Check for the requirements to make duckpan contributions
+    Checks if you fulfill all requirements for the development environment. This will run automatically during a B<duckpan release>.
 
-B<duckpan query>:  
-    Query is a command line tool for testing the plugin triggers. It can be used to test zeroclickinfo-goodies plugins.
+B<duckpan query>:
+    Test Goodie and Spice triggers interactively on the command line. For each query, the instant answers triggered will be displayed. This tool should be used to ensure your instant answer triggers correctly.
 
 B<duckpan server>:
-    Server runs a local webserver very similar to DuckDuckGo production environment. It can be used to test zeroclickinfo-goodies and zeroclickinfo-spice plugins. 
+    Starts a local web server, which emulates the DuckDuckGo production environment. Allows for live testing of Goodie and Spice instant answers.  This tool should be used to ensure your instant answer displays correctly. For Spice instant answers, this is especially important to verify API calls are successful and no JavaScript errors exist.
      
 B<duckpan help>:
-    Help shows you this page which briefly describes duckpan tool and its features.
+    Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
 
 B<duckpan test>:
-    Test your release (this will run automatically before a release).
+    Tests your release, by running the tests in the B<t/> directory using Dzil (if a dist.ini exists) or prove. This will run automatically during a B<duckpan release>.
 	
 B<duckpan poupload>:
-    Upload a po file to the Community Platform (Translation manager only).
+    Upload a po file to the Community Platform. This is for Translation Managers only.
 
 B<duckpan publisher>:
-    Live testing of duckduckgo-publisher.
+    Starts a local web server which displays static websites created with L<DuckDuckGo-Publisher|https://github.com/duckduckgo/duckduckgo-publisher>.
 
 B<duckpan release>:
-    Release the project of the current directory to DuckPAN.
+    Pushes a new release of the current project (ie. Spice, Goodie or Publisher) to L<DuckPAN.org|http://duckpan.org>
 
 B<duckpan setup>:
-  Still in beta setup helps setting environment for using Dist::Zilla::Plugin::UploadToDuckPAN.
+  Helps configure your environment so you can use L<Dist::Zilla::Plugin::UploadToDuckPAN>, which is used by B<duckpan release>.
 
-
-=head2 ENVIRONMENT
+=head2 ENVIRONMENT VARIABLES
 
 B<duckpan env name value>
-    Add an environment variable that duckpan will remember. Useful for
-    spice API keys. Variables are stored in ~/.duckpan/env.ini
+    Add an environment variable that DuckPAN will remember. This is specifically useful for Spice API keys. Variables are stored in ~/.duckpan/env.ini
 
 B<duckpan env rm name>
-    Remove an environment variable from duckpan. 
+    Remove an environment variable from DuckPAN. 
 
-
-
-=head2 PARAMETERS  
+=head2 PARAMETERS
   
 B<duckpan -Ilib>:
-    Preload an external library intended for use while developing plugin development. For example loading modified duckpan modules C<duckpan -I../p5-app-duckpan/lib server>
+    Loads the specified external library. This should be used to test changes made to L<App::DuckPAN> and L<DDG>. Example: loading modified DuckPAN modules C<duckpan -I../p5-app-duckpan/lib server>.
 
-
-=head2 DESCRIPTION
+=head1 DESCRIPTION
 
 See L<App::DuckPAN> for more information.
 
-=head2 SEE ALSO
+=head1 SEE ALSO
 
-L<https://duckduckgo.com>
+=over 4
 
-L<https://github.com/duckduckgo>
+=item L<https://github.com/duckduckgo/p5-app-duckpan>
 
-L<https://dukgo.com>
+=item L<https://github.com/duckduckgo>
 
-L<http://duckpan.org>
+=item L<https://duckduckgo.com>
 
+=item L<https://dukgo.com>
 
-=head2 CONTRIBUTION
+=item L<http://duckpan.org>
 
+=back
 
-We welcome and encourage contributions from our community. Please visit L<http://duckduckhack.com/> to contribute your ideas, code samples, new sources of plugin data or just express your appreciation of what we are trying to do.
-   
+=head1 CONTRIBUTION
 
-
+To contribute to DuckPAN, please visit L<https://github.com/duckduckgo/p5-app-duckpan>. We also welcome and encourage contributions from our community. Please visit L<http://duckduckhack.com/> to contribute new instant answers, or visit L<https://dukgo.com/ideas> to share your ideas and instant answer source suggestions.
 
 =head2 SUPPORT
 
+B<IRC>:
 
-B<IRC>
+    We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
 
-  We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
-
-B<Repository>
-
-  L<https://github.com/duckduckgo/p5-app-duckpan>
+B<Repository>:
     
-B<Issue Tracker>
+    L<https://github.com/duckduckgo/p5-app-duckpan>
 
-  https://github.com/duckduckgo/p5-app-duckpan/issues
+B<Issue Tracker>:
+    
+    https://github.com/duckduckgo/p5-app-duckpan/issues
 
+=cut
