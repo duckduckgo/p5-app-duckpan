@@ -9,7 +9,7 @@ package App::DuckPAN::Cmd::New;
 use Moo;
 use Data::Dumper;
 with qw( App::DuckPAN::Cmd );
-use Text::Sprintf::Named qw(named_sprintf);
+use Text::Xslate qw(mark_raw);
 use IO::All;
 
 sub camel_to_underscore {
@@ -87,13 +87,16 @@ sub run {
 			
 		}
 		    
-		my $content = '';
 		while (my ($source, $dest) = each($plugins{'goodie'}{'files'})) {
 		    
-		    $content = io($source)->all;
-		    my $cooked_data = named_sprintf($content, plugin_name => $plugin_name);
+		    
+		    my $tx = Text::Xslate->new();
+		    my %vars = (ia_name => $plugin_name,
+			lia_name => $lc_plugin);
+		    my $content = $tx->render($source, \%vars);
+		    
 		    #$cooked_data > io($dest);
-		    io($dest)->append($cooked_data);
+		    io($dest)->append($content);
 		    $self->app->print_text("Plugin $plugin_name $dest file copied\n");
 		    
 		}   
@@ -126,13 +129,16 @@ sub run {
 		    }
 		    
 		    mkdir $plugins{'spice'}{'dir_ui'};
-		    my $content = '';
 		    while (my ($source, $dest) = each($plugins{'spice'}{'files'})) {
 			
-			$content = io($source)->all;
-			my $cooked_data = named_sprintf($content, plugin_name => $plugin_name);
+			my $tx = Text::Xslate->new();
+			my %vars = (ia_name => $plugin_name,
+			    lia_name => $lc_plugin);
+			my $content = $tx->render($source, \%vars);
+		    
 			#$cooked_data > io($dest);
-			io($dest)->append($cooked_data);
+			io($dest)->append($content);
+		    
 			$self->app->print_text("Plugin $plugin_name $dest file copied\n");
 			
 		    }   
