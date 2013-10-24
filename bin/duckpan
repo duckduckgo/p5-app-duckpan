@@ -74,11 +74,11 @@ B<duckpan env rm name>
 B<duckpan -Ilib>:
     Loads the specified external library. This should be used to test changes made to L<App::DuckPAN> and L<DDG>. Example: loading modified DuckPAN modules C<duckpan -I../p5-app-duckpan/lib server>.
 
-=head2 DESCRIPTION
+=head1 DESCRIPTION
 
 See L<App::DuckPAN> for more information.
 
-=head2 SEE ALSO
+=head1 SEE ALSO
 
 =over 4
 
@@ -94,7 +94,7 @@ See L<App::DuckPAN> for more information.
 
 =back
 
-=head2 CONTRIBUTION
+=head1 CONTRIBUTION
 
 To contribute to DuckPAN, please visit L<https://github.com/duckduckgo/p5-app-duckpan>. We also welcome and encourage contributions from our community. Please visit L<http://duckduckhack.com/> to contribute new instant answers, or visit L<https://dukgo.com/ideas> to share your ideas and instant answer source suggestions.
 

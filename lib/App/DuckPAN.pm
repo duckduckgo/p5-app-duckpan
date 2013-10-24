@@ -344,81 +344,52 @@ sub BUILD {
 
 1;
 
-=encoding utf8
+=pod
 
-=head1 SYNPOSIS
+=pod
 
-L<DuckDuckGo|http://duckpan.org/> is a release platform for
-L<DuckDuckGo|https://duckduckgo.com/> open source code.
+=head1 DuckPAN
 
-DuckPAN also contains a suite of tools for testing and debugging ZeroClickInfo
-plugins.
+The DuckDuckHack Testing Tool
 
-=head2 INSTALL COMMANDS
+=head2 SYNPOSIS
 
-DuckPAN is an application built to provide developers a testing environment
-for the ZeroClickInfo Plugins. It allows users to test plugin triggers,
-and lets you preview their visual design. 
+DuckPAN is an application built to provide developers a testing environment for DuckDuckHack Instant Answers. It allows you to test instant answer triggers and preview their visual design and output.
 
-  duckpan installdeps
-  # Install all requirements of the specific DuckDuckHack project (if
-  # possible), like zeroclickinfo-spice, zeroclickinfo-goodie, duckduckgo
-  # or community-platform
-
-  duckpan check
-  # Check if you fulfill all requirements for the development
-  # environment (this is run automatically during setup)
-
-=head2 PLUGIN TESTING
-
-  duckpan query
-  # Test goodies and spice triggers interactively on the command line
-
-  duckpan server
-  # Test spice plugins on a local web server (for design/layout purposes)
-
-=head2 ADVANCED FEATURES
-
-  duckpan env
-  # View env commands and also shows the env variables currently stored in ~/.duckpan/env.ini
-
-  duckpan env <name> <value>
-  # Add an environment variable that duckpan will remember. Useful for
-  # spice API keys. Variables are stored in ~/.duckpan/env.ini
-
-  duckpan env <name>
-  # Retrieve the matching key for a given env variable.
-
-  duckpan env rm <name>
-  # Remove an environment variable from duckpan
-
-  # For the followings you need an account at L<https://dukgo.com/>
-
-  duckpan release
-  # Release the project of the current directory to DuckPAN
-
-  duckpan setup
-  # BETA FEATURE
-  # Setup your environment for using Dist::Zilla::Plugin::UploadToDuckPAN
-
-=head1 SUPPORT
- 
-Issue Tracker: L<https://github.com/duckduckgo/p5-app-duckpan/issues>
-
-IRC: #duckduckgo on irc.freenode.net (join us!)
-
-=head1 CONTRIBUTE
-
-Pull requests and additional contributors are welcome
-
-L<https://github.com/duckduckgo/p5-app-duckpan>
+C<duckpan help> provides more detailed information.
 
 =head1 SEE ALSO
 
-L<https://duckduckgo.com>
+=over 4
 
-L<https://github.com/duckduckgo>
+=item L<https://github.com/duckduckgo/p5-app-duckpan>
 
-L<https://dukgo.com>
+=item L<https://github.com/duckduckgo>
 
-L<http://duckpan.org>
+=item L<https://duckduckgo.com>
+
+=item L<https://dukgo.com>
+
+=item L<http://duckpan.org>
+
+=back
+
+=head1 CONTRIBUTION
+
+To contribute to DuckPAN, please visit L<https://github.com/duckduckgo/p5-app-duckpan>. We also welcome and encourage contributions from our community. Please visit L<http://duckduckhack.com/> to contribute new instant answers, or visit L<https://dukgo.com/ideas> to share your ideas and instant answer source suggestions.
+
+=head1 SUPPORT
+
+B<IRC>:
+
+    We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
+
+B<Repository>:
+    
+    L<https://github.com/duckduckgo/p5-app-duckpan>
+
+B<Issue Tracker>:
+    
+    https://github.com/duckduckgo/p5-app-duckpan/issues
+
+=cut
