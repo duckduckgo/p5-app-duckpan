@@ -135,7 +135,7 @@ has help => (
 	lazy => 1,
 );
 
-sub _build_help { App::DuckPAN::Help->new( version => $VERSION ) }
+sub _build_help { App::DuckPAN::Help->new( ) }
 
 has perl => (
 	is => 'ro',
@@ -343,8 +343,6 @@ sub BUILD {
 }
 
 1;
-
-=pod
 
 =pod
 
