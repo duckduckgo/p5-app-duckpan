@@ -16,7 +16,28 @@ use Config::INI;
 use Data::Printer;
 use Data::Dumper;
 
-my ($page_js_filename, $page_css_filename, $spice_js_filename, $hostname);
+has page_js_filename => (
+	is => 'rw',
+);
+
+has page_css_filename => (
+	is => 'rw',
+);
+
+has spice_js_filename => (
+	is => 'rw',
+);
+
+has hostname => (
+	is => 'ro',
+	builder => '_build_hostname',
+	lazy => 1,
+);
+
+sub _build_hostname {
+	my ( $self ) = @_;
+	return $self->app->server_hostname;
+}
 
 sub run {
 	my ( $self, @args ) = @_;
@@ -54,13 +75,11 @@ sub run {
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-	$hostname = $self->app->server_hostname;
-	print "\n\nTrying to fetch current versions of the HTML from http://$hostname/\n\n";
-
+	print "\n\nTrying to fetch current versions of the HTML from http://".$self->hostname."/\n\n";
 
 	# First we bootstrap the cache, copying all files from /share (dist_dir) into the
-	# cache. Then we get each file from given $hostname (usually DuckDuckGo.com) and
-	# rewrite all links in the HTML to point to the same $hostname. This also makes
+	# cache. Then we get each file from given hostname (usually DuckDuckGo.com) and
+	# rewrite all links in the HTML to point to the same hostname. This also makes
 	# sure requests for assets stored locally come from DuckPAN cache so they aren't
 	# requested from DuckDuckGo again. Then we push this new copy of the file into
 	# the DuckPAN cache.
@@ -73,7 +92,7 @@ sub run {
 		next unless defined $assets{$file_name}{'file_path'};
 
 		my $path = $assets{$file_name}{'file_path'};
-		my $url = 'http://'.$hostname.''.$path;
+		my $url = 'http://'.$self->hostname.''.$path;
 		my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
 		if ($res->is_success){
@@ -106,14 +125,14 @@ sub run {
 	# Pull file out of cache to be served later by DuckPAN
 	my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
-	my $page_css = io(file($self->app->cfg->cache_path,$page_css_filename))->slurp;
+	my $page_css = io(file($self->app->cfg->cache_path,$self->page_css_filename))->slurp;
 
 	# Concatenate all JS files
 	# Order matters because of JS dependencies 
 	# DDG JS -> Handlebars -> jQuery & Spice.js -> Duckpan.js
-	my $page_js = io(file($self->app->cfg->cache_path,$page_js_filename))->slurp;
+	my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_filename))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'handlebars.js'))->slurp;
-	$page_js .= io(file($self->app->cfg->cache_path,$spice_js_filename))->slurp;
+	$page_js .= io(file($self->app->cfg->cache_path,$self->spice_js_filename))->slurp;
 	$page_js .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
@@ -128,7 +147,7 @@ sub run {
 		page_spice => $page_spice,
 		page_css => $page_css,
 		page_js => $page_js,
-		server_hostname => $hostname,
+		server_hostname => $self->hostname,
 	);
 	my $runner = Plack::Runner->new(
 		#loader => 'Restarter',
@@ -152,7 +171,7 @@ sub change_js {
 # E.g url("/assets/background.png") => url("http://duckduckgo.com/assets")
 sub change_css {
 	my ( $self, $css ) = @_;
-	$css =~ s!url\(("?)!url\($1http://$hostname/!g;
+	$css =~ s!url\(("?)!url\($1http://$self->hostname/!g;
 	return $css;
 }
 
@@ -161,8 +180,6 @@ sub change_html {
 
 	my $root = HTML::TreeBuilder->new;
 	$root->parse($html);
-
-	my $hostname = $self->app->server_hostname;
 
 	my @a = $root->look_down(
 		"_tag", "a"
@@ -174,13 +191,12 @@ sub change_html {
 
 	# Make sure DuckPAN serves DDG CSS (already pulled down at startup)
 	# ie <link href="/s123.css"> becomes <link href="/?duckduckhack_css=1">
-	# Also rewrite relative links to $hostname
+	# Also rewrite relative links to hostname
 	for (@a,@link) {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
-			warn $_->attr('href');
 			$_->attr('href','/?duckduckhack_css=1');
 		} elsif (substr($_->attr('href'),0,1) eq '/') {
-			$_->attr('href','http://'.$hostname.''.$_->attr('href'));
+			$_->attr('href','http://'.$self->hostname.''.$_->attr('href'));
 		}
 	}
 
@@ -191,13 +207,13 @@ sub change_html {
 
 	# Make sure DuckPAN serves DDG JS (already pulled down at startup)
 	# ie <link href="/d123.js"> becomes <link href="/?duckduckhack_js=1">
-	# Also rewrite relative links to $hostname
+	# Also rewrite relative links to hostname
 	for (@script) {
 		if (my $src = $_->attr('src')) {
 			if ($src =~ m/^\/d\d+\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
 			} elsif (substr($src,0,1) eq '/') {
-				$_->attr('src','http://'.$hostname.''.$_->attr('src'));
+				$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 			}
 		}
 	}
@@ -206,10 +222,10 @@ sub change_html {
 		"_tag", "img"
 	);
 
-	# Rewrite img links to be requested from $hostname
+	# Rewrite img links to be requested from hostname
 	for (@img) {
 		if ($_->attr('src')) {
-			$_->attr('src','http://'.$hostname.''.$_->attr('src'));
+			$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 		}
 	}
 
@@ -242,9 +258,9 @@ sub get_assets {
 	for (@script) {
 		if (my $src = $_->attr('src')) {
 			if ($src =~ m/^\/(d\d+\.js)/) {
-				$page_js_filename = $1;
-			} elsif ($src =~ m/^\/spice2\/(spice2_duckpan_(?:\d{3,4}|dev)\.js)/) {
-				$spice_js_filename = $1;
+				$self->page_js_filename($1);
+			} elsif ($src =~ m/^\/spice2\/(spice2_duckpan_(?:\d+|dev)\.js)/) {
+				$self->spice_js_filename($1);
 			}
 		}
 	}
@@ -254,19 +270,19 @@ sub get_assets {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
 			if (my $href = $_->attr('href')) {
 				if ($href =~ m/^\/(s\d+\.css)/) {
-					$page_css_filename = $1;
+					$self->page_css_filename($1);
 				}
 			}
 		}
 	}
 
-	# Check if we need to request any new assets from $hostname, otherwise use cached copies
-	for my $curr_asset ($page_js_filename, $page_css_filename, $spice_js_filename) {
+	# Check if we need to request any new assets from hostname, otherwise use cached copies
+	for my $curr_asset ($self->page_js_filename, $self->page_css_filename, $self->spice_js_filename) {
 		my $curr_asset_path = $curr_asset =~ qr/spice2/ ? "/spice2/".$curr_asset : "/".$curr_asset;
 
 		unless (-f file($self->app->cfg->cache_path,$curr_asset)) {
 			my $path = $curr_asset_path;
-			my $url = 'http://'.$hostname.''.$curr_asset_path;
+			my $url = 'http://'.$self->hostname.''.$curr_asset_path;
 			my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
 			if ($res->is_success) {
