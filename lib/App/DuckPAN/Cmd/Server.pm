@@ -49,7 +49,7 @@ sub run {
 		'page_root.html'            => { name => 'DuckDuckGo Landing Page', file_path => '/' },
 		'page_spice.html'           => { name => 'DuckDuckGo SERP', file_path => '/?q=duckduckhack-template-for-spice2' },
 		'handlebars.js'             => { name => 'Handlebars.js', file_path => '/js/handlebars-1.0.0-rc.3.js' },
-		'duckpan.js'                => { }
+		'duckpan.js'                => { } # no name/path required; always pulled from the cache
 	);
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
@@ -84,7 +84,11 @@ sub run {
 				$self->get_assets($content);
 			}
 
-			# Rewrite links then push file into cache
+			# The following block writes the requested files into the cache.
+			# Each file, depending on the type (js/css/html) first has all
+			# links within the file modified by the appropriate function
+			# ie. change_js, change_css, change_html which are explained below.
+
 			if ($file_name =~ m/\.js$/){
 				io(file($self->app->cfg->cache_path,$file_name))->print($self->change_js($content));
 			} elsif  ($file_name =~ m/\.css$/){
@@ -134,13 +138,18 @@ sub run {
 	exit $runner->run;
 }
 
+# Force DuckPAN to ignore requests for certain files
+# that are not needed (ie. d.js, s.js, post.html)
 sub change_js {
 	my ( $self, $js ) = @_;
+
 	$js =~ s!/([ds])\.js\?!/?duckduckhack_ignore=1&!g;
 	$js =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
 	return $self->change_css($js);
 }
 
+# Rewrite all relative asset links in CSS
+# E.g url("/assets/background.png") => url("http://duckduckgo.com/assets")
 sub change_css {
 	my ( $self, $css ) = @_;
 	$css =~ s!url\(("?)!url\($1http://$hostname/!g;
@@ -164,9 +173,11 @@ sub change_html {
 	);
 
 	# Make sure DuckPAN serves DDG CSS (already pulled down at startup)
+	# ie <link href="/s123.css"> becomes <link href="/?duckduckhack_css=1">
 	# Also rewrite relative links to $hostname
 	for (@a,@link) {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
+			warn $_->attr('href');
 			$_->attr('href','/?duckduckhack_css=1');
 		} elsif (substr($_->attr('href'),0,1) eq '/') {
 			$_->attr('href','http://'.$hostname.''.$_->attr('href'));
@@ -179,6 +190,7 @@ sub change_html {
 
 
 	# Make sure DuckPAN serves DDG JS (already pulled down at startup)
+	# ie <link href="/d123.js"> becomes <link href="/?duckduckhack_js=1">
 	# Also rewrite relative links to $hostname
 	for (@script) {
 		if (my $src = $_->attr('src')) {
@@ -194,7 +206,7 @@ sub change_html {
 		"_tag", "img"
 	);
 
-	# Make sure img's are requested from $hostname
+	# Rewrite img links to be requested from $hostname
 	for (@img) {
 		if ($_->attr('src')) {
 			$_->attr('src','http://'.$hostname.''.$_->attr('src'));
