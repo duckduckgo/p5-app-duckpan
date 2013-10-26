@@ -32,16 +32,16 @@ sub run {
 	# and stores locally in its own cache
 	# The are all necessary for DuckPAN Server to function properly
 	#
-	# Page_Root.html  : DDG Homepage
+	# page_root.html  : DDG Homepage
 	# 									- used for error page when no plugins trigger
 	#
-	# Page_Spice.html : DDG SERP
+	# page_spice.html : DDG SERP
 	#										- this is the page we inject Spice and Goodie results into
 	#
-	# Handlebars.js   : The FULL Handlebars lib
+	# handlebars.js   : The FULL Handlebars lib
 	# 									- needed to compile Spice templates in the browser
 	#
-	# Duckpan.js      : Small script DuckPAN runs on SERP load
+	# duckpan.js      : Small script DuckPAN runs on SERP load
 	# 									- used to compile Spice templates and inject Goodies into SERP
 	# 									- stored locally, no need to make web request for this
 
