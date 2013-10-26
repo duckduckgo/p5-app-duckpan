@@ -1,5 +1,5 @@
 package App::DuckPAN::Cmd::Server;
-# ABSTRACT: Starting up the webserver to test plugins
+# ABSTRACT: Starting up the web server to test instant answers
 
 use Moo;
 with qw( App::DuckPAN::Cmd );
@@ -33,17 +33,17 @@ sub run {
 	# The are all necessary for DuckPAN Server to function properly
 	#
 	# page_root.html  : DDG Homepage
-	# 									- used for error page when no plugins trigger
+	#                   - used for error page when no instant answers trigger
 	#
 	# page_spice.html : DDG SERP
-	#										- this is the page we inject Spice and Goodie results into
+	#	                  - this is the page we inject Spice and Goodie results into
 	#
 	# handlebars.js   : The FULL Handlebars lib
-	# 									- needed to compile Spice templates in the browser
+	#                   - needed to compile Spice templates in the browser
 	#
 	# duckpan.js      : Small script DuckPAN runs on SERP load
-	# 									- used to compile Spice templates and inject Goodies into SERP
-	# 									- stored locally, no need to make web request for this
+	#                   - used to compile Spice templates and inject Goodies into SERP
+	#                   - stored locally, no need to make web request for this
 
 	my %assets = (
 		'page_root.html'            => { name => 'DuckDuckGo Landing Page', file_path => '/' },
@@ -66,7 +66,8 @@ sub run {
 	# the DuckPAN cache.
 
 	for my $file_name (keys %assets) {
-
+		
+		# copy all files in /share (dist_dir) into cache, unless they already exist
 		copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name)) unless -f file($self->app->cfg->cache_path,$file_name);
 
 		next unless defined $assets{$file_name}{'file_path'};
@@ -142,7 +143,6 @@ sub run {
 # that are not needed (ie. d.js, s.js, post.html)
 sub change_js {
 	my ( $self, $js ) = @_;
-
 	$js =~ s!/([ds])\.js\?!/?duckduckhack_ignore=1&!g;
 	$js =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
 	return $self->change_css($js);
