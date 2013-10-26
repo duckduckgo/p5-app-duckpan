@@ -231,7 +231,7 @@ sub get_assets {
 		if (my $src = $_->attr('src')) {
 			if ($src =~ m/^\/(d\d+\.js)/) {
 				$page_js_filename = $1;
-			} elsif ($src =~ m/^\/spice2\/(spice2_duckpan_\d{3,4}\.js)/) {
+			} elsif ($src =~ m/^\/spice2\/(spice2_duckpan_(?:\d{3,4}|dev)\.js)/) {
 				$spice_js_filename = $1;
 			}
 		}
