@@ -201,6 +201,16 @@ sub print_text {
 	print "\n";
 }
 
+sub camel_to_underscore {
+ my ($self, $name) = @_;
+	# Replace first capital by lowercase
+	# if followed my lowercase.
+	$name =~ s/^([A-Z])([a-z])/lc($1).$2/e;
+	# Substitute camelCase to camel_case
+	$name =~ s/([a-z])([A-Z])/$1.'_'.lc($2)/ge;
+	return lc $name;
+}
+
 sub check_requirements {
 	my ( $self ) = @_;
 	my $fail = 0;
