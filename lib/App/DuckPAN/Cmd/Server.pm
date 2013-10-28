@@ -171,7 +171,8 @@ sub change_js {
 # E.g url("/assets/background.png") => url("http://duckduckgo.com/assets")
 sub change_css {
 	my ( $self, $css ) = @_;
-	$css =~ s!url\(("?)!url\($1http://$self->hostname/!g;
+	my $hostname = $self->hostname;
+	$css =~ s!url\(("?)!url\($1http://$hostname/!g;
 	return $css;
 }
 
