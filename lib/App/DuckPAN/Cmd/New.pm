@@ -18,20 +18,10 @@ use IO::All;
 
 sub run {
 	my ( $self, @args ) = @_;
-	if (@args < 1)
-	{
-	    $self->app->print_text('Plugin name is required');
-	    
-	}
-	else
-	{
-	    # Plugin name as parameter
-	    my $plugin_name = $args[0];
-	    my $lc_plugin = camel_to_underscore($plugin_name);
 
-
-	    # %plugin forms the spine data structure which is used
-	    # as a guide to discovering content which is moved around
+	# Instant Answer name as parameter
+	my $name = $args[0] || $self->app->get_reply('Please enter a name for your Instant Answer');
+	my $lc_name = $self->app->camel_to_underscore($name);
 
 	    my %plugins = ( 
 		goodie => {
