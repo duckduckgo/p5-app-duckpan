@@ -16,27 +16,6 @@ with qw( App::DuckPAN::Cmd );
 use Text::Xslate qw(mark_raw);
 use IO::All;
 
-sub camel_to_underscore {
-    $_ = shift;
-    # Replace first capital by lowercase
-    # if followed my lowercase.
-    s/^([A-Z])([a-z])/lc($1).$2/e;
-    # Substitute camelCase to camel_case
-    s/([a-z])([A-Z])/$1.'_'.lc($2)/ge;
-    return lc $_;
-}
-
-sub touch {
-    my $file = shift @_;
-    my $now = time;
-    local (*TMP);
-
-                utime ($now, $now, $file)
-                || open (TMP, ">>$file")
-                || warn ("Couldn't touch file: $!\n");
-} 
-
-
 sub run {
 	my ( $self, @args ) = @_;
 	if (@args < 1)
