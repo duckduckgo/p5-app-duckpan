@@ -12,7 +12,7 @@ use HTML::Entities;
 use HTML::TreeBuilder;
 use HTML::Element;
 use Data::Printer;
-use IO::All -utf8;
+use IO::All;
 use HTTP::Request;
 use LWP::UserAgent;
 use URI::Escape;
