@@ -1,10 +1,14 @@
 package App::DuckPAN::Cmd::New;
-# ABSTRACT: New is plugin template creates basic files for 
-# zeroclickinfo plugin.
-# It is capable of creating Goodie and Spice plugin.
-# In case of Goodie it creates a .pm file
-# For Spice it creates a populated .pm and empty handlebars and js file
+# ABSTRACT: Take a name as input and generates a new, named Goodie or Spice instant answer skeleton
 
+# For Goodies:
+# 	- <name>.pm file is created in lib/DDG/Goodie
+#
+# For Spice:
+# 	- <name>.pm file is created in lib/DDG/Spice
+# 	- directory /share/spice/<name> is created
+# 	- <name.js> is created in /share/spice/<name>
+# 	- <name.handlebars> is created in /share/spice/<name>
 
 use Moo;
 use Data::Dumper;
