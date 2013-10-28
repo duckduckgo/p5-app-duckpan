@@ -23,105 +23,93 @@ sub run {
 	my $name = $args[0] || $self->app->get_reply('Please enter a name for your Instant Answer');
 	my $lc_name = $self->app->camel_to_underscore($name);
 
-	    my %plugins = ( 
+	# %templates forms the spine data structure which is used
+	# as a guide to discovering content which is moved around
+	my %templates = (
 		goodie => {
-		    dir => './lib/DDG/Goodie',
-		    files => {
-			'./plugin_template/lib/DDG/Goodie/Example.pm' => "./lib/DDG/Goodie/$plugin_name.pm",
-			'./plugin_template/t/Example.t' => "./t/$plugin_name.t",
-		    },  
+			lib_dir => "./lib/DDG/Goodie",
+			files => {
+				"./template/lib/DDG/Goodie/Example.pm" => "./lib/DDG/Goodie/$name.pm",
+				"./template/t/Example.t" => "./t/$name.t",
+			},
 		},
+
 		spice => {
-		    dir => './lib/DDG/Spice', 
-		    dir_ui => "./share/spice/$lc_plugin",
-		    files => {
-			'./plugin_template/lib/DDG/Spice/Example.pm' => "./lib/DDG/Spice/$plugin_name.pm",
-			'./plugin_template/t/Example.t' => "./t/$plugin_name.t",
-			'./plugin_template/share/spice/example/example.handlebars' => "./share/spice/$lc_plugin/$lc_plugin.handlebars",
-			'./plugin_template/share/spice/example/example.js' => "./share/spice/$lc_plugin/$lc_plugin.js"
-			  },
-		}  
-		
-		);
-	    if (-d $plugins{'goodie'}{'dir'}) {
-		for (keys $plugins{'goodie'}{'files'}) {
-		    my $filename = $_;
-		    my $dest = $plugins{'goodie'}{'files'}{$filename};
-		    
-		    if (-e $dest) {
-			$self->app->print_text("Plugin $plugin_name $dest file already exists\n");
-			exit -1;
-		    }
-		    
-		    if (! -e $filename) {
-			$self->app->print_text("Plugin template $filename does not exist\n");
-			exit -1;
-		    }
-			
+			lib_dir => "./lib/DDG/Spice",
+			share_dir => "./share/spice/$lc_name",
+			files => {
+				"./template/lib/DDG/Spice/Example.pm" => "./lib/DDG/Spice/$name.pm",
+				"./template/t/Example.t" => "./t/$name.t",
+				"./template/share/spice/example/example.handlebars" => "./share/spice/$lc_name/$lc_name.handlebars",
+				"./template/share/spice/example/example.js" => "./share/spice/$lc_name/$lc_name.js"
+			}
 		}
-		    
-		while (my ($source, $dest) = each($plugins{'goodie'}{'files'})) {
-		    
-		    
-		    my $tx = Text::Xslate->new();
-		    my %vars = (ia_name => $plugin_name,
-			lia_name => $lc_plugin);
-		    my $content = $tx->render($source, \%vars);
-		    
-		    #$cooked_data > io($dest);
-		    io($dest)->append($content);
-		    $self->app->print_text("Plugin $plugin_name $dest file copied\n");
-		    
-		}   
-		$self->app->print_text("Plugin $plugin_name definitions created\n");
-		    
+	);
+
+	# Check if we're in a Goodie repository
+	if (-d $templates{'goodie'}{'lib_dir'}) {
 		
-	    }
-
-	    if (-d $plugins{'spice'}{'dir'}) {
-		if (-d $plugins{'spice'}{'dir_ui'}) {
-		    $self->app->print_text("Plugin $plugin_name already exists");
-		    exit -1;
-		}
-		else {
-
-		    for (keys $plugins{'spice'}{'files'}) {
-			my $filename = $_;
-			my $dest = $plugins{'spice'}{'files'}{$filename};
-			
+		for my $filename (keys %{$templates{'goodie'}{'files'}}) {
+			my $dest = $templates{'goodie'}{'files'}{$filename};
 			if (-e $dest) {
-			    $self->app->print_text("Plugin $plugin_name $dest file already exists\n");
-			    exit -1;
+				$self->app->print_text("[ERROR] File already exists: $name $dest");
+				exit -1;
 			}
-				
-			if (! -e $filename) {
-			    $self->app->print_text("Plugin template $filename does not exist\n");
-			    exit -1;
+			unless (-e $filename) {
+				$self->app->print_text("[ERROR] Template does not exist: $filename");
+				exit -1;
 			}
-			
-		    }
-		    
-		    mkdir $plugins{'spice'}{'dir_ui'};
-		    while (my ($source, $dest) = each($plugins{'spice'}{'files'})) {
-			
-			my $tx = Text::Xslate->new();
-			my %vars = (ia_name => $plugin_name,
-			    lia_name => $lc_plugin);
-			my $content = $tx->render($source, \%vars);
-		    
-			#$cooked_data > io($dest);
-			io($dest)->append($content);
-		    
-			$self->app->print_text("Plugin $plugin_name $dest file copied\n");
-			
-		    }   
-		    $self->app->print_text("Plugin $plugin_name definitions created\n");
-		    
 		}
-	    }
 
+		while (my ($source, $dest) = each(%{$templates{'goodie'}{'files'}})) {
+			my $tx = Text::Xslate->new();
+			my %vars = (ia_name => $name,	lia_name => $lc_name);
+			my $content = $tx->render($source, \%vars);
+			io($dest)->append($content);
+			$self->app->print_text("Created file: $dest");
+		}
+		$self->app->print_text("Successfully created Goodie: $name ");
+	}
+
+	# Check if we're in a Spice repository
+	elsif (-d $templates{'spice'}{'lib_dir'}) {
+
+		if (-d $templates{'spice'}{'share_dir'}) {
+			$self->app->print_text("[ERROR] Instant answer already exists: $name");
+			exit -1;
+		}	else {
+			for my $filename (keys %{$templates{'spice'}{'files'}}) {
+				my $dest = $templates{'spice'}{'files'}{$filename};
+				if (-e $dest) {
+					$self->app->print_text("[ERROR] File already exists: $name $dest");
+					exit -1;
+				}
+				unless (-e $filename) {
+					$self->app->print_text("[ERROR] Template does not exist: $filename");
+					exit -1;
+				}
+			}
+
+			mkdir $templates{'spice'}{'share_dir'};
+			while (my ($source, $dest) = each(%{$templates{'spice'}{'files'}})) {
+				my $tx = Text::Xslate->new();
+				my %vars = (ia_name => $name,
+					lia_name => $lc_name);
+				my $content = $tx->render($source, \%vars);
+
+				io($dest)->append($content);
+
+				$self->app->print_text("Created file: $dest");
+			}
+			$self->app->print_text("Successfully created Spice: $name");
+		}
+	}
+
+	# [TODO] Implement Fathead and Longtail templates
+
+	else {
+		$self->app->print_text("[ERROR] No lib/DDG/Goodie, lib/DDG/Spice, lib/DDG/Fathead or lib/DDG/Longtail found");
 	}
 }
-	    
 
 1;
