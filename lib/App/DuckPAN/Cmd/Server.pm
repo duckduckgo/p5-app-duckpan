@@ -4,7 +4,7 @@ package App::DuckPAN::Cmd::Server;
 use Moo;
 with qw( App::DuckPAN::Cmd );
 
-use MooX::Options;
+use MooX::Options protect_argv => 0;
 use Plack::Runner;
 use File::ShareDir::ProjectDistDir;
 use File::Copy;
@@ -15,6 +15,19 @@ use HTML::TreeBuilder;
 use Config::INI;
 use Data::Printer;
 use Data::Dumper;
+
+option no_cache => (
+	is => 'ro',
+	lazy => 1,
+	default => sub { 0 }
+);
+
+option verbose => (
+	is => 'ro',
+	lazy => 1,
+	short => 'v',
+	default => sub { 0 }
+);
 
 has page_js_filename => (
 	is => 'rw',
@@ -42,8 +55,7 @@ sub _build_hostname {
 sub run {
 	my ( $self, @args ) = @_;
 
-	# Check if newer version of App::Duckpan
-	# or DDG exists
+	# Check if newer version of App::Duckpan or DDG exists
 	exit 1 unless $self->app->check_app_duckpan;
 	exit 1 unless $self->app->check_ddg;
 
@@ -75,7 +87,9 @@ sub run {
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-	print "\n\nTrying to fetch current versions of the HTML from http://".$self->hostname."/\n\n";
+	print "\n\nHostname is: http://".$self->hostname if $self->verbose;
+	print "\n\nChecking for newest assets from: http://".$self->hostname."\n";
+	print "\n[CACHE DISABLED]. Forcing request for all assets...\n\n" if $self->verbose && $self->no_cache;
 
 	# First we bootstrap the cache, copying all files from /share (dist_dir) into the
 	# cache. Then we get each file from given hostname (usually DuckDuckGo.com) and
@@ -87,15 +101,19 @@ sub run {
 	for my $file_name (keys %assets) {
 		
 		# copy all files in /share (dist_dir) into cache, unless they already exist
-		copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name)) unless -f file($self->app->cfg->cache_path,$file_name);
+		unless (-f file($self->app->cfg->cache_path,$file_name)) {
+			copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name));
+		}
 
 		next unless defined $assets{$file_name}{'file_path'};
 
 		my $path = $assets{$file_name}{'file_path'};
 		my $url = 'http://'.$self->hostname.''.$path;
+		print "\nRequesting: $url..." if $self->verbose;
 		my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
 		if ($res->is_success){
+			print "success!\n" if $self->verbose;
 			my $content = $res->decoded_content(charset => 'none');
 
 			# Make sure we cache DDG js/css and only
@@ -116,9 +134,10 @@ sub run {
 			} else {
 				io(file($self->app->cfg->cache_path,$file_name))->print($self->change_html($content));
 			}
-
+			print "\nWrote \"$file_name\" into cache.\n" if $self->verbose;
 		} else {
-			print "\n".$assets{$file_name}{'name'}." fetching failed, will just use cached version...";
+			print "[ERROR] Request for \"$file_name\" failed with response: $res\n";
+			print "\nUsing cached version";
 		}
 	}
 
@@ -164,6 +183,7 @@ sub change_js {
 	my ( $self, $js ) = @_;
 	$js =~ s!/([ds])\.js\?!/?duckduckhack_ignore=1&!g;
 	$js =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
+	$js =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
 	return $self->change_css($js);
 }
 
@@ -196,6 +216,7 @@ sub change_html {
 	for (@a,@link) {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
 			$_->attr('href','/?duckduckhack_css=1');
+
 		} elsif (substr($_->attr('href'),0,1) eq '/') {
 			$_->attr('href','http://'.$self->hostname.''.$_->attr('href'));
 		}
@@ -205,14 +226,19 @@ sub change_html {
 		"_tag", "script"
 	);
 
-
 	# Make sure DuckPAN serves DDG JS (already pulled down at startup)
 	# ie <link href="/d123.js"> becomes <link href="/?duckduckhack_js=1">
 	# Also rewrite relative links to hostname
+
 	for (@script) {
 		if (my $src = $_->attr('src')) {
+
 			if ($src =~ m/^\/d\d+\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
+
+			} elsif ($src =~ m/^\/spice2\/spice2_duckpan_(?:\d+|dev)\.js/) {
+				$_->attr('src','/?duckduckhack_ignore=1');
+
 			} elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 			}
@@ -243,7 +269,7 @@ sub change_html {
 
 sub get_assets {
 	my ($self, $html ) = @_;
-	
+
 	my $root = HTML::TreeBuilder->new;
 	$root->parse($html);
 
@@ -280,15 +306,16 @@ sub get_assets {
 	# Check if we need to request any new assets from hostname, otherwise use cached copies
 	for my $curr_asset ($self->page_js_filename, $self->page_css_filename, $self->spice_js_filename) {
 		my $curr_asset_path = $curr_asset =~ qr/spice2/ ? "/spice2/".$curr_asset : "/".$curr_asset;
-
-		unless (-f file($self->app->cfg->cache_path,$curr_asset)) {
+		# Request file unless cache is disabled, or cache already contains file
+		if ($self->no_cache || ! -f file($self->app->cfg->cache_path,$curr_asset)) {
 			my $path = $curr_asset_path;
 			my $url = 'http://'.$self->hostname.''.$curr_asset_path;
+			print "\nRequesting: $url..." if $self->verbose;
 			my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
 			if ($res->is_success) {
+				print "Request successful!\n" if $self->verbose;
 				my $content = $res->decoded_content(charset => 'none');
-
 				if ($curr_asset =~ m/\.js$/){
 					io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_js($content));
 				} elsif  ($curr_asset =~ m/\.css$/){
@@ -296,10 +323,13 @@ sub get_assets {
 				} else {
 					io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_html($content));
 				}
-
+				print "\nWrote \"$curr_asset\" into cache.\n" if $self->verbose;
 			} else {
-				print "\n".$curr_asset." fetching failed, will just use cached version...";
+				print "[ERROR] Request for \"$curr_asset\" failed with response: $res\n";
+				print "\nUsing cached version";
 			}
+		} else {
+			print "\n$curr_asset already exists in cache -- no request made.\n" if $self->verbose;
 		}
 	}
 }
