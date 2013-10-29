@@ -4,7 +4,7 @@ package App::DuckPAN::Cmd::Server;
 use Moo;
 with qw( App::DuckPAN::Cmd );
 
-use MooX::Options;
+use MooX::Options protect_argv => 0;
 use Plack::Runner;
 use File::ShareDir::ProjectDistDir;
 use File::Copy;
@@ -55,12 +55,6 @@ sub _build_hostname {
 sub run {
 	my ( $self, @args ) = @_;
 
-	# Workaround -- for some reason @args still contains the used "no-cache" option
-	my @new_args;
-	for (@args) {
-		push (@new_args, $_) unless $_ =~ qr/--no-cache|-v|--verbose/;
-	}
-
 	# Check if newer version of App::Duckpan or DDG exists
 	exit 1 unless $self->app->check_app_duckpan;
 	exit 1 unless $self->app->check_ddg;
@@ -91,7 +85,7 @@ sub run {
 		'duckpan.js'                => { } # no name/path required; always pulled from the cache
 	);
 
-	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@new_args)};
+	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
 	print "\n\nHostname is: http://".$self->hostname if $self->verbose;
 	print "\n\nChecking for newest assets from: http://".$self->hostname."\n";
