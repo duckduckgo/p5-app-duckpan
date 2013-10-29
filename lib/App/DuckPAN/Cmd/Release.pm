@@ -1,7 +1,8 @@
 package App::DuckPAN::Cmd::Release;
 # ABSTRACT: Release the distribution of the current directory
 
-use MooX qw( Options );
+use MooX;
+use MooX::Options protect_argv => 0;
 with qw( App::DuckPAN::Cmd );
 
 sub run {

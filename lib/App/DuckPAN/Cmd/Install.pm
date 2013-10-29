@@ -4,7 +4,7 @@ package App::DuckPAN::Cmd::Install;
 use Moo;
 with qw( App::DuckPAN::Cmd );
 
-use MooX::Options;
+use MooX::Options protect_argv => 0;
 
 sub run {
 	my ( $self, @args ) = @_;

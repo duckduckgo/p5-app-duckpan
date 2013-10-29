@@ -1,7 +1,8 @@
 package App::DuckPAN::Cmd::Query;
 # ABSTRACT: Command line tool for testing queries and see triggered plugins
 
-use MooX qw( Options );
+use MooX;
+use MooX::Options protect_argv => 0;
 with qw( App::DuckPAN::Cmd );
 
 sub run {

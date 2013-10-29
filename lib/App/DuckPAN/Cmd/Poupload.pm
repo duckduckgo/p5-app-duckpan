@@ -4,7 +4,7 @@ package App::DuckPAN::Cmd::Poupload;
 use Moo;
 with qw( App::DuckPAN::Cmd );
 
-use MooX::Options;
+use MooX::Options protect_argv => 0;
 use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
 use Path::Class;

@@ -4,7 +4,7 @@ package App::DuckPAN::Cmd::Server;
 use Moo;
 with qw( App::DuckPAN::Cmd );
 
-use MooX::Options;
+use MooX::Options protect_argv => 0;
 use Plack::Runner;
 use File::ShareDir::ProjectDistDir;
 use File::Copy;

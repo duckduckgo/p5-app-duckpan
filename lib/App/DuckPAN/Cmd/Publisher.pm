@@ -4,7 +4,7 @@ package App::DuckPAN::Cmd::Publisher;
 use Moo;
 with qw( App::DuckPAN::Cmd );
 
-use MooX::Options;
+use MooX::Options protect_argv => 0;
 
 use Path::Class;
 use Plack::Handler::Starman;
