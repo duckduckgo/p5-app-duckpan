@@ -4,7 +4,7 @@ package App::DuckPAN::Cmd::Goodie;
 use Moo;
 with qw( App::DuckPAN::Cmd );
 
-use MooX::Options;
+use MooX::Options protect_argv => 0;
 use Module::Pluggable::Object;
 use Class::Load ':all';
 use Data::Printer;
