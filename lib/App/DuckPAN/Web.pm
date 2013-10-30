@@ -7,11 +7,12 @@ use DDG::Test::Location;
 use DDG::Test::Language;
 use Plack::Request;
 use Plack::Response;
+use Plack::MIME;
 use HTML::Entities;
 use HTML::TreeBuilder;
 use HTML::Element;
 use Data::Printer;
-use IO::All -utf8;
+use IO::All;
 use HTTP::Request;
 use LWP::UserAgent;
 use URI::Escape;
@@ -94,6 +95,8 @@ sub request {
 		}
 
 		my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename);
+		my $content_type = Plack::MIME->mime_type($filename);
+		$response->content_type($content_type);
 		$body .= -f $filename_path ? io($filename_path)->slurp : "";
 
 	} elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
