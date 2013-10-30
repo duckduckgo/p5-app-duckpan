@@ -183,7 +183,6 @@ sub change_js {
 	my ( $self, $js ) = @_;
 	$js =~ s!/([ds])\.js\?!/?duckduckhack_ignore=1&!g;
 	$js =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
-	$js =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
 	return $self->change_css($js);
 }
 
