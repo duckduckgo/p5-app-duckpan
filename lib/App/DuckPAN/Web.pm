@@ -78,7 +78,10 @@ sub request {
 	my $response = Plack::Response->new(200);
 	my $body;
 
-	if (@path_parts && $path_parts[0] eq 'share') {
+	if ($request->request_uri eq "/"){
+		$response->content_type("text/html");
+		$body = $self->page_root;
+	} elsif (@path_parts && $path_parts[0] eq 'share') {
 		my $filename = pop @path_parts;
 		my $share_dir = join('/',@path_parts);
 
@@ -154,7 +157,9 @@ sub request {
 			}
 		}
 	} elsif ($request->param('duckduckhack_ignore')) {
-		$body = "";
+		$response->status(204);
+		$response->content_length(0);
+		$body = undef;
 	} elsif ($request->param('duckduckhack_css')) {
 		$response->content_type('text/css');
 		$body = $self->page_css;
