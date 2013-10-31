@@ -40,15 +40,21 @@ B<duckpan check>:
 B<duckpan query>:
     Test Goodie and Spice triggers interactively on the command line. For each query, the instant answers triggered will be displayed. This tool should be used to ensure your instant answer triggers correctly.
 
-B<duckpan server>:
+B<duckpan server>: [--verbose] [--no-cache]
     Starts a local web server, which emulates the DuckDuckGo production environment. Allows for live testing of Goodie and Spice instant answers.  This tool should be used to ensure your instant answer displays correctly. For Spice instant answers, this is especially important to verify API calls are successful and no JavaScript errors exist.
-     
+
+    -v, --verbose:
+        Provides more output from server
+
+    --no-cache:
+        Forces the cache to be repopulated each time the server starts (defaults to using cached copies of assets unless newer versions exist)
+
 B<duckpan help>:
     Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
 
 B<duckpan test>:
     Tests your release, by running the tests in the B<t/> directory using Dzil (if a dist.ini exists) or prove. This will run automatically during a B<duckpan release>.
-	
+
 B<duckpan poupload>:
     Upload a po file to the Community Platform. This is for Translation Managers only.
 
