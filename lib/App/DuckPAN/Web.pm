@@ -158,8 +158,7 @@ sub request {
 		}
 	} elsif ($request->param('duckduckhack_ignore')) {
 		$response->status(204);
-		$response->content_length(0);
-		$body = undef;
+		$body = "";
 	} elsif ($request->param('duckduckhack_css')) {
 		$response->content_type('text/css');
 		$body = $self->page_css;
