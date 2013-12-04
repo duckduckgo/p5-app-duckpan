@@ -18,7 +18,8 @@ That being said, we are more than willing to help you debug any installation pro
 
 The easiest way to get started with DuckPAN is to either:
 
-- Use our DuckDuckHack development virtual machine image (see below); or
+- Use our DuckDuckHack development virtual machine image ([see below](#duckduckhack-development-virtual-machine)); or
+- Use the Vagrant virtual environment to run DuckDuckHack ([see below](#vagrant-virtual-environment)); or
 - Download and install [Ubuntu](http://www.ubuntu.com/download) yourself; or
 - Download and install a different Linux distro (but as mentioned above, you may run into issues).
 
@@ -100,9 +101,51 @@ Once you have installed the virtual machine you should be able to startup the VM
 
 **The DuckPAN client has already been installed for you.** You can now clone the instant answer repos and start developing/testing.
 
+
+## Vagrant Virtual Environment
+
+The Vagrant-based DuckDuckHack virtual environment provides a similar sandbox to the DuckDuckHack VM, but rather than downloading a prebuilt VM, Vagrant creates an environment for you based on the defined configuration.  Vagrant is an awesome tool for building development environments.  One command - `vagrant up` - gets you a complete working environment in minutes.  Something go wrong with the environment?  No messing around with snapshots.  Tear the VM down and build a fresh environment.  The DuckDuckHack Vagrant environment uses on Chef cookbooks and the DuckPAN installer script, so configuration is transparent and easily shared.
+
+Through the Vagrant configuration, you can easily switch back and forth between a headless-mode and the traditional VirtualBox interface.  The configuration defaults to headless.
+
+##### Setup Instructions
+
+1. Install: [Vagrant](http://docs.vagrantup.com/v2/installation/index.html) and [Bundler](http://bundler.io/#getting-started)
+
+2. Clone the [duckpan-vagrant](https://github.com/shedd/duckpan-vagrant) repo, which contains the `Vagrantfile` and Chef cookbooks you'll need
+
+3. Run `bundle install` to install Berkshelf, a Chef cookbook manager.
+
+4. Run `vagrant plugin install vagrant-berkshelf` to hook Berkshelf into Vagrant.
+
+5. Review the CUSTOM_CONFIG settings at the top of `Vagrantfile`.  You will want to customize the value of the synced directory to point to your local directory containing the DuckDuckGo code you wish to test.  By default, Vagrant will load a [VirtualBox Precise64](http://files.vagrantup.com/precise64.box) machine image.  If you change this, [Ubuntu is recommended](https://github.com/duckduckgo/p5-app-duckpan#disclaimer).
+
+6. Run `vagrant up`
+
+The box takes some time to stand up as the duckpan-install script runs.  Refer to [the duckpan-vagrant readme](https://github.com/shedd/duckpan-vagrant#installation) for more info.
+
+Once the environment has been built, **the DuckPAN client is installed and ready to go.** You can now clone the instant answer repos and start developing/testing.
+
+##### Quick Overview of key Vagrant CLI commands
+
+There are a couple of key Vagrant commands that you'll use to manage your environment.
+
+	$ vagrant
+
+	up       - Build environment from Vagrantfile or resume a previously halted environment.
+	ssh      - Connect to your running VM via SSH.
+	suspend  - Pause the VM, storing its current state to disk.
+	resume   - Bring a suspended VM back to life.
+	reload   - The equivalent of running a halt followed by an up.  Use this when you make changes to Vagrantfile.
+	halt     - Shut down the VM. Tries to gracefully shutdown first; if that fails, it will forcefully shut the VM down.
+	destroy  - Stop the currently running VM and blow everything away.
+
+Run these commands from the directory containing your `Vagrantfile`.
+
+
 ## Installing DuckPAN
 
-**\*\*Note**: You don't need to install DuckPAN if you're using our DuckDuckHack virtual machine. It's already installed for you!
+**\*\*Note**: You don't need to install DuckPAN if you're using our DuckDuckHack virtual machine or the Vagrant virtual environment. It's already installed for you!
 
 To install DuckPan, open your terminal and run:
 
