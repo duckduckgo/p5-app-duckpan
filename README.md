@@ -56,8 +56,6 @@ https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
 
 #### Roadmap
 
-- Headless virtual machine
-- Vagrant support
 - Docker support
 - Public AMI for use on EC2
 
