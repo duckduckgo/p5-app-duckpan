@@ -124,6 +124,8 @@ The box takes some time to stand up as the duckpan-install script runs.  Refer t
 
 Once the environment has been built, **the DuckPAN client is installed and ready to go.** You can now clone the instant answer repos and start developing/testing.
 
+If you run into any issues, please file an issue in the [duckpan-vagrant issue page](https://github.com/shedd/duckpan-vagrant/issues).
+
 ##### Quick Overview of key Vagrant CLI commands
 
 There are a couple of key Vagrant commands that you'll use to manage your environment.
@@ -139,6 +141,8 @@ There are a couple of key Vagrant commands that you'll use to manage your enviro
 	destroy  - Stop the currently running VM and blow everything away.
 
 Run these commands from the directory containing your `Vagrantfile`.
+
+For more information, please see the (excellent) [Vagrant docs](http://docs.vagrantup.com/).
 
 
 ## Installing DuckPAN
