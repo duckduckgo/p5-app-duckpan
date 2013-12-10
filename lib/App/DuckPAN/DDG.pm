@@ -12,7 +12,7 @@ sub get_dukgo_user_pass {
 	my $config = $self->app->perl->get_dzil_config;
 	unless (defined $config->{'%DUKGO'}) {
 		shift->app->print_text(
-			"[ERROR] No configuration found for your https://dukgo.com/ username and password, please use: 'dzil setup' first!",
+			"[ERROR] No configuration found for your https://duck.co/ username and password, please use: 'dzil setup' first!",
 		);
 		exit 1;
 	}

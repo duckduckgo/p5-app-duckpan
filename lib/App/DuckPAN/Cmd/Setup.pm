@@ -1,5 +1,5 @@
 package App::DuckPAN::Cmd::Setup;
-# ABSTRACT: Setting up your dukgo.com Account on your duckpan client
+# ABSTRACT: Setting up your duck.co Account on your duckpan client
 
 use Moo;
 with qw( App::DuckPAN::Cmd );
@@ -17,7 +17,7 @@ option user => (
 	default => sub { shift->get_user }
 );
 
-sub get_user { shift->app->get_reply( 'What is your username on https://dukgo.com/ ? ' ) }
+sub get_user { shift->app->get_reply( 'What is your username on https://duck.co/ ? ' ) }
 
 option pass => (
 	is => 'rw',
@@ -26,7 +26,7 @@ option pass => (
 	default => sub { shift->get_pass }
 );
 
-sub get_pass { shift->app->get_reply( 'What is your password on https://dukgo.com/ ? ' ) }
+sub get_pass { shift->app->get_reply( 'What is your password on https://duck.co/ ? ' ) }
 
 option name => (
 	is => 'rw',
@@ -58,13 +58,13 @@ sub run {
 		my $pass = $dzil_config->{'%DUKGO'}->{password};
 		print "Name: ".$name."\n" if $name;
 		print "Email: ".$email."\n" if $email;
-		print "Username at https://dukgo.com/: ".$user."\n" if $user;
-		print "Password at https://dukgo.com/: ".$pass."\n" if $pass;
+		print "Username at https://duck.co/: ".$user."\n" if $user;
+		print "Password at https://duck.co/: ".$pass."\n" if $pass;
 		if ($name || $email || $user || $pass) {
 			print "\n";
 			if ($self->app->term->ask_yn( prompt => 'Do you wanna use those? ', default => 'y' )) {
 				if ($user && $pass) {
-					print "\nChecking your account on https://dukgo.com/... ";
+					print "\nChecking your account on https://duck.co/... ";
 					if ($self->app->checking_dukgo_user($user,$pass)) {
 						print "success!\n";
 						$self->user($user);
@@ -84,7 +84,7 @@ sub run {
 		$self->setup_email unless $self->has_email;
 	}
 	unless ($self->has_user && $self->has_pass) {
-		print "\nGetting your https://dukgo.com/ user information\n\n";
+		print "\nGetting your https://duck.co/ user information\n\n";
 		$self->setup_dukgo;
 	}
 	my %vars = (
@@ -138,7 +138,7 @@ sub setup_dukgo {
 	my ( $self ) = @_;
 	my $user = $self->has_user ? $self->user : $self->get_user;
 	my $pass = $self->get_pass;
-	print "\nChecking your account on https://dukgo.com/... ";
+	print "\nChecking your account on https://duck.co/... ";
 	if ($self->app->checking_dukgo_user($user,$pass)) {
 		print "success!\n";
 		$self->user($user);
@@ -149,7 +149,7 @@ sub setup_dukgo {
 			$self->clear_user if $self->has_user;
 			$self->setup_dukgo;
 		} else {
-			print "[ERROR] A login to https://dukgo.com/ is required to work with DuckPAN\n";
+			print "[ERROR] A login to https://duck.co/ is required to work with DuckPAN\n";
 			exit 1;
 		}
 	}

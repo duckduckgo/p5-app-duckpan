@@ -13,6 +13,7 @@ use Data::Dumper;
 use LWP::Simple;
 use File::Temp qw/ :POSIX /;
 use version;
+use Parse::CPAN::Packages::Fast;
 use Class::Load ':all';
 
 sub dzil_root { Dist::Zilla::Util->_global_config_root }

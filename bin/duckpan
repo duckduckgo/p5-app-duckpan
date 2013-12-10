@@ -94,7 +94,7 @@ See L<App::DuckPAN> for more information.
 
 =item L<https://duckduckgo.com>
 
-=item L<https://dukgo.com>
+=item L<https://duck.co>
 
 =item L<http://duckpan.org>
 
@@ -102,7 +102,7 @@ See L<App::DuckPAN> for more information.
 
 =head1 CONTRIBUTION
 
-To contribute to DuckPAN, please visit L<https://github.com/duckduckgo/p5-app-duckpan>. We also welcome and encourage contributions from our community. Please visit L<http://duckduckhack.com/> to contribute new instant answers, or visit L<https://dukgo.com/ideas> to share your ideas and instant answer source suggestions.
+To contribute to DuckPAN, please visit L<https://github.com/duckduckgo/p5-app-duckpan>. We also welcome and encourage contributions from our community. Please visit L<http://duckduckhack.com/> to contribute new instant answers, or visit L<https://duck.co/ideas> to share your ideas and instant answer source suggestions.
 
 =head2 SUPPORT
 

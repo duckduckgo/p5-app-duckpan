@@ -23,7 +23,7 @@ option upload_uri => (
 	builder => 1,
 );
 
-sub _build_upload_uri { 'https://dukgo.com/translate/po/upload' }
+sub _build_upload_uri { 'https://duck.co/translate/po/upload' }
 
 sub get_request {
 	my ( $self, $file ) = @_;
