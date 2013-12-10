@@ -166,7 +166,10 @@ sub execute {
 		my @modules;
 		my @left_args;
 		for (@arr_args) {
-			if ($_ =~ /^dist/i || $_ =~ /^ddg/i || $_ =~ /^app/i) {
+			if ($_ =~ /^www/i ||
+				$_ =~ /^dist/i ||
+				$_ =~ /^ddg/i ||
+				$_ =~ /^app/i) {
 				push @modules, $_;
 			} elsif (lc($_) eq 'duckpan' or lc($_) eq 'upgrade') {
 				push @modules, 'App::DuckPAN';
@@ -370,15 +373,15 @@ C<duckpan help> provides more detailed information.
 
 =over 4
 
-=item L<https://github.com/duckduckgo/p5-app-duckpan>
+=item L<https://github.com/duckduckgo/p5-app-duckpan/>
 
-=item L<https://github.com/duckduckgo>
+=item L<https://github.com/duckduckgo/>
 
-=item L<https://duckduckgo.com>
+=item L<https://duckduckgo.com/>
 
-=item L<https://duck.co>
+=item L<https://duck.co/>
 
-=item L<http://duckpan.org>
+=item L<http://duckpan.org/>
 
 =back
 
@@ -398,6 +401,6 @@ B<Repository>:
 
 B<Issue Tracker>:
     
-    https://github.com/duckduckgo/p5-app-duckpan/issues
+    L<https://github.com/duckduckgo/p5-app-duckpan/issues>
 
 =cut
