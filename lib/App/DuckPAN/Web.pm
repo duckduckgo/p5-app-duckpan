@@ -28,7 +28,7 @@ has server_hostname => ( is => 'ro', required => 0 );
 has _share_dir_hash => ( is => 'rw' );
 has _path_hash => ( is => 'rw' );
 has _rewrite_hash => ( is => 'rw' );
-has _spice_js_hash => ( is => 'rw' );
+has _spice_callback_hash => ( is => 'rw' );
 
 has ua => (
 	is => 'ro',
@@ -47,12 +47,12 @@ sub BUILD {
 	my %share_dir_hash;
 	my %path_hash;
 	my %rewrite_hash;
-	my %spice_js_hash;
+	my %spice_callback_hash;
 	for (@{$self->blocks}) {
 		for (@{$_->only_plugin_objs}) {
 			if ($_->does('DDG::IsSpice')) {
 				$rewrite_hash{ref $_} = $_->rewrite if $_->has_rewrite;
-				$spice_js_hash{ref $_} = $_->spice_js;
+				$spice_callback_hash{ref $_} = $_->callback.'()';
 			}
 			$share_dir_hash{$_->module_share_dir} = ref $_ if $_->can('module_share_dir');
 			$path_hash{$_->path} = ref $_ if $_->can('path');
@@ -61,7 +61,7 @@ sub BUILD {
 	$self->_share_dir_hash(\%share_dir_hash);
 	$self->_path_hash(\%path_hash);
 	$self->_rewrite_hash(\%rewrite_hash);
-	$self->_spice_js_hash(\%spice_js_hash);
+	$self->_spice_callback_hash(\%spice_callback_hash);
 }
 
 sub run_psgi {
@@ -99,6 +99,7 @@ sub request {
 
 		my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename);
 		$body .= -f $filename_path ? io($filename_path)->slurp : "";
+		$body =~ s/^ddg\_spice\_[\w\_]+\s*\(\)\;$//igm;
 
 	} elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
 		for (keys %{$self->_path_hash}) {
@@ -108,7 +109,7 @@ sub request {
 				$path_remainder =~ s/\/+/\//g;
 				$path_remainder =~ s/^\///;
 				my $spice_class = $self->_path_hash->{$_};
-				my $spice_js = $self->_spice_js_hash->{$spice_class};
+				my $spice_callback = $self->_spice_callback_hash->{$spice_class};
 				my $rewrite = $self->_rewrite_hash->{$spice_class};
 				if ($rewrite) {
 					my $from = $rewrite->from;
@@ -156,7 +157,7 @@ sub request {
 					}
 				} else {
 					$response->content_type('text/javascript');
-					$response->body($spice_js);
+					$response->body($spice_callback);
 					return $response;
 				}
 			}
