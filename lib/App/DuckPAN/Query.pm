@@ -90,9 +90,11 @@ sub handle_user_input {
 }
  
 sub setup_console {
-  $_[HEAP]{console} = POE::Wheel::ReadLine->new(
+  my $powh_readline = POE::Wheel::ReadLine->new(
     InputEvent => 'got_user_input'
   );
+  $powh_readline->bind_key("C-\\", "interrupt");
+  $_[HEAP]{console} = $powh_readline;
   $_[HEAP]{console}->read_history($history_path);
   $_[HEAP]{console}->get("Query: ");
 }
