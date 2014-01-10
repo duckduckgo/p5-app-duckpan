@@ -275,6 +275,7 @@ sub get_local_app_duckpan_version {
 
 sub check_app_duckpan {
 	my ( $self ) = @_;
+        return 1 if $self->no_check;
 	my $ok = 1;
 	my $installed_version = $self->get_local_app_duckpan_version;
 	return $ok if $installed_version && $installed_version == '9.999';
@@ -304,6 +305,7 @@ sub check_app_duckpan {
 
 sub check_ddg {
 	my ( $self ) = @_;
+        return 1 if $self->no_check;
 	my $ok = 1;
 	my $installed_version = $self->get_local_ddg_version;
 	return $ok if $installed_version && $installed_version == '9.999';
