@@ -130,15 +130,17 @@ If you run into any issues, please file an issue in the [duckpan-vagrant issue p
 
 There are a couple of key Vagrant commands that you'll use to manage your environment.
 
-	$ vagrant
+```shell
+$ vagrant
 
-	up       - Build environment from Vagrantfile or resume a previously halted environment.
-	ssh      - Connect to your running VM via SSH.
-	suspend  - Pause the VM, storing its current state to disk.
-	resume   - Bring a suspended VM back to life.
-	reload   - The equivalent of running a halt followed by an up.  Use this when you make changes to Vagrantfile.
-	halt     - Shut down the VM. Tries to gracefully shutdown first; if that fails, it will forcefully shut the VM down.
-	destroy  - Stop the currently running VM and blow everything away.
+up       - Build environment from Vagrantfile or resume a previously halted environment.
+ssh      - Connect to your running VM via SSH.
+suspend  - Pause the VM, storing its current state to disk.
+resume   - Bring a suspended VM back to life.
+reload   - The equivalent of running a halt followed by an up.  Use this when you make changes to Vagrantfile.
+halt     - Shut down the VM. Tries to gracefully shutdown first; if that fails, it will forcefully shut the VM down.
+destroy  - Stop the currently running VM and blow everything away.
+```
 
 Run these commands from the directory containing your `Vagrantfile`.
 
@@ -191,6 +193,7 @@ cpanm Test::More --notest
 ```
 
 If that still doesn't work, you can also try using `--force`:
+
 ```shell
 cpanm Test::More --force
 ```
