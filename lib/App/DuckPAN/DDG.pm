@@ -50,7 +50,15 @@ sub get_blocks_from_current_dir {
 	lib->import('lib');
 	print "\nUsing the following DDG instant answers:\n\n";
 	for (@args) {
-		load_class($_);
+		eval { load_class($_); };
+		if ($@) {
+			if ($@ =~ m|^Can't locate .+\.pm in \@INC|) {
+				print "Missing dependencies for $_.\n";
+				print "Try running `duckpan installdeps`.\n";
+				print "Is ./dist.ini up to date?\n";
+				exit 1;
+			} else { die $@; }
+		}
 		print " - ".$_;
 		print " (".$_->triggers_block_type.")\n";
 	}
