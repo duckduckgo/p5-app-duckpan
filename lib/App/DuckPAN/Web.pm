@@ -323,11 +323,6 @@ sub request {
 
 				# Check if array contains a goodie result
 				} elsif (ref $result eq 'DDG::ZeroClickInfo') {
-
-					# Loop over all possible getter for DDG::ZeroClickInfo
-					# If exists, push into hash,
-					# JSON encode and inject into script tag
-
 					$template_name = $_->has_answer_type ? $_->answer_type : "unnamed-goodie";
 
 					# Display and set up the ZCI box
