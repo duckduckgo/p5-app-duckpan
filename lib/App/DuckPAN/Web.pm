@@ -206,11 +206,15 @@ sub request {
 			$root = HTML::TreeBuilder->new;
 			$root->parse($self->page_root);
 			my $text_field = $root->look_down(
-			"name", "q"
+				"name", "q"
 			);
 			$text_field->attr( value => $query );
+			$root->find_by_tag_name('body')->push_content(
+				HTML::TreeBuilder->new_from_content(
+					q(<script type="text/javascript">seterr('Sorry, no hit for your plugins')</script>)
+				)->guts
+			);
 			$page = $root->as_HTML;
-			$page =~ s/<\/body>/<script type="text\/javascript">seterr('Sorry, no hit for your plugins')<\/script><\/body>/;
 		}
 
 		# Iterate over results,
@@ -246,7 +250,7 @@ sub request {
 					}
 
 				 	@files = map { $_ } grep {
-					       $_->name =~ /^.+handlebars$/
+						   $_->name =~ /^.+handlebars$/
 					   } io($parent_dir)->all_files;
 				}
 
@@ -292,8 +296,8 @@ sub request {
 		#   calls_script : spice js files
 		#   calls_nrj : proxied spice api calls
 		#   calls_nrc : spice css calls
-		#   calls_templates : spice handlebars templates or goodie result
-		
+		#   calls_template : spice handlebars templates or goodie result
+
 		my $calls_nrj = (scalar @calls_nrj)	?	join(";",map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
 		my $calls_nrc = (scalar @calls_nrc) ? join(";",map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
 		my $calls_script = (scalar @calls_script)
@@ -302,7 +306,7 @@ sub request {
 
 		if (@calls_template) {
 			my ($template_name, $template_content);
-				$calls_script .= join("",map {
+			$calls_script .= join("",map {
 
 				my $result = $_;
 
@@ -313,33 +317,72 @@ sub request {
 					# e.g. filename: hacker_news.handlebars
 					# creates <script ... name=hacker_news>...</script>
 					$template_name = $result->filename;
-					$template_name =~ s/.handlebars//g;
+					$template_name =~ s/\.handlebars//g;
 					$template_content = $result->all;
 					"<script class='duckduckhack_spice_template' name='$template_name' type='text/plain'>$template_content</script>"
 
 				# Check if array contains a goodie result
 				} elsif (ref $result eq 'DDG::ZeroClickInfo') {
 
-					my $goodie = $result;
-
 					# Loop over all possible getter for DDG::ZeroClickInfo
 					# If exists, push into hash,
 					# JSON encode and inject into script tag
-					my @getters = qw(abstract abstract_text abstract_source abstract_url image heading answer answer_type definition definition_source definition_url html related_topics_sections results type redirect);
-
-					my %result_data = map {
-						my $has_func = 'has_'.$_;
-						my $func = $_;
-						$goodie->$has_func ? ( $_ => $goodie->$func ) : ();
-					} @getters;
 
 					$template_name = $_->has_answer_type ? $_->answer_type : "unnamed-goodie";
-					$template_content =  encode_json \%result_data;
-					"<script class='duckduckhack_goodie' name='$template_name' type='application/json'>$template_content</script>";
+
+					# Display and set up the ZCI box
+					my $abstract = $root->find_by_attribute(id => 'zero_click_abstract');
+					$abstract->delete_content; # clear the poor thing
+					$abstract->attr(style => undef);
+					$abstract->attr(class => 'zero_click_answer highlight_1');
+					my $left = $abstract->left;
+
+					# Stick the duck icon in, unless there is already an img to the left
+					$abstract->preinsert(
+						HTML::TreeBuilder->new_from_content(
+							q(<img class="icon_zero_click_answer" src="/icon16.png">)
+						)->guts
+					) unless defined $left && $left->tag eq 'img';
+
+					# Un-hide the *other* part of the ZCI box...
+					my $wrapper = $abstract->look_up(id => 'zero_click_wrapper');
+					$wrapper->attr(style => undef);
+
+					# Check for and insert the heading
+					if ($result->has_heading) {
+						my $header = $wrapper->look_down(id => 'zero_click_header');
+						$header->attr(style => undef);
+						$header->attr(class => 'highlight_1');
+						$header->push_content($result->heading);
+						$header->parent->find_by_attribute(id => 'zero_click_plus_wrapper')->delete;
+					}
+
+					# Same, insert the image
+					if ($result->has_image) {
+						my $img = HTML::Element->new('img', src => $result->image);
+						my $image = $wrapper->look_down(id => 'zero_click_image');
+						$image->attr(style => undef);
+						$image->push_content($img);
+					}
+
+					# Create a div for the actual answer (goes inside $abstract)
+					my $answer = HTML::Element->new('div');
+					$answer->push_content(
+						$result->has_html ?
+							HTML::TreeBuilder->new_from_content($result->html)->guts :
+							$result->answer
+					);
+
+					# Stick the answer inside $abstract
+					$abstract->push_content($answer);
+
+					# Now we can just ignore the call-script -- replace with an empty string
+					""
 				}
 
 			} @calls_template);
 		}
+		$page = $root->as_HTML;
 
 		$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
 		$page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
