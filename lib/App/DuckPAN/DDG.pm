@@ -49,18 +49,19 @@ sub get_blocks_from_current_dir {
 	require lib;
 	lib->import('lib');
 	print "\nUsing the following DDG instant answers:\n\n";
-	for (@args) {
-		eval { load_class($_); };
+	my $tried_install_deps = 0;
+	for (my $i = 0; $i < scalar @args; $i++) {
+		eval { load_class($args[$i]); };
 		if ($@) {
-			if ($@ =~ m|^Can't locate .+\.pm in \@INC|) {
-				print "Missing dependencies for $_.\n";
-				print "Try running `duckpan installdeps`.\n";
-				print "Is ./dist.ini up to date?\n";
-				exit 1;
+			if (!$tried_install_deps and $@ =~ m|^Can't locate .+\.pm in \@INC|) {
+				$self->app->install_deps;
+				$tried_install_deps++;
+				$i--;
 			} else { die $@; }
+		} else {
+			print " - ".$_;
+			print " (".$_->triggers_block_type.")\n";
 		}
-		print " - ".$_;
-		print " (".$_->triggers_block_type.")\n";
 	}
 	my %blocks_plugins;
 	for (@args) {
