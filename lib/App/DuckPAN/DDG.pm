@@ -59,8 +59,8 @@ sub get_blocks_from_current_dir {
 				$i--;
 			} else { die $@; }
 		} else {
-			print " - ".$_;
-			print " (".$_->triggers_block_type.")\n";
+			print " - ".$args[$i];
+			print " (".$args[$i]->triggers_block_type.")\n";
 		}
 	}
 	my %blocks_plugins;
