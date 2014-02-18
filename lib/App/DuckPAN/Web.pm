@@ -29,6 +29,7 @@ has server_hostname => ( is => 'ro', required => 0 );
 has _share_dir_hash => ( is => 'rw' );
 has _path_hash => ( is => 'rw' );
 has _rewrite_hash => ( is => 'rw' );
+has _spice_callback_hash => ( is => 'rw' );
 
 has ua => (
 	is => 'ro',
@@ -47,10 +48,12 @@ sub BUILD {
 	my %share_dir_hash;
 	my %path_hash;
 	my %rewrite_hash;
+	my %spice_callback_hash;
 	for (@{$self->blocks}) {
 		for (@{$_->only_plugin_objs}) {
 			if ($_->does('DDG::IsSpice')) {
 				$rewrite_hash{ref $_} = $_->rewrite if $_->has_rewrite;
+				$spice_callback_hash{ref $_} = $_->callback.'()';
 			}
 			$share_dir_hash{$_->module_share_dir} = ref $_ if $_->can('module_share_dir');
 			$path_hash{$_->path} = ref $_ if $_->can('path');
@@ -59,6 +62,7 @@ sub BUILD {
 	$self->_share_dir_hash(\%share_dir_hash);
 	$self->_path_hash(\%path_hash);
 	$self->_rewrite_hash(\%rewrite_hash);
+	$self->_spice_callback_hash(\%spice_callback_hash);
 }
 
 sub run_psgi {
@@ -101,6 +105,7 @@ sub request {
 		my $content_type = Plack::MIME->mime_type($filename);
 		$response->content_type($content_type);
 		$body .= -f $filename_path ? io($filename_path)->slurp : "";
+		$body =~ s/^ddg\_spice\_[\w\_]+\s*\(\)\;$//igm;
 
 	} elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
 		for (keys %{$self->_path_hash}) {
@@ -110,49 +115,56 @@ sub request {
 				$path_remainder =~ s/\/+/\//g;
 				$path_remainder =~ s/^\///;
 				my $spice_class = $self->_path_hash->{$_};
+				my $spice_callback = $self->_spice_callback_hash->{$spice_class};
 				my $rewrite = $self->_rewrite_hash->{$spice_class};
-				die "Spice tested here must have a rewrite..." unless $rewrite;
-				my $from = $rewrite->from;
-				my $re = $rewrite->has_from ? qr{$from} : qr{(.*)};
-				if (my @captures = $path_remainder =~ m/$re/) {
-					my $to = $rewrite->parsed_to;
-					for (1..@captures) {
-						my $index = $_-1;
-						my $cap_from = '\$'.$_;
-						my $cap_to = $captures[$index];
-						if (defined $cap_to) {
-							$to =~ s/$cap_from/$cap_to/g;
+				if ($rewrite) {
+					my $from = $rewrite->from;
+					my $re = $rewrite->has_from ? qr{$from} : qr{(.*)};
+					if (my @captures = $path_remainder =~ m/$re/) {
+						my $to = $rewrite->parsed_to;
+						for (1..@captures) {
+							my $index = $_-1;
+							my $cap_from = '\$'.$_;
+							my $cap_to = $captures[$index];
+							if (defined $cap_to) {
+								$to =~ s/$cap_from/$cap_to/g;
+							} else {
+								$to =~ s/$cap_from//g;
+							}
+						}
+						# Make sure we replace "${dollar}" with "$".
+						$to =~ s/\$\{dollar\}/\$/g;
+						p($to);
+						my $res = $self->ua->request(HTTP::Request->new(
+							GET => $to,
+							[ $rewrite->accept_header ? ("Accept", $rewrite->accept_header) : () ]
+							));
+						if ($res->is_success) {
+							$body = $res->decoded_content;
+							# Encode utf8 api_responses to bytestream for Plack.
+							utf8::encode $body if utf8::is_utf8 $body;
+							warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $rewrite->wrap_jsonp_callback && $rewrite->wrap_string_callback;
+							if ($rewrite->wrap_jsonp_callback && $rewrite->callback) {
+								$body = $rewrite->callback.'('.$body.');';
+							}
+							elsif ($rewrite->wrap_string_callback && $rewrite->callback) {
+								$body =~ s/"/\\"/g;
+								$body =~ s/\n/\\n/g;
+								$body =~ s/\R//g;
+								$body = $rewrite->callback.'("'.$body.'");';
+							} else {
+								$response->code($res->code);
+								$response->content_type($res->content_type);
+							}
 						} else {
-							$to =~ s/$cap_from//g;
+							warn $res->status_line, "\n";
+							$body = "";
 						}
 					}
-					# Make sure we replace "${dollar}" with "$".
-					$to =~ s/\$\{dollar\}/\$/g;
-					p($to);
-					my $res = $self->ua->request(HTTP::Request->new(
-						GET => $to,
-						[ $rewrite->accept_header ? ("Accept", $rewrite->accept_header) : () ]
-						));
-					if ($res->is_success) {
-						$body = $res->decoded_content;
-						# Encode utf8 api_responses to bytestream for Plack.
-						utf8::encode $body if utf8::is_utf8 $body;
-						warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $rewrite->wrap_jsonp_callback && $rewrite->wrap_string_callback;
-						if ($rewrite->wrap_jsonp_callback && $rewrite->callback) {
-							$body = $rewrite->callback.'('.$body.');';
-						}
-						elsif ($rewrite->wrap_string_callback && $rewrite->callback) {
-							$body =~ s/"/\\"/g;
-							$body =~ s/\n/\\n/g;
-							$body =~ s/\R//g;
-							$body = $rewrite->callback.'("'.$body.'");';
-						}
-						$response->code($res->code);
-						$response->content_type($res->content_type);
-					} else {
-						warn $res->status_line, "\n";
-						$body = "";
-					}
+				} else {
+					$response->content_type('text/javascript');
+					$response->body($spice_callback);
+					return $response;
 				}
 			}
 		}
