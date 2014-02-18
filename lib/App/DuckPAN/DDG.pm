@@ -50,20 +50,30 @@ sub get_blocks_from_current_dir {
 	require lib;
 	lib->import('lib');
 	print "\nUsing the following DDG instant answers:\n\n";
-	my $tried_install_deps = 0;
-	for (my $i = 0; $i < scalar @args; $i++) {
-		my $module = $args[$i];
-		my ($loaded, $error) = try_load_class $module;
-		if ($loaded) {
-			print " - $module\n";
-			print " (".$module->triggers_block_type.")\n";
-		} else {
-			Class::Unload->unload($module);
-			if (!$tried_install_deps and $error =~ m|^Can't locate .+\.pm in \@INC|) {
-				$self->app->install_deps;
-				$tried_install_deps++;
-				$i--;
-			} else { die $error; }
+	for (@args) {
+		my ($module, $pid, $pipe, $attempts) = ($_, undef, undef, 10);
+		do {
+			$pid = open $pipe, "-|";
+			die "Attempted $module load, but couldn't fork\n" if $attempts++ > 10
+		} until defined $pid;
+		if ($pid == 0) {
+			my ($loaded, $error) = try_load_class $module;
+			if (not $loaded) {
+				if ($error =~ m|^Can't locate .+\.pm in \@INC|) {
+					print "install_deps\n";
+				} else { die $error; }
+			}
+			exit 0;
+		} elsif ($pid) {
+			waitpid $pid, 0;
+			$self->app->install_deps if (<$pipe> eq "install_deps\n");
+			my ($loaded, $error) = try_load_class $module;
+			if ($loaded) {
+				print " - $module";
+				print " (".$module->triggers_block_type.")\n";
+			} else {
+				die $error;
+			}
 		}
 	}
 	my %blocks_plugins;
