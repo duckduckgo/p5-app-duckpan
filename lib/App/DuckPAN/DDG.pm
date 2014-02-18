@@ -6,6 +6,7 @@ with 'App::DuckPAN::HasApp';
 
 use Module::Pluggable::Object;
 use Class::Load ':all';
+use Class::Unload;
 
 sub get_dukgo_user_pass {
 	my ( $self ) = @_;
@@ -51,16 +52,18 @@ sub get_blocks_from_current_dir {
 	print "\nUsing the following DDG instant answers:\n\n";
 	my $tried_install_deps = 0;
 	for (my $i = 0; $i < scalar @args; $i++) {
-		eval { load_class($args[$i]); };
-		if ($@) {
-			if (!$tried_install_deps and $@ =~ m|^Can't locate .+\.pm in \@INC|) {
+		my $module = $args[$i];
+		my ($loaded, $error) = try_load_class $module;
+		if ($loaded) {
+			print " - $module\n";
+			print " (".$module->triggers_block_type.")\n";
+		} else {
+			Class::Unload->unload($module);
+			if (!$tried_install_deps and $error =~ m|^Can't locate .+\.pm in \@INC|) {
 				$self->app->install_deps;
 				$tried_install_deps++;
 				$i--;
-			} else { die $@; }
-		} else {
-			print " - ".$args[$i];
-			print " (".$args[$i]->triggers_block_type.")\n";
+			} else { die $error; }
 		}
 	}
 	my %blocks_plugins;
