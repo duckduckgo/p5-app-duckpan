@@ -171,7 +171,7 @@ sub execute {
 				$_ =~ /^ddg/i ||
 				$_ =~ /^app/i) {
 				push @modules, $_;
-			} elsif (lc $_ =~ m/duckpan|upgrade|update/) {
+			} elsif ($_ =~ m/^(duckpan|upgrade|update)$/i) {
 				push @modules, 'App::DuckPAN';
 				push @modules, 'DDG' if lc($_) eq 'upgrade';
 			} else {
