@@ -134,11 +134,9 @@ sub request {
 					if(defined $rewrite->missing_envs) {
 					     $to = 'https://duckduckgo.com' . $request->request_uri;
 					     # Display the URL that we used.
-					     my $api_not_found = "API key not found. Using DuckDuckGo endpoint: $to";
-					     p($api_not_found);
-					} else {
-					    p($to);
+					     print "\nAPI key not found. Using DuckDuckGo's endpoint:\n";
 					}
+					p($to);
 
 					my $res = $self->ua->request(HTTP::Request->new(
 						GET => $to,
