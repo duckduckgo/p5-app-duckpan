@@ -128,7 +128,16 @@ sub request {
 					}
 					# Make sure we replace "${dollar}" with "$".
 					$to =~ s/\$\{dollar\}/\$/g;
+
+					# Check if environment variables (most likely the API key) is missing.
+					# If it is missing, switch to the DDG endpoint.
+					if(defined $rewrite->missing_envs) {
+					     $to = 'https://duckduckgo.com' . $request->request_uri;
+					     # Display the URL that we used.
+					     print "\nAPI key not found. Using DuckDuckGo's endpoint:\n";
+					}
 					p($to);
+
 					my $res = $self->ua->request(HTTP::Request->new(
 						GET => $to,
 						[ $rewrite->accept_header ? ("Accept", $rewrite->accept_header) : () ]
