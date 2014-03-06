@@ -212,6 +212,12 @@ possible), like zeroclickinfo-spice, zeroclickinfo-goodie, duckduckgo
 or community-platform
 
 ```shell
+duckpan roadrunner
+```
+Same as installdeps, but avoids testing anything. Useful for speed, but
+not recommended unless you know what you are doing.
+
+```shell
 duckpan check
 ```
 Check if you fulfill all requirements for the development
