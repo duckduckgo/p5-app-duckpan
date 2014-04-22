@@ -3756,7 +3756,10 @@ $(document).ready(function() {
 				spiceName = $script.attr("spice-name");
 				templateName = $script.attr("template-name");
 
-				Spice[spiceName] = {};
+				if (!Spice.hasOwnProperty(spiceName)) {
+					Spice[spiceName] = {};
+				}
+
 				Spice[spiceName][templateName] = env.Handlebars.compile(content);
 
 				console.log("Compiled template: ", spiceName+"_"+templateName);
