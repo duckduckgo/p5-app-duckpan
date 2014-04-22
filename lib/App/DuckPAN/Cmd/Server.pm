@@ -181,7 +181,7 @@ sub run {
 # that are not needed (ie. d.js, s.js, g.js, post2.html)
 sub change_js {
 	my ( $self, $js ) = @_;
-	$js =~ s!/([dsg])\.js\?!/?duckduckhack_ignore=1&!g;
+	$js =~ s!/([dsg]\d+?|duckduck|duckgo_dev)\.js\?!/?duckduckhack_ignore=1&!g;
 	$js =~ s!/post2\.html!/?duckduckhack_ignore=1&!g;
 	return $self->change_css($js);
 }
@@ -233,10 +233,10 @@ sub change_html {
 	for (@script) {
 		if (my $src = $_->attr('src')) {
 
-			if ($src =~ m/^\/d\d+\.js/) {
+			if ($src =~ m/^\/(d\d+|duckduck)\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
 
-			} elsif ($src =~ m/^\/g\d+\.js/) {
+			} elsif ($src =~ m/^\/(g\d+|duckgo_dev)\.js/) {
 				$_->attr('src','/?duckduckhack_templates=1');
 
 			} elsif (substr($src,0,1) eq '/') {
@@ -284,11 +284,11 @@ sub get_assets {
 	# Find version no. for d.js and g.js
 	for (@script) {
 		if (my $src = $_->attr('src')) {
-			if ($src =~ m/^\/(d\d+\.js)/) {
+			if ($src =~ m/^\/((?:d\d+|duckduck)\.js)/) {
 				$self->page_js_filename($1);
 			}
 
-			if ($src =~ m/^\/(g\d+\.js)/) {
+			if ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
 				$self->page_templates_filename($1);
 			}
 		}
