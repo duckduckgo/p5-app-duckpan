@@ -86,6 +86,10 @@ sub request {
 		my $filename = pop @path_parts;
 		my $share_dir = join('/',@path_parts);
 
+		# remove spice version from path when present
+		# eg. get_asset_path returns `/share/spice/recipe/###/yummly.ico`
+		$share_dir =~ s!/\d+!!;
+
 		if ($filename =~ /\.js$/ and
 			$has_common_js and
 			$share_dir =~ /(share\/spice\/([^\/]+)\/?)(.*)/){
