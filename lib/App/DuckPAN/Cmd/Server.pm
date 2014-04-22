@@ -298,7 +298,7 @@ sub get_assets {
 	for (@link) {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
 			if (my $href = $_->attr('href')) {
-				if ($href =~ m/^\/(s\d+\.css)/) {
+				if ($href =~ m/^\/((?:s\d+|style)\.css)/) {
 					$self->page_css_filename($1);
 				}
 			}
