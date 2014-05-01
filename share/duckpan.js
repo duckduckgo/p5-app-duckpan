@@ -14,8 +14,7 @@ $(document).ready(function() {
 	// without over-writing the existing instance of
 	// HB and all the templates.
 
-	(function() {
-
+	(function(Handlebars, Spice) {
 		var env = {};
 		console.log("Compiling Templates!");
 
@@ -3749,7 +3748,6 @@ $(document).ready(function() {
 		// to global Handlebars obj
 		if (hb_templates.length) {
 			console.log("Compiling Spice Templates")
-			Spice = Spice || {};
 			hb_templates.each(function() {
 				$script = $(this);
 				content = $script.html();
@@ -3769,5 +3767,5 @@ $(document).ready(function() {
 			console.log("Now Spice obj: ", Spice);
 			return;
 		}
-	})();
+	})(Handlebars, Spice);
 });
