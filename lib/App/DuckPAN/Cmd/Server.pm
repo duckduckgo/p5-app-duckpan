@@ -15,7 +15,6 @@ use HTML::TreeBuilder;
 use Config::INI;
 use Data::Printer;
 use Data::Dumper;
-use HTTP::Headers;
 
 option no_cache => (
 	is => 'ro',
@@ -84,12 +83,9 @@ sub run {
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-	print "\n\nHostname is: http://".$self->hostname if $self->verbose;
-	print "\n\nChecking for newest assets from: http://".$self->hostname."\n";
+	# print "\n\nHostname is: http://".$self->hostname if $self->verbose;
+	# print "\n\nChecking for newest assets from: http://".$self->hostname."\n";
 	print "\n[CACHE DISABLED]. Forcing request for all assets...\n\n" if $self->verbose && $self->no_cache;
-
-	my $pw = $ENV{APP_DUCKPAN_SERVER_PASSWORD};
-	my $h = HTTP::Headers->new(Authorization => "Basic $pw");
 
 	# First we bootstrap the cache, copying all files from /share (dist_dir) into the
 	# cache. Then we get each file from given hostname (usually DuckDuckGo.com) and
@@ -110,7 +106,7 @@ sub run {
 		my $path = $assets{$file_name}{'file_path'};
 		my $url = 'http://'.$self->hostname.''.$path;
 		print "\nRequesting: $url..." if $self->verbose;
-		my $res = $self->app->http->request(HTTP::Request->new('GET', $url, $h));
+		my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
 		if ($res->is_success){
 			print "success!\n" if $self->verbose;

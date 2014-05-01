@@ -107,7 +107,7 @@ has server_hostname => (
 	builder => 1,
 );
 
-sub _build_server_hostname { defined $ENV{APP_DUCKPAN_SERVER_HOSTNAME} ? $ENV{APP_DUCKPAN_SERVER_HOSTNAME} : 'duckduckgo.com' }
+sub _build_server_hostname { defined $ENV{APP_DUCKPAN_SERVER_HOSTNAME} ? $ENV{APP_DUCKPAN_SERVER_HOSTNAME} : 'next.duckduckgo.com' }
 
 has cfg => (
 	is => 'ro',
