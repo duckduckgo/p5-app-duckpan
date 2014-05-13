@@ -344,6 +344,23 @@ sub checking_dukgo_user {
 	$response->code == 302 ? 1 : 0; # workaround, need something in dukgo
 }
 
+sub install_deps {
+	my ( $self ) = @_;
+	if (-f 'dist.ini') {
+		$self->print_text(
+			"Found a dist.ini, suggesting a Dist::Zilla distribution",
+		);
+		$self->perl->cpanminus_install_error
+			if (system("dzil authordeps --missing 2>/dev/null | grep -ve '^\\W' | cpanm"));
+		$self->perl->cpanminus_install_error
+			if (system("dzil listdeps --missing 2>/dev/null | grep -ve '^\\W' | cpanm"));
+		return 0;
+	} else {
+		print "Can't find ./dist.ini. Are you sure you're in the root of a plugin repository?\n";
+		exit 1;
+	}
+}
+
 sub BUILD {
 	my ( $self ) = @_;
 	if ($^O eq 'MSWin32') {

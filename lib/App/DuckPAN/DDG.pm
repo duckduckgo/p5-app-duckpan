@@ -6,6 +6,7 @@ with 'App::DuckPAN::HasApp';
 
 use Module::Pluggable::Object;
 use Class::Load ':all';
+use Class::Unload;
 
 sub get_dukgo_user_pass {
 	my ( $self ) = @_;
@@ -50,9 +51,30 @@ sub get_blocks_from_current_dir {
 	lib->import('lib');
 	print "\nUsing the following DDG instant answers:\n\n";
 	for (@args) {
-		load_class($_);
-		print " - ".$_;
-		print " (".$_->triggers_block_type.")\n";
+		my ($module, $pid, $pipe, $attempts) = ($_, undef, undef, 10);
+		do {
+			$pid = open $pipe, "-|";
+			die "Attempted $module load, but couldn't fork\n" if $attempts++ > 10
+		} until defined $pid;
+		if ($pid == 0) {
+			my ($loaded, $error) = try_load_class $module;
+			if (not $loaded) {
+				if ($error =~ m|^Can't locate .+\.pm in \@INC|) {
+					print "install_deps\n";
+				} else { die $error; }
+			}
+			exit 0;
+		} elsif ($pid) {
+			waitpid $pid, 0;
+			$self->app->install_deps if (<$pipe> eq "install_deps\n");
+			my ($loaded, $error) = try_load_class $module;
+			if ($loaded) {
+				print " - $module";
+				print " (".$module->triggers_block_type.")\n";
+			} else {
+				die $error;
+			}
+		}
 	}
 	my %blocks_plugins;
 	for (@args) {
