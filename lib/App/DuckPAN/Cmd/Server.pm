@@ -83,8 +83,8 @@ sub run {
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-	# print "\n\nHostname is: http://".$self->hostname if $self->verbose;
-	# print "\n\nChecking for newest assets from: http://".$self->hostname."\n";
+	print "\n\nHostname is: http://".$self->hostname if $self->verbose;
+	print "\n\nChecking for newest assets from: http://".$self->hostname."\n";
 	print "\n[CACHE DISABLED]. Forcing request for all assets...\n\n" if $self->verbose && $self->no_cache;
 
 	# First we bootstrap the cache, copying all files from /share (dist_dir) into the
