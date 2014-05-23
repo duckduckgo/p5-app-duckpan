@@ -21,7 +21,7 @@ use Term::ReadLine;
 use Carp;
 use Encode;
 use Path::Class;
-#use File::Path qw(remove_tree);
+use File::Path;
 
 our $VERSION ||= '9.999';
 
@@ -177,8 +177,8 @@ sub execute {
 				my $cache = $self->cfg->cache_path;
 				if (-d $cache){
 					print "Clearing DuckPAN cache...";
-					print `rm -r $cache/*`;
-					# remove_tree($self->cfg->cache_path); #better option, not working though...
+					# print `rm -r $cache/*`;
+					rmtree($cache);
 					print "Done\n";
 				}
 				push @modules, 'App::DuckPAN';
