@@ -24,6 +24,7 @@ has page_root => ( is => 'ro', required => 1 );
 has page_spice => ( is => 'ro', required => 1 );
 has page_css => ( is => 'ro', required => 1 );
 has page_js => ( is => 'ro', required => 1 );
+has page_templates => ( is => 'ro', required => 1 );
 has server_hostname => ( is => 'ro', required => 0 );
 
 has _share_dir_hash => ( is => 'rw' );
@@ -85,6 +86,10 @@ sub request {
 		my $filename = pop @path_parts;
 		my $share_dir = join('/',@path_parts);
 
+		# remove spice version from path when present
+		# eg. get_asset_path returns `/share/spice/recipe/###/yummly.ico`
+		$share_dir =~ s!/\d+!!;
+
 		if ($filename =~ /\.js$/ and
 			$has_common_js and
 			$share_dir =~ /(share\/spice\/([^\/]+)\/?)(.*)/){
@@ -132,9 +137,9 @@ sub request {
 					# Check if environment variables (most likely the API key) is missing.
 					# If it is missing, switch to the DDG endpoint.
 					if(defined $rewrite->missing_envs) {
-					     $to = 'https://duckduckgo.com' . $request->request_uri;
-					     # Display the URL that we used.
-					     print "\nAPI key not found. Using DuckDuckGo's endpoint:\n";
+						 $to = 'https://duckduckgo.com' . $request->request_uri;
+						 # Display the URL that we used.
+						 print "\nAPI key not found. Using DuckDuckGo's endpoint:\n";
 					}
 					p($to);
 
@@ -174,6 +179,9 @@ sub request {
 	} elsif ($request->param('duckduckhack_js')) {
 		$response->content_type('text/javascript');
 		$body = $self->page_js;
+	} elsif ($request->param('duckduckhack_templates')) {
+		$response->content_type('text/javascript');
+		$body = $self->page_templates;
 	} elsif ($request->param('q') && $request->path_info eq '/') {
 		my $query = $request->param('q');
 		Encode::_utf8_on($query);
@@ -187,7 +195,7 @@ sub request {
 		my @calls_nrj = ();
 		my @calls_nrc = ();
 		my @calls_script = ();
-		my @calls_template = ();
+		my %calls_template = ();
 
 		for (@{$self->blocks}) {
 			push(@results,$_->request($ddg_request));
@@ -245,55 +253,75 @@ sub request {
 				my @files;
 				my $share_dir = $result->caller->module_share_dir;
 				my @path = split(/\/+/, $share_dir);
-				my $filename = $path[-1];
-
-				if (scalar(@path) > 3 and
-					$share_dir =~ /(share\/spice\/([^\/]+)\/?)(.*)/){
-
-					my $parent_dir = $1;
-					my $parent_name = $2;
-					my $common_js = $parent_dir."$parent_name.js";
-
-					unless ($has_common_js) {
-						$has_common_js = 1 if (-f $common_js);
-					}
-
-				 	@files = map { $_ } grep {
-						   $_->name =~ /^.+handlebars$/
-					   } io($parent_dir)->all_files;
-				}
-
-				$filename =~ s/share\/spice\///g;
-				$filename =~ s/\//\_/g;
+				my $spice_name = join("_", @path[2..$#path]);
 
 				$io = io($result->caller->module_share_dir);
 				push(@files, @$io);
 
 				foreach (@files){
 
-					if ($_->filename =~ /$filename\.js$/){
+					if ($_->filename =~ /$spice_name\.js$/){
 						push (@calls_script, $_);
 
-					} elsif ($_->filename =~ /$filename\.css$/){
+					} elsif ($_->filename =~ /$spice_name\.css$/){
 						push (@calls_nrc, $_);
 
 					} elsif ($_->filename =~ /^.+handlebars$/){
-						push (@calls_template, $_);
+						my $template_name = $_->filename;
+						$template_name =~ s/\.handlebars//;
+						$calls_template{$spice_name}{$template_name} = $_;
 					}
 				}
 				push (@calls_nrj, $result->call_path);
 
 			# Check if we have a Goodie result
+			# if so modify HTML and return content
 			} elsif ( ref $result eq 'DDG::ZeroClickInfo' ){
-				push (@calls_template, $result);
+
+				# Grab ZCI div, push in required HTML
+				my $zci_container = HTML::Element->new('div', id => "zci-answer", class => "zci zci--answer is-active");
+				$zci_container->push_content(
+					HTML::TreeBuilder->new_from_content(
+						q(<div class="cw">
+							<div class="zci__main  zci__main--detail">
+								<div class="zci__body"></div>
+							</div>
+						</div>)
+					)->guts
+				);
+				my $zci_body = $zci_container->look_down(class => 'zci__body');
+
+				# Stick the answer inside $zci_body
+				$zci_body->push_content(
+					$result->has_html ?
+						HTML::TreeBuilder->new_from_content($result->html)->guts :
+						$result->answer
+				);
+
+				my $zci_wrapper = $root->look_down(id => "zero_click_wrapper");
+				$zci_wrapper->insert_element($zci_container);
+
+				my $duckbar_home = $root->look_down(id => "duckbar_home");
+				$duckbar_home->delete_content();
+				$duckbar_home->push_content(
+					HTML::TreeBuilder->new_from_content(
+						q(<li class="zcm__item">
+							<a data-zci-link="answer" class="zcm__link  zcm__link--answer is-active" href="javascript:;">Answer</a>
+						</li>)
+					)->guts
+				);
+
+				my $duckbar_static_sep = $root->look_down(id => "duckbar_static_sep");
+				$duckbar_static_sep->attr(class => "zcm__sep--h");
+
+				my $html = $root->look_down(_tag => "html");
+				$html->attr(class => "set-header--fixed  has-zcm js no-touch csstransforms3d csstransitions svg use-opts has-active-zci")
 
 			# If not Spice or Goodie,
 			# inject raw Dumper() output from into page
 			} else {
 
-				my $content = $root->look_down(
-					"id", "bottom_spacing2"
-					);
+				my $content = $root->look_down(id => "bottom_spacing2");
 				my $dump = HTML::Element->new('pre');
 				$dump->push_content(Dumper $result);
 				$content->insert_element($dump);
@@ -305,87 +333,26 @@ sub request {
 		#   calls_script : spice js files
 		#   calls_nrj : proxied spice api calls
 		#   calls_nrc : spice css calls
-		#   calls_template : spice handlebars templates or goodie result
+		#   calls_template : spice handlebars templates
 
-		my $calls_nrj = (scalar @calls_nrj)	?	join(";",map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
+		my $calls_nrj = (scalar @calls_nrj) ? join(";",map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
 		my $calls_nrc = (scalar @calls_nrc) ? join(";",map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
 		my $calls_script = (scalar @calls_script)
 			? join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script)
 			: '';
 
-		if (@calls_template) {
-			my ($template_name, $template_content);
-			$calls_script .= join("",map {
+		if (%calls_template) {
 
-				my $result = $_;
+			foreach my $spice_name ( keys %calls_template ){
+				$calls_script .= join("",map {
+					my $template_name = $_;
+					my $template_content = $calls_template{$spice_name}{$template_name}->slurp;
+					"<script class='duckduckhack_spice_template' spice-name='$spice_name' template-name='$template_name' type='text/plain'>$template_content</script>"
 
-				# Check if our array is full of template files
-				if (ref $result eq 'IO::All::File') {
-
-					# Give the script tag a name based on the template name
-					# e.g. filename: hacker_news.handlebars
-					# creates <script ... name=hacker_news>...</script>
-					$template_name = $result->filename;
-					$template_name =~ s/\.handlebars//g;
-					$template_content = $result->all;
-					"<script class='duckduckhack_spice_template' name='$template_name' type='text/plain'>$template_content</script>"
-
-				# Check if array contains a goodie result
-				} elsif (ref $result eq 'DDG::ZeroClickInfo') {
-					$template_name = $_->has_answer_type ? $_->answer_type : "unnamed-goodie";
-
-					# Display and set up the ZCI box
-					my $abstract = $root->find_by_attribute(id => 'zero_click_abstract');
-					$abstract->delete_content; # clear the poor thing
-					$abstract->attr(style => undef);
-					$abstract->attr(class => 'zero_click_answer highlight_1');
-					my $left = $abstract->left;
-
-					# Stick the duck icon in, unless there is already an img to the left
-					$abstract->preinsert(
-						HTML::TreeBuilder->new_from_content(
-							q(<img class="icon_zero_click_answer" src="/icon16.png">)
-						)->guts
-					) unless defined $left && $left->tag eq 'img';
-
-					# Un-hide the *other* part of the ZCI box...
-					my $wrapper = $abstract->look_up(id => 'zero_click_wrapper');
-					$wrapper->attr(style => undef);
-
-					# Check for and insert the heading
-					if ($result->has_heading) {
-						my $header = $wrapper->look_down(id => 'zero_click_header');
-						$header->attr(style => undef);
-						$header->attr(class => 'highlight_1');
-						$header->push_content($result->heading);
-						$header->parent->find_by_attribute(id => 'zero_click_plus_wrapper')->delete;
-					}
-
-					# Same, insert the image
-					if ($result->has_image) {
-						my $img = HTML::Element->new('img', src => $result->image);
-						my $image = $wrapper->look_down(id => 'zero_click_image');
-						$image->attr(style => undef);
-						$image->push_content($img);
-					}
-
-					# Create a div for the actual answer (goes inside $abstract)
-					my $answer = HTML::Element->new('div');
-					$answer->push_content(
-						$result->has_html ?
-							HTML::TreeBuilder->new_from_content($result->html)->guts :
-							$result->answer
-					);
-
-					# Stick the answer inside $abstract
-					$abstract->push_content($answer);
-
-					# Now we can just ignore the call-script -- replace with an empty string
-					""
-				}
-
-			} @calls_template);
+				} keys $calls_template{$spice_name});
+			}
 		}
+
 		$page = $root->as_HTML;
 
 		$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;

@@ -21,6 +21,7 @@ use Term::ReadLine;
 use Carp;
 use Encode;
 use Path::Class;
+use File::Path qw(remove_tree);
 
 our $VERSION ||= '9.999';
 
@@ -174,6 +175,13 @@ sub execute {
 			} elsif ($_ =~ m/^(duckpan|upgrade|update)$/i) {
 				push @modules, 'App::DuckPAN';
 				push @modules, 'DDG' if lc($_) eq 'upgrade';
+				my $cache = $self->cfg->cache_path;
+				if (-d $cache){
+					print "Clearing DuckPAN cache...";
+					print `rm -r $cache/*`;
+					# remove_tree($self->cfg->cache_path); #better option, not working though...
+					print "Done\n";
+				}
 			} else {
 				push @left_args, $_;
 			}

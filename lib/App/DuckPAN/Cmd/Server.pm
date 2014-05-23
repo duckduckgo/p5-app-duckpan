@@ -33,11 +33,11 @@ has page_js_filename => (
 	is => 'rw',
 );
 
-has page_css_filename => (
+has page_templates_filename => (
 	is => 'rw',
 );
 
-has spice_js_filename => (
+has page_css_filename => (
 	is => 'rw',
 );
 
@@ -71,17 +71,13 @@ sub run {
 	# page_spice.html : DDG SERP
 	#	                  - this is the page we inject Spice and Goodie results into
 	#
-	# handlebars.js   : The FULL Handlebars lib
-	#                   - needed to compile Spice templates in the browser
-	#
 	# duckpan.js      : Small script DuckPAN runs on SERP load
-	#                   - used to compile Spice templates and inject Goodies into SERP
+	#                   - used to compile Spice templates
 	#                   - stored locally, no need to make web request for this
 
 	my %assets = (
 		'page_root.html'            => { name => 'DuckDuckGo Landing Page', file_path => '/' },
 		'page_spice.html'           => { name => 'DuckDuckGo SERP', file_path => '/?q=duckduckhack-template-for-spice2' },
-		'handlebars.js'             => { name => 'Handlebars.js', file_path => '/js/handlebars-1.0.0-rc.3.js' },
 		'duckpan.js'                => { } # no name/path required; always pulled from the cache
 	);
 
@@ -99,7 +95,7 @@ sub run {
 	# the DuckPAN cache.
 
 	for my $file_name (keys %assets) {
-		
+
 		# copy all files in /share (dist_dir) into cache, unless they already exist
 		unless (-f file($self->app->cfg->cache_path,$file_name)) {
 			copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name));
@@ -141,18 +137,17 @@ sub run {
 		}
 	}
 
-	# Pull file out of cache to be served later by DuckPAN
+	# Pull files out of cache to be served later by DuckPAN server
 	my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
 	my $page_css = io(file($self->app->cfg->cache_path,$self->page_css_filename))->slurp;
-
-	# Concatenate all JS files
-	# Order matters because of JS dependencies 
-	# DDG JS -> Handlebars -> jQuery & Spice.js -> Duckpan.js
 	my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_filename))->slurp;
-	$page_js .= io(file($self->app->cfg->cache_path,'handlebars.js'))->slurp;
-	$page_js .= io(file($self->app->cfg->cache_path,$self->spice_js_filename))->slurp;
-	$page_js .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
+
+	# Concatenate duckpan.js to g.js
+	# This way duckpan.js runs after all dependencies are loaded
+	my $page_templates = io(file($self->app->cfg->cache_path,$self->page_templates_filename))->slurp;
+	$page_templates .= "\n//duckpan.js\n";
+	$page_templates .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
 	print "\n\nYou can stop the webserver with Ctrl-C";
@@ -166,6 +161,7 @@ sub run {
 		page_spice => $page_spice,
 		page_css => $page_css,
 		page_js => $page_js,
+		page_templates => $page_templates,
 		server_hostname => $self->hostname,
 	);
 	my $runner = Plack::Runner->new(
@@ -178,11 +174,11 @@ sub run {
 }
 
 # Force DuckPAN to ignore requests for certain files
-# that are not needed (ie. d.js, s.js, post.html)
+# that are not needed (ie. d.js, s.js, g.js, post2.html)
 sub change_js {
 	my ( $self, $js ) = @_;
-	$js =~ s!/([ds])\.js\?!/?duckduckhack_ignore=1&!g;
-	$js =~ s!/post\.html!/?duckduckhack_ignore=1&!g;
+	$js =~ s!/([dsg]\d+?|duckduck|duckgo_dev)\.js\?!/?duckduckhack_ignore=1&!g;
+	$js =~ s!/post2\.html!/?duckduckhack_ignore=1&!g;
 	return $self->change_css($js);
 }
 
@@ -191,7 +187,7 @@ sub change_js {
 sub change_css {
 	my ( $self, $css ) = @_;
 	my $hostname = $self->hostname;
-	$css =~ s!url\(("?)!url\($1http://$hostname/!g;
+	$css =~ s!:\s*url\(("?)/?!:url\($1http://$hostname/!g;
 	return $css;
 }
 
@@ -213,10 +209,10 @@ sub change_html {
 	# ie <link href="/s123.css"> becomes <link href="/?duckduckhack_css=1">
 	# Also rewrite relative links to hostname
 	for (@a,@link) {
+
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
 			$_->attr('href','/?duckduckhack_css=1');
-
-		} elsif (substr($_->attr('href'),0,1) eq '/') {
+		} elsif (defined $_->attr('href') && substr($_->attr('href'),0,1) eq '/') {
 			$_->attr('href','http://'.$self->hostname.''.$_->attr('href'));
 		}
 	}
@@ -232,12 +228,10 @@ sub change_html {
 	for (@script) {
 		if (my $src = $_->attr('src')) {
 
-			if ($src =~ m/^\/d\d+\.js/) {
+			if ($src =~ m/^\/(d\d+|duckduck)\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
-
-			} elsif ($src =~ m/^\/spice2\/spice2_duckpan_(?:\d+|dev)\.js/) {
-				$_->attr('src','/?duckduckhack_ignore=1');
-
+			} elsif ($src =~ m/^\/(g\d+|duckgo_dev)\.js/) {
+				$_->attr('src','/?duckduckhack_templates=1');
 			} elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 			}
@@ -261,7 +255,7 @@ sub change_html {
 }
 
 # This is where we cache and check for newer versions
-# of DDG JS and CSS by paring the HTML requested from
+# of DDG JS and CSS by parsing the HTML requested from
 # DuckDuckGo. If new files exits, we grab them, rewrite
 # any links and store them in the cache. Otherwise we 
 # serve the current versions from the cache.
@@ -280,13 +274,13 @@ sub get_assets {
 		"_tag", "link"
 	);
 
-	# Find version no. for d.js and spice2.js
+	# Find version no. for d.js and g.js
 	for (@script) {
 		if (my $src = $_->attr('src')) {
-			if ($src =~ m/^\/(d\d+\.js)/) {
+			if ($src =~ m/^\/((?:dpan\d+|duckpan_dev)\.js)/) {
 				$self->page_js_filename($1);
-			} elsif ($src =~ m/^\/spice2\/(spice2_duckpan_(?:\d+|dev)\.js)/) {
-				$self->spice_js_filename($1);
+			} elsif ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
+				$self->page_templates_filename($1);
 			}
 		}
 	}
@@ -295,7 +289,7 @@ sub get_assets {
 	for (@link) {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
 			if (my $href = $_->attr('href')) {
-				if ($href =~ m/^\/(s\d+\.css)/) {
+				if ($href =~ m/^\/((?:s\d+|style)\.css)/) {
 					$self->page_css_filename($1);
 				}
 			}
@@ -303,12 +297,10 @@ sub get_assets {
 	}
 
 	# Check if we need to request any new assets from hostname, otherwise use cached copies
-	for my $curr_asset ($self->page_js_filename, $self->page_css_filename, $self->spice_js_filename) {
-		my $curr_asset_path = $curr_asset =~ qr/spice2/ ? "/spice2/".$curr_asset : "/".$curr_asset;
+	for my $curr_asset ($self->page_js_filename, $self->page_templates_filename, $self->page_css_filename) {
 		# Request file unless cache is disabled, or cache already contains file
 		if ($self->no_cache || ! -f file($self->app->cfg->cache_path,$curr_asset)) {
-			my $path = $curr_asset_path;
-			my $url = 'http://'.$self->hostname.''.$curr_asset_path;
+			my $url = 'http://'.$self->hostname.'/'.$curr_asset;
 			print "\nRequesting: $url..." if $self->verbose;
 			my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
