@@ -24,6 +24,7 @@ has page_root => ( is => 'ro', required => 1 );
 has page_spice => ( is => 'ro', required => 1 );
 has page_css => ( is => 'ro', required => 1 );
 has page_js => ( is => 'ro', required => 1 );
+has page_templates => ( is => 'ro', required => 1 );
 has server_hostname => ( is => 'ro', required => 0 );
 
 has _share_dir_hash => ( is => 'rw' );
@@ -178,6 +179,9 @@ sub request {
 	} elsif ($request->param('duckduckhack_js')) {
 		$response->content_type('text/javascript');
 		$body = $self->page_js;
+	} elsif ($request->param('duckduckhack_templates')) {
+		$response->content_type('text/javascript');
+		$body = $self->page_templates;
 	} elsif ($request->param('q') && $request->path_info eq '/') {
 		my $query = $request->param('q');
 		Encode::_utf8_on($query);

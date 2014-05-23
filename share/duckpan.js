@@ -23,7 +23,7 @@ $(document).ready(function() {
 				Spice[spiceName] = {};
 			}
 
-			Spice[spiceName][templateName] = env.Handlebars.compile(content);
+			Spice[spiceName][templateName] = Handlebars.compile(content);
 
 			console.log("Compiled template: ", spiceName+"_"+templateName);
 		});
