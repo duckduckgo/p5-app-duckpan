@@ -173,8 +173,7 @@ sub execute {
 				$_ =~ /^app/i) {
 				push @modules, $_;
 			} elsif ($_ =~ m/^(duckpan|upgrade|update)$/i) {
-				push @modules, 'App::DuckPAN';
-				push @modules, 'DDG' if lc($_) eq 'upgrade';
+				# Clear cache so share files are written into cache
 				my $cache = $self->cfg->cache_path;
 				if (-d $cache){
 					print "Clearing DuckPAN cache...";
@@ -182,6 +181,8 @@ sub execute {
 					# remove_tree($self->cfg->cache_path); #better option, not working though...
 					print "Done\n";
 				}
+				push @modules, 'App::DuckPAN';
+				push @modules, 'DDG' if lc($_) eq 'upgrade';
 			} else {
 				push @left_args, $_;
 			}
