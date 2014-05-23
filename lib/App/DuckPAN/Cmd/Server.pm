@@ -228,7 +228,7 @@ sub change_html {
 	for (@script) {
 		if (my $src = $_->attr('src')) {
 
-			if ($src =~ m/^\/(d\d+|duckduck)\.js/) {
+			if ($src =~ m/^\/(dpan\d+|duckpan_dev)\.js)/) {
 				$_->attr('src','/?duckduckhack_js=1');
 			} elsif ($src =~ m/^\/(g\d+|duckgo_dev)\.js/) {
 				$_->attr('src','/?duckduckhack_templates=1');
