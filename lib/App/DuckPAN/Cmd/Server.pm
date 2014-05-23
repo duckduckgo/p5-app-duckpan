@@ -297,7 +297,7 @@ sub get_assets {
 	}
 
 	# Check if we need to request any new assets from hostname, otherwise use cached copies
-	for my $curr_asset ($self->page_templates_filename, $self->page_css_filename) {
+	for my $curr_asset ($self->page_js_filename, $self->page_templates_filename, $self->page_css_filename) {
 		# Request file unless cache is disabled, or cache already contains file
 		if ($self->no_cache || ! -f file($self->app->cfg->cache_path,$curr_asset)) {
 			my $url = 'http://'.$self->hostname.'/'.$curr_asset;
