@@ -303,6 +303,7 @@ sub request {
 
 				my $duckbar_home = $root->look_down(id => "duckbar_home");
 				$duckbar_home->delete_content();
+				$duckbar_home->attr(class => "zcm__menu");
 				$duckbar_home->push_content(
 					HTML::TreeBuilder->new_from_content(
 						q(<li class="zcm__item">
