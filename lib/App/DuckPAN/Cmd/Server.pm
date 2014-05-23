@@ -228,15 +228,25 @@ sub change_html {
 	# Temp Fix: Force ignore of d.js & duckduck.
 	# This logic needs to be improved!
 
+	my $has_dpanjs = 0;
 	for (@script) {
 		if (my $src = $_->attr('src')) {
 
 			if ($src =~ m/^\/(dpan\d+|duckpan_dev)\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
+				$has_dpanjs = 1;
 			} elsif ($src =~ m/^\/(g\d+|duckgo_dev)\.js/) {
 				$_->attr('src','/?duckduckhack_templates=1');
 			} elsif ($src =~ m/^\/(d\d+|duckduck)\.js/) {
-				$_->attr('src','/?duckduckhack_ignore=1');
+
+				# If dpan.js is not present (ie. homepage)
+				# make sure we serve the js rather than blocking
+				# the call to d.js
+				if ($has_dpanjs){
+					$_->attr('src','/?duckduckhack_ignore=1');
+				} else {
+					$_->attr('src','/?duckduckhack_js=1');
+				}
 			} elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 			}
