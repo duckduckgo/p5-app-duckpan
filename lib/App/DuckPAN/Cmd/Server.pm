@@ -29,6 +29,10 @@ option verbose => (
 	default => sub { 0 }
 );
 
+has page_js_filename => (
+	is => 'rw',
+);
+
 has page_templates_filename => (
 	is => 'rw',
 );
@@ -74,7 +78,6 @@ sub run {
 	my %assets = (
 		'page_root.html'            => { name => 'DuckDuckGo Landing Page', file_path => '/' },
 		'page_spice.html'           => { name => 'DuckDuckGo SERP', file_path => '/?q=duckduckhack-template-for-spice2' },
-		'duckduckpan.js'            => { name => 'DuckDuckGo JS', file_path => '/duckduckpan.js' },
 		'duckpan.js'                => { } # no name/path required; always pulled from the cache
 	);
 
@@ -138,7 +141,7 @@ sub run {
 	my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
 	my $page_css = io(file($self->app->cfg->cache_path,$self->page_css_filename))->slurp;
-	my $page_js = io(file($self->app->cfg->cache_path,'duckduckpan.js'))->slurp;
+	my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_filename))->slurp;
 
 	# Concatenate duckpan.js to g.js
 	# This way duckpan.js runs after all dependencies are loaded
@@ -252,7 +255,7 @@ sub change_html {
 }
 
 # This is where we cache and check for newer versions
-# of DDG JS and CSS by paring the HTML requested from
+# of DDG JS and CSS by parsing the HTML requested from
 # DuckDuckGo. If new files exits, we grab them, rewrite
 # any links and store them in the cache. Otherwise we 
 # serve the current versions from the cache.
@@ -274,7 +277,9 @@ sub get_assets {
 	# Find version no. for d.js and g.js
 	for (@script) {
 		if (my $src = $_->attr('src')) {
-			if ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
+			if ($src =~ m/^\/((?:dpan\d+|duckpan_dev)\.js)/) {
+				$self->page_js_filename($1);
+			} elsif ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
 				$self->page_templates_filename($1);
 			}
 		}
