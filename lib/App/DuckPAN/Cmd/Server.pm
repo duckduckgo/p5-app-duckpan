@@ -29,14 +29,6 @@ option verbose => (
 	default => sub { 0 }
 );
 
-has page_js_filename => (
-	is => 'rw',
-);
-
-has page_templates_filename => (
-	is => 'rw',
-);
-
 has page_css_filename => (
 	is => 'rw',
 );
@@ -78,6 +70,7 @@ sub run {
 	my %assets = (
 		'page_root.html'            => { name => 'DuckDuckGo Landing Page', file_path => '/' },
 		'page_spice.html'           => { name => 'DuckDuckGo SERP', file_path => '/?q=duckduckhack-template-for-spice2' },
+		'duckduckpan.js'            => { name => 'DuckDuckGo JS', file_path => '/duckduckpan.js' },
 		'duckpan.js'                => { } # no name/path required; always pulled from the cache
 	);
 
@@ -141,13 +134,12 @@ sub run {
 	my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
 	my $page_css = io(file($self->app->cfg->cache_path,$self->page_css_filename))->slurp;
-	my $page_js .= io(file($self->app->cfg->cache_path,$self->page_js_filename))->slurp;
+	my $page_js = io(file($self->app->cfg->cache_path,'duckduckpan.js'))->slurp;
 
 	# Concatenate duckpan.js to g.js
 	# This way duckpan.js runs after all dependencies are loaded
-	my $page_templates .= io(file($self->app->cfg->cache_path,$self->page_templates_filename))->slurp;
-	$page_templates .= "\n//duckpan.js\n";
-	$page_templates .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
+	$page_js .= "\n//duckpan.js\n";
+	$page_js .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
 
 	print "\n\nStarting up webserver...";
 	print "\n\nYou can stop the webserver with Ctrl-C";
@@ -161,7 +153,6 @@ sub run {
 		page_spice => $page_spice,
 		page_css => $page_css,
 		page_js => $page_js,
-		page_templates => $page_templates,
 		server_hostname => $self->hostname,
 	);
 	my $runner = Plack::Runner->new(
@@ -212,7 +203,6 @@ sub change_html {
 
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
 			$_->attr('href','/?duckduckhack_css=1');
-
 		} elsif (defined $_->attr('href') && substr($_->attr('href'),0,1) eq '/') {
 			$_->attr('href','http://'.$self->hostname.''.$_->attr('href'));
 		}
@@ -231,10 +221,6 @@ sub change_html {
 
 			if ($src =~ m/^\/(d\d+|duckduck)\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
-
-			} elsif ($src =~ m/^\/(g\d+|duckgo_dev)\.js/) {
-				$_->attr('src','/?duckduckhack_templates=1');
-
 			} elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 			}
@@ -277,19 +263,6 @@ sub get_assets {
 		"_tag", "link"
 	);
 
-	# Find version no. for d.js and g.js
-	for (@script) {
-		if (my $src = $_->attr('src')) {
-			if ($src =~ m/^\/((?:d\d+|duckduck)\.js)/) {
-				$self->page_js_filename($1);
-			}
-
-			if ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
-				$self->page_templates_filename($1);
-			}
-		}
-	}
-
 	# Find version no. for s.css
 	for (@link) {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
@@ -302,7 +275,7 @@ sub get_assets {
 	}
 
 	# Check if we need to request any new assets from hostname, otherwise use cached copies
-	for my $curr_asset ($self->page_js_filename, $self->page_templates_filename, $self->page_css_filename) {
+	for my $curr_asset ($self->page_css_filename) {
 		# Request file unless cache is disabled, or cache already contains file
 		if ($self->no_cache || ! -f file($self->app->cfg->cache_path,$curr_asset)) {
 			my $url = 'http://'.$self->hostname.'/'.$curr_asset;
