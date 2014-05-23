@@ -21,7 +21,7 @@ use Term::ReadLine;
 use Carp;
 use Encode;
 use Path::Class;
-use File::Path qw(remove_tree);
+#use File::Path qw(remove_tree);
 
 our $VERSION ||= '9.999';
 

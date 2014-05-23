@@ -225,13 +225,18 @@ sub change_html {
 	# ie <link href="/d123.js"> becomes <link href="/?duckduckhack_js=1">
 	# Also rewrite relative links to hostname
 
+	# Temp Fix: Force ignore of d.js & duckduck.
+	# This logic needs to be improved!
+
 	for (@script) {
 		if (my $src = $_->attr('src')) {
 
-			if ($src =~ m/^\/(d\d+|duckduck)\.js/) {
+			if ($src =~ m/^\/(dpan\d+|duckpan_dev)\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
 			} elsif ($src =~ m/^\/(g\d+|duckgo_dev)\.js/) {
 				$_->attr('src','/?duckduckhack_templates=1');
+			} elsif ($src =~ m/^\/(d\d+|duckduck)\.js/) {
+				$_->attr('src','/?duckduckhack_ignore=1');
 			} elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 			}
