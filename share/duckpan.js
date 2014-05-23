@@ -1,4 +1,4 @@
-$(document).ready(function() 
+$(document).ready(function() {
 
 	var $script, name, content;
 
@@ -13,7 +13,6 @@ $(document).ready(function()
 	// to global Handlebars obj
 	if (hb_templates.length) {
 		console.log("Compiling Spice Templates")
-		Spice = Spice || {};
 		hb_templates.each(function() {
 			$script = $(this);
 			content = $script.html();

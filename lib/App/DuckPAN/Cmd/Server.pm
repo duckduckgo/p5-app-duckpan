@@ -221,6 +221,8 @@ sub change_html {
 
 			if ($src =~ m/^\/(d\d+|duckduck)\.js/) {
 				$_->attr('src','/?duckduckhack_js=1');
+			} elsif ($src =~ m/^\/(g\d+|duckduck)\.js/) {
+				$_->attr('src','/?duckduckhack_ignore=1');
 			} elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 			}
