@@ -176,7 +176,9 @@ sub execute {
 				push @modules, 'App::DuckPAN';
 				push @modules, 'DDG' if lc($_) eq 'upgrade';
 				print "Clearing DuckPAN cache...";
-				remove_tree($self->cfg->cache_path);
+				my $cache = $self->cfg->cache_path;
+				print `rm -r $cache/*`;
+				# remove_tree($self->cfg->cache_path); #better option, not working though...
 				print "Done\n";
 			} else {
 				push @left_args, $_;
