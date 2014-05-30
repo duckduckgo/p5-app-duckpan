@@ -49,10 +49,11 @@ sub get_blocks_from_current_dir {
 	require lib;
 	lib->import('lib');
 	print "\nUsing the following DDG instant answers:\n\n";
-	for (@args) {
-		load_class($_);
-		print " - ".$_;
-		print " (".$_->triggers_block_type.")\n";
+    
+	foreach my $class (@args) {
+            load_class($class);
+            print " - ".$class;
+            print " (".$class->triggers_block_type.")\n";
 	}
 	my %blocks_plugins;
 	for (@args) {
