@@ -51,9 +51,9 @@ sub get_blocks_from_current_dir {
 	print "\nUsing the following DDG instant answers:\n\n";
     
 	foreach my $class (@args) {
-        load_class($class);
-		print " - ".$class;
-		print " (".$class->triggers_block_type.")\n";
+            load_class($class);
+            print " - ".$class;
+            print " (".$class->triggers_block_type.")\n";
 	}
 	my %blocks_plugins;
 	for (@args) {
