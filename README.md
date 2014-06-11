@@ -12,19 +12,24 @@ Developers have also been successful running DuckPAN on other Linux distros (e.g
 
 As well, **there have been reported issues with installing DuckPAN on Mac OSX and Windows**, so we don't recommend you go down that path.
 
-That being said, we are more than willing to help you debug any installation problems, so please come to us with your problems and we'll try to get your issues sorted out. If you'd like some help from our community, feel free to engage with them on the [DuckDuckGo forum](http://duck.co/)
+That being said, we are more than willing to help you debug any installation problems, so please come to us with your problems and we'll try to get your issues sorted out. If you'd like some help from our community, feel free to engage with them on the [DuckDuckGo forum](http://duck.co/).
 
 ## Getting Started
 
-The easiest way to get started with DuckPAN is to either:
+The easiest way to get started with DuckPAN is to use our Codio Project Template ([see here](#codio-project-template)). Here are other ways to install DuckPAN:
 
 - Use our DuckDuckHack development virtual machine image ([see below](#duckduckhack-development-virtual-machine)); or
 - Use the Vagrant virtual environment to run DuckDuckHack ([see below](#vagrant-virtual-environment)); or
 - Download and install [Ubuntu](http://www.ubuntu.com/download) yourself; or
 - Download and install a different Linux distro (but as mentioned above, you may run into issues).
 
-**If you're going to use our virtual machine** please continue reading. 
-If not, go setup your OS and continue with the DuckPAN [installation instructions](#installing-duckpan) below.
+## Codio Project Template
+
+1. Create an account on [Codio](https://codio.com/).
+2. Go to https://codio.com/DuckDuckGo/DuckDuckHack and fork the project. Make sure to fork the project and the box.
+3. Go into one of the repositories (such as https://github.com/duckduckgo/zeroclickinfo-spice) and [fork it](https://help.github.com/articles/fork-a-repo) (You need to open the Terminal for this).
+4. Go into the directory (by typing in `cd zeroclickinfo-spice`) and run `duckpan server`. Click on "DuckPAN Server" to view the webpage.
+5. You're all set!
 
 ## DuckDuckHack Development Virtual Machine
 
