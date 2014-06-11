@@ -8,9 +8,9 @@ DuckPAN is an application built to provide developers a testing environment for 
 
 Currently, DuckPAN has been developed on, and works well with **Ubuntu**. More specifically, we regularly build, test and run DuckPAN on **Ubuntu 12.04**. We have also successfully installed and run DuckPAN on older and newer Ubuntu releases, e.g. Ubuntu 10.04, 12.10, and 13.04.
 
-Developers have also been successful running DuckPAN on other Linux distros (e.g. Arch, Debian), but **we make no promises that it will work outside of Ubuntu**.
+Developers have also been successful running DuckPAN on other Linux distros (e.g. Arch, Debian) and on Mac OS X 10.8 and later, but **we make no promises that it will work outside of Ubuntu**.
 
-As well, **there have been reported issues with installing DuckPAN on Mac OSX and Windows**, so we don't recommend you go down that path.
+As well, **there have been reported issues with installing DuckPAN on Windows**, so we don't recommend you go down that path.
 
 That being said, we are more than willing to help you debug any installation problems, so please come to us with your problems and we'll try to get your issues sorted out. If you'd like some help from our community, feel free to engage with them on the [DuckDuckGo forum](http://duck.co/).
 
