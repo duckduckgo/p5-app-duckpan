@@ -26,10 +26,17 @@ The easiest way to get started with DuckPAN is to use our Codio Project Template
 ## Codio Project Template
 
 1. Create an account on [Codio](https://codio.com/).
-2. Go to https://codio.com/DuckDuckGo/DuckDuckHack and fork the project. Make sure to fork the project and the box.
+2. Go to https://codio.com/duckduckgo/duckduckhack and fork the project. Make sure to fork the project and the box.  
+![Codio Fork](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_fork.png)
+![Codio Fork Both](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_fork_both.png)
 3. Go into one of the repositories (such as https://github.com/duckduckgo/zeroclickinfo-spice) and [fork it](https://help.github.com/articles/fork-a-repo) (You need to open the Terminal for this).
+![Codio Terminal](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_terminal.png)
 4. Go into the directory (by typing in `cd zeroclickinfo-spice`) and run `duckpan server`. Click on "DuckPAN Server" to view the webpage.
+![Codio Server](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_server.png)
 5. You're all set!
+![Codio Success](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_success.png)
+
+Try typing in queries like "define hello," and see if it works for you. You might be wondering why there are no search results in the page. It's because DuckPAN isn't configured to work with search results—it's only for instant answers for now.
 
 ## DuckDuckHack Development Virtual Machine
 
