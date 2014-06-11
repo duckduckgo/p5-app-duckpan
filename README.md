@@ -36,7 +36,7 @@ The easiest way to get started with DuckPAN is to use our Codio Project Template
 5. You're all set!  
 ![Codio Success](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_success.png)
 
-Try typing in queries like "define hello," and see if it works for you. You might be wondering why there are no search results in the page. It's because DuckPAN isn't configured to work with search results—it's only for instant answers for now.
+Try typing in queries like "define hello," and see if it works for you. You might be wondering why there are no search results in the page. It's because DuckPAN isn't configured to work with search results—it's only for testing instant answers.
 
 ## DuckDuckHack Development Virtual Machine
 
