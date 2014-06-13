@@ -153,13 +153,13 @@ sub request {
 						utf8::encode $body if utf8::is_utf8 $body;
 						warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $rewrite->wrap_jsonp_callback && $rewrite->wrap_string_callback;
 						if ($rewrite->wrap_jsonp_callback && $rewrite->callback) {
-							$body = $rewrite->callback.'('.$body.');';
+							$body = $rewrite->callback.'('.$body.');' unless defined $rewrite->missing_envs;
 						}
 						elsif ($rewrite->wrap_string_callback && $rewrite->callback) {
 							$body =~ s/"/\\"/g;
 							$body =~ s/\n/\\n/g;
 							$body =~ s/\R//g;
-							$body = $rewrite->callback.'("'.$body.'");';
+							$body = $rewrite->callback.'("'.$body.'");' unless defined $rewrite->missing_envs;
 						}
 						$response->code($res->code);
 						$response->content_type($res->content_type);
