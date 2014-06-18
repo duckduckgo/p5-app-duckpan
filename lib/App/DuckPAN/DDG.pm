@@ -29,7 +29,8 @@ sub print_failed_modules {
     p(%failed_to_load);
     
     if(%failed_to_load) {
-        print "You can ignore these errors if you're not working on these instant answers.\n";
+        print "To learn more about installing Perl dependencies, please read https://duck.co/duckduckhack/faq#how-do-i-install-perl-dependencies.\n";
+        print "Note: You can ignore these errors if you're not working on these instant answers.\n";
     }
 }
 
@@ -90,7 +91,7 @@ sub get_blocks_from_current_dir {
         } else {
             # Get the module name that needs to be installed by the user.
             if($load_error_message =~ /you may need to install the ([^\s]+) module/) {
-                $failed_to_load{$class} = "Missing dependencies. Check out https://duck.co/duckduckhack/faq#how-do-i-install-perl-dependencies for more information.";
+                $failed_to_load{$class} = "Please install $1 and any other required dependencies to use this instant answer.";
             } else {
                 # We just set the value to whatever the error message was if it failed for some other reason.
                 $failed_to_load{$class} = $load_error_message;
