@@ -25,10 +25,10 @@ sub print_failed_modules {
     my %failed_to_load = %{shift @_};
 
     # Print out the missing modules in color.
-    print "\nThese instant answers were not loaded:\n";
-    p(%failed_to_load);
-    
     if(%failed_to_load) {
+        print "\nThese instant answers were not loaded:\n";
+        p(%failed_to_load);
+
         print "To learn more about installing Perl dependencies, please read https://duck.co/duckduckhack/faq#how-do-i-install-perl-dependencies.\n";
         print "Note: You can ignore these errors if you're not working on these instant answers.\n";
     }
