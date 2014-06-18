@@ -24,6 +24,7 @@ sub get_dukgo_user_pass {
 sub print_failed_modules {
     my %failed_to_load = %{shift @_};
 
+    # Print out the missing modules in color.
     print "\nThese instant answers were not loaded:\n";
     p(%failed_to_load);
 }
@@ -85,7 +86,7 @@ sub get_blocks_from_current_dir {
         } else {
             # Get the module name that needs to be installed by the user.
             if($load_error_message =~ /you may need to install the ([^\s]+) module/) {
-                $failed_to_load{$class} = "It looks like some required modules such as $1 are missing.";
+                $failed_to_load{$class} = "Missing dependencies. Check out https://duck.co/duckduckhack/faq#how-do-i-install-perl-dependencies for more information.";
             } else {
                 # We just set the value to whatever the error message was if it failed for some other reason.
                 $failed_to_load{$class} = $load_error_message;
