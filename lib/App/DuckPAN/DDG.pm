@@ -24,7 +24,7 @@ sub get_dukgo_user_pass {
 sub print_failed_modules {
     my %failed_to_load = %{shift @_};
     
-    print "\nSome instant answers failed to load:\n";
+    print "\nThese instant answers were not loaded:\n";
     p(%failed_to_load);
 }
 
