@@ -27,6 +27,10 @@ sub print_failed_modules {
     # Print out the missing modules in color.
     print "\nThese instant answers were not loaded:\n";
     p(%failed_to_load);
+    
+    if(%failed_to_load) {
+        print "You can ignore these errors if you're not working on these instant answers.\n";
+    }
 }
 
 sub get_blocks_from_current_dir {
