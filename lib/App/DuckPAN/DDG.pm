@@ -9,113 +9,113 @@ use Class::Load ':all';
 use Data::Printer;
 
 sub get_dukgo_user_pass {
-	my ( $self ) = @_;
-	my $config = $self->app->perl->get_dzil_config;
-	unless (defined $config->{'%DUKGO'}) {
-		shift->app->print_text(
-			"[ERROR] No configuration found for your https://duck.co/ username and password, please use: 'dzil setup' first!",
-		);
-		exit 1;
-	}
-	return $config->{'%DUKGO'}->{username}, $config->{'%DUKGO'}->{password};
+    my ( $self ) = @_;
+    my $config = $self->app->perl->get_dzil_config;
+    unless (defined $config->{'%DUKGO'}) {
+        shift->app->print_text(
+            "[ERROR] No configuration found for your https://duck.co/ username and password, please use: 'dzil setup' first!",
+        );
+        exit 1;
+    }
+    return $config->{'%DUKGO'}->{username}, $config->{'%DUKGO'}->{password};
 }
 
 # This function tells the user which modules / instant answers failed to load.
 sub print_failed_modules {
-	my %failed_to_load = %{shift @_};
+    my %failed_to_load = %{shift @_};
 
-	print "\nThese instant answers were not loaded:\n";
-	p(%failed_to_load);
+    print "\nThese instant answers were not loaded:\n";
+    p(%failed_to_load);
 }
 
 sub get_blocks_from_current_dir {
-	my ( $self, @args ) = @_;
-	unless ($self->app->get_local_ddg_version) {
-		print "\n[ERROR] You need to have the DDG distribution installed\n";
-		print "\nTo get the installation command, please run: duckpan check\n\n";
-		exit 1;
-	}
-	my $finder = Module::Pluggable::Object->new(
-		search_path => ['lib/DDG/Spice','lib/DDG/Goodie','lib/DDG/Fathead','lib/DDG/Longtail'],
-	);
-	if (scalar @args == 0) {
-		my @plugins = $finder->plugins;
-		push @args, sort { $a cmp $b } @plugins;
-	} else {
-		@args = map { $_ = "lib::DDG::$_" unless m,^lib(::|/)DDG,; $_; } @args;
-	}
-	@args = map {
-		$_ =~ s!/!::!g;
-		my @parts = split('::',$_);
-		shift @parts;
-		join('::',@parts);
-	} @args;
-	unless (@args) {
-		print "\n[ERROR] No DDG::Goodie::*, DDG::Spice::*, DDG::Fathead::* or DDG::Longtail::* packages found\n";
-		print "\nHint: You must be in the root of your repository so that this works.\n\n";
-		exit 1;
-	}
-	require lib;
-	lib->import('lib');
-	print "\nUsing the following DDG instant answers:\n\n";
+    my ( $self, @args ) = @_;
+    unless ($self->app->get_local_ddg_version) {
+        print "\n[ERROR] You need to have the DDG distribution installed\n";
+        print "\nTo get the installation command, please run: duckpan check\n\n";
+        exit 1;
+    }
+    my $finder = Module::Pluggable::Object->new(
+        search_path => ['lib/DDG/Spice','lib/DDG/Goodie','lib/DDG/Fathead','lib/DDG/Longtail'],
+    );
+    if (scalar @args == 0) {
+        my @plugins = $finder->plugins;
+        push @args, sort { $a cmp $b } @plugins;
+    } else {
+        @args = map { $_ = "lib::DDG::$_" unless m,^lib(::|/)DDG,; $_; } @args;
+    }
+    @args = map {
+        $_ =~ s!/!::!g;
+        my @parts = split('::',$_);
+        shift @parts;
+        join('::',@parts);
+    } @args;
+    unless (@args) {
+        print "\n[ERROR] No DDG::Goodie::*, DDG::Spice::*, DDG::Fathead::* or DDG::Longtail::* packages found\n";
+        print "\nHint: You must be in the root of your repository so that this works.\n\n";
+        exit 1;
+    }
+    require lib;
+    lib->import('lib');
+    print "\nUsing the following DDG instant answers:\n\n";
     
     
-	# This list contains all of the classes that loaded successfully.
-	my @successfully_loaded = ();
+    # This list contains all of the classes that loaded successfully.
+    my @successfully_loaded = ();
     
-	# This hash contains all of the modules that failed.
-	# The key contains the module name and the value contains the dependency that wasn't met.
-	my %failed_to_load = ();
+    # This hash contains all of the modules that failed.
+    # The key contains the module name and the value contains the dependency that wasn't met.
+    my %failed_to_load = ();
     
-	# This loop goes through each Goodie / Spice, and it tries to load it.
-	foreach my $class (@args) {
-		# Let's try to load each Goodie / Spice module
-		# and see if they load successfully.
-		my ($load_success, $load_error_message) = try_load_class($class);
+    # This loop goes through each Goodie / Spice, and it tries to load it.
+    foreach my $class (@args) {
+        # Let's try to load each Goodie / Spice module
+        # and see if they load successfully.
+        my ($load_success, $load_error_message) = try_load_class($class);
 
-		# If they load successfully, $load_success would be a 1.
-		# Otherwise, it would be a 0.
-		if($load_success) {
-			# Since we only want the successful classes to trigger, we 
-			# collect all of the ones that triggered successfully in a temporary list.
-			push @successfully_loaded, $class;
+        # If they load successfully, $load_success would be a 1.
+        # Otherwise, it would be a 0.
+        if($load_success) {
+            # Since we only want the successful classes to trigger, we 
+            # collect all of the ones that triggered successfully in a temporary list.
+            push @successfully_loaded, $class;
 
-			# Display to the user when a class has been successfully loaded.
-			print " - $class (" . $class->triggers_block_type . ")\n";
-		} else {
-			# Get the module name that needs to be installed by the user.
-			if($load_error_message =~ /you may need to install the ([^\s]+) module/) {
-				$failed_to_load{$class} = "You don't have $1 installed.";
-			} else {
-				# We just set the value to whatever the error message was if it failed for some other reason.
-				$failed_to_load{$class} = $load_error_message;
-			}
-			}
-	}
+            # Display to the user when a class has been successfully loaded.
+            print " - $class (" . $class->triggers_block_type . ")\n";
+        } else {
+            # Get the module name that needs to be installed by the user.
+            if($load_error_message =~ /you may need to install the ([^\s]+) module/) {
+                $failed_to_load{$class} = "It looks like some required modules such as $1 are missing.";
+            } else {
+                # We just set the value to whatever the error message was if it failed for some other reason.
+                $failed_to_load{$class} = $load_error_message;
+            }
+        }
+    }
 
-	# Since @args can contain modules that we don't want to trigger (since they didn't load in the first place),
-	# and @successfully_loaded does, we just use what's in @successfully_loaded.
-	@args = @successfully_loaded;
+    # Since @args can contain modules that we don't want to trigger (since they didn't load in the first place),
+    # and @successfully_loaded does, we just use what's in @successfully_loaded.
+    @args = @successfully_loaded;
 
-	# Now let's tell the user why some of the modules failed.
-	print_failed_modules(\%failed_to_load);
+    # Now let's tell the user why some of the modules failed.
+    print_failed_modules(\%failed_to_load);
     
-	my %blocks_plugins;
-	for (@args) {
-		unless ($blocks_plugins{$_->triggers_block_type}) {
-			$blocks_plugins{$_->triggers_block_type} = [];
-		}
-		push @{$blocks_plugins{$_->triggers_block_type}}, $_;
-	}
+    my %blocks_plugins;
+    for (@args) {
+        unless ($blocks_plugins{$_->triggers_block_type}) {
+            $blocks_plugins{$_->triggers_block_type} = [];
+        }
+        push @{$blocks_plugins{$_->triggers_block_type}}, $_;
+    }
     
-	my @blocks;
-	for (keys %blocks_plugins) {
-		my $block_class = 'DDG::Block::'.$_;
-		load_class($block_class);
-		push @blocks, $block_class->new( plugins => $blocks_plugins{$_}, return_one => 0 );
-	}
-	load_class('DDG::Request');
-	return \@blocks;
+    my @blocks;
+    for (keys %blocks_plugins) {
+        my $block_class = 'DDG::Block::'.$_;
+        load_class($block_class);
+        push @blocks, $block_class->new( plugins => $blocks_plugins{$_}, return_one => 0 );
+    }
+    load_class('DDG::Request');
+    return \@blocks;
 }
 
 1;
