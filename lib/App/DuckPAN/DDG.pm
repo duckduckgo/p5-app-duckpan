@@ -90,7 +90,7 @@ sub get_blocks_from_current_dir {
         } else {
             # Get the module name that needs to be installed by the user.
             if($load_error_message =~ /you may need to install the ([^\s]+) module/) {
-                $failed_to_load{$class} = "Missing dependencies. Check out https://duck.co/duckduckhack/faq#how-do-i-install-perl-dependencies for more information.";
+                $failed_to_load{$class} = "Missing dependencies. Check out https://duck.co/duckduckhack/faq#how-do-i-install-a-missing-perl-dependency.";
             } else {
                 # We just set the value to whatever the error message was if it failed for some other reason.
                 $failed_to_load{$class} = $load_error_message;
