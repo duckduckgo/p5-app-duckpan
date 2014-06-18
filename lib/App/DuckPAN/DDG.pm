@@ -22,8 +22,8 @@ sub get_dukgo_user_pass {
 
 # This function tells the user which modules / instant answers failed to load.
 sub print_failed_modules {
-	my %failed_to_load = %{shift @_};
-	
+    my %failed_to_load = %{shift @_};
+    
     print "\nSome instant answers failed to load:\n";
     p(%failed_to_load);
 }
@@ -68,31 +68,31 @@ sub get_blocks_from_current_dir {
     my %failed_to_load = ();
     
     # This loop goes through each Goodie / Spice, and it tries to load it.
-	foreach my $class (@args) {
-    		# Let's try to load each Goodie / Spice module
+    foreach my $class (@args) {
+            # Let's try to load each Goodie / Spice module
             # and see if they load successfully.
             my ($load_success, $load_error_message) = try_load_class($class);
             
             # If they load successfully, $load_success would be a 1.
             # Otherwise, it would be a 0.
             if($load_success) {
-            	# Since we only want the successful classes to trigger, we 
+                # Since we only want the successful classes to trigger, we 
                 # collect all of the ones that triggered successfully in a temporary list.
                 push @successfully_loaded, $class;
                 
                 # Display to the user when a class has been successfully loaded.
                 print " - $class (" . $class->triggers_block_type . ")\n";
             } else {
-            	# Get the module name that needs to be installed by the user.
-				if($load_error_message =~ /you may need to install the ([^\s]+) module/) {
-                	$failed_to_load{$class} = "You don't have $1 installed.";
+                # Get the module name that needs to be installed by the user.
+                if($load_error_message =~ /you may need to install the ([^\s]+) module/) {
+                    $failed_to_load{$class} = "You don't have $1 installed.";
                 } else {
-                	# We just set the value to undef if it failed for some other reason.
-                	$failed_to_load{$class} = $load_error_message;
+                    # We just set the value to undef if it failed for some other reason.
+                    $failed_to_load{$class} = $load_error_message;
                 }
             }
-	}
-	# Since @args can contain modules that we don't want to trigger (since they didn't load in the first place),
+    }
+    # Since @args can contain modules that we don't want to trigger (since they didn't load in the first place),
     # and @successfully_loaded does, we just use what's in @successfully_loaded.
     @args = @successfully_loaded;
     
