@@ -87,7 +87,7 @@ sub get_blocks_from_current_dir {
                 if($load_error_message =~ /you may need to install the ([^\s]+) module/) {
                     $failed_to_load{$class} = "You don't have $1 installed.";
                 } else {
-                    # We just set the value to undef if it failed for some other reason.
+                    # We just set the value to whatever the error message was if it failed for some other reason.
                     $failed_to_load{$class} = $load_error_message;
                 }
             }
