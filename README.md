@@ -105,7 +105,7 @@ Supports: Windows, Linux
 
 #### Happy Hacking!
 
-Once you have installed the virtual machine you should be able to startup the VM and login with the following credentials: 
+Once you have installed the virtual machine you should be able to start up the VM and login with the following credentials: 
 - **username** : `dax`
 - **password** : `duckduckhack`
 
@@ -196,7 +196,7 @@ If during the course of your DuckPAN install you run into errors, don't panic, t
 
 First, try running the install command again (`curl http://duckpan.org/install.pl | perl`), this often solves issues related to any dependencies.
 
-If that doesn't work, you should investigate the build.log and see what's wrong. It might be a depencency issue which you can resolve by manually installing whichever dependency is missing via `cpanm`.
+If that doesn't work, you should investigate the build.log and see what's wrong. It might be a dependency issue which you can resolve by manually installing whichever dependency is missing via `cpanm`.
 
 If it still won't install with `cpanm` try adding `--notest` to the cpanm command:
 
