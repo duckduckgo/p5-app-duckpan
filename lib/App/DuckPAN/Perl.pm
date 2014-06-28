@@ -87,17 +87,18 @@ sub duckpan_install {
                 my $pin_version = $ENV{$sp};
 				my $localver = $self->get_local_version($_);
                 my $module_version = version->parse($module->version);
+                my $latest = $self->app->duckpan.'authors/id/'.$module->distribution->pathname;
 
-                if ($pin_version && $localver && $pin_version > $localver && $module_version > $localver && $module_version <= $pin_version) {
-                    print "$_: $localver installed, $pin_version pin, $module_version latest ";
-                    push @to_install, $latest unless grep { $_ eq $latest } @to_install;
-                }
-                elsif ($localver && $localver == $module_version)) {
+                if ($pin_version) {
+                    print "$_: $localver installed, $pin_version pin, $module_version latest\n";
+                    if ($localver && $pin_version > $localver && $module_version > $localver && $module_version <= $pin_version) {
+                        push @to_install, $latest unless grep { $_ eq $latest } @to_install;
+                    }
+                } elsif ($localver && $localver == $module_version) {
 					$self->app->print_text("You already have latest version of ".$_." with ".$localver."\n");
-				} elsif ($localver && $localver > $module_version)) {
-					$self->app->print_text("You have a newer version of ".$_." with ".$localver." (duckpan has ".$module_version).")\n");
+				} elsif ($localver && $localver > $module_version) {
+					$self->app->print_text("You have a newer version of ".$_." with ".$localver." (duckpan has ".$module_version.")\n");
 				} else {
-					my $latest = $self->app->duckpan.'authors/id/'.$module->distribution->pathname;
 					push @to_install, $latest unless grep { $_ eq $latest } @to_install;
 				}
 			} else {
