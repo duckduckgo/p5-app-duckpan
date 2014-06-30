@@ -269,7 +269,8 @@ sub request {
 					} elsif ($_->filename =~ /^.+handlebars$/){
 						my $template_name = $_->filename;
 						$template_name =~ s/\.handlebars//;
-						$calls_template{$spice_name}{$template_name} = $_;
+						$calls_template{$spice_name}{$template_name}{"content"} = $_;
+						$calls_template{$spice_name}{$template_name}{"is_ct_self"} = $result->call_type eq 'self';
 					}
 				}
 				push (@calls_nrj, $result->call_path);
@@ -343,12 +344,12 @@ sub request {
 			: '';
 
 		if (%calls_template) {
-
 			foreach my $spice_name ( keys %calls_template ){
 				$calls_script .= join("",map {
 					my $template_name = $_;
-					my $template_content = $calls_template{$spice_name}{$template_name}->slurp;
-					"<script class='duckduckhack_spice_template' spice-name='$spice_name' template-name='$template_name' type='text/plain'>$template_content</script>"
+					my $is_ct_self = $calls_template{$spice_name}{$template_name}{"is_ct_self"};
+					my $template_content = $calls_template{$spice_name}{$template_name}{"content"}->slurp;
+					"<script class='duckduckhack_spice_template' spice-name='$spice_name' template-name='$template_name' is-ct-self='$is_ct_self' type='text/plain'>$template_content</script>"
 
 				} keys $calls_template{$spice_name});
 			}
