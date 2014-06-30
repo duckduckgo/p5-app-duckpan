@@ -78,14 +78,14 @@ sub duckpan_install {
 			my $module = $packages->package($_);
 			if ($module) {
 				local $@;
-                
-                # see if we have an env variable for this module
+				
+				# see if we have an env variable for this module
 				my $sp = $_;
 				$sp =~ s/\:\:/_/g;
 
-						# special case: check for a pinned verison number
+				# special case: check for a pinned verison number
 				my $pin_version = $ENV{$sp};
-						my $localver = $self->get_local_version($_);
+				my $localver = $self->get_local_version($_);
 				my $duckpan_module_version = version->parse($module->version);
 				my $duckpan_module_url = $self->app->duckpan.'authors/id/'.$module->distribution->pathname;
 
