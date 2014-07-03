@@ -292,11 +292,14 @@ sub request {
 				my $zci_body = $zci_container->look_down(class => 'zci__body');
 
 				# Stick the answer inside $zci_body
-				$zci_body->push_content(
-					$result->has_html ?
-						HTML::TreeBuilder->new_from_content($result->html)->guts :
-						$result->answer
-				);
+				my $answer = $result->answer;
+				if ($result->has_html) {
+					my $tb = HTML::TreeBuilder->new();
+					# Specifically allow unknown tags to support <svg> and <canvas>
+					$tb->ignore_unknown(0);
+					$answer = $tb->parse_content($result->html)->guts;
+				}
+				$zci_body->push_content($answer);
 
 				my $zci_wrapper = $root->look_down(id => "zero_click_wrapper");
 				$zci_wrapper->insert_element($zci_container);
