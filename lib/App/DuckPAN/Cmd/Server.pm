@@ -37,8 +37,11 @@ has page_templates_filename => (
 	is => 'rw',
 );
 
-has page_css_filename => (
+# We set this into an array because there can be multiple
+# CSS files in the page.
+has page_css_filenames => (
 	is => 'rw',
+    default => sub { [] },
 );
 
 has hostname => (
@@ -140,7 +143,12 @@ sub run {
 	# Pull files out of cache to be served later by DuckPAN server
 	my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
 	my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
-	my $page_css = io(file($self->app->cfg->cache_path,$self->page_css_filename))->slurp;
+    
+    # Since there are multiple CSS files to slurp in,
+    # we iterate through each one.
+	my $page_css = join('', map { 
+    	io(file($self->app->cfg->cache_path, $_))->slurp;
+    } @{$self->page_css_filenames});
 	my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_filename))->slurp;
 
 	# Concatenate duckpan.js to g.js
@@ -304,15 +312,17 @@ sub get_assets {
 	for (@link) {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
 			if (my $href = $_->attr('href')) {
-				if ($href =~ m/^\/((?:s\d+|style)\.css)/) {
-					$self->page_css_filename($1);
+            	# We're looking for txxx.css and sxxx.css.
+                # style.css and static.css are for development mode.
+				if ($href =~ m/^\/((?:[st]\d+|style|static)\.css)/) {
+                	push(@{$self->page_css_filenames}, $1);
 				}
 			}
 		}
 	}
 
 	# Check if we need to request any new assets from hostname, otherwise use cached copies
-	for my $curr_asset ($self->page_js_filename, $self->page_templates_filename, $self->page_css_filename) {
+    for my $curr_asset ($self->page_js_filename, $self->page_templates_filename, @{$self->page_css_filenames}) {
 		# Request file unless cache is disabled, or cache already contains file
 		if ($self->no_cache || ! -f file($self->app->cfg->cache_path,$curr_asset)) {
 			my $url = 'http://'.$self->hostname.'/'.$curr_asset;
