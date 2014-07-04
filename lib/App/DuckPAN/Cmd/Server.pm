@@ -216,10 +216,18 @@ sub change_html {
 	# Make sure DuckPAN serves DDG CSS (already pulled down at startup)
 	# ie <link href="/s123.css"> becomes <link href="/?duckduckhack_css=1">
 	# Also rewrite relative links to hostname
-	for (@a,@link) {
-
+    my $has_css = 0;
+	for (@a, @link) {
 		if ($_->attr('type') && $_->attr('type') eq 'text/css') {
-			$_->attr('href','/?duckduckhack_css=1');
+        	# We only want to load the CSS file once.
+            # We only load it once because /?duckduckhack_css=1 already has all of the CSS
+            # in a single page.
+        	unless($has_css) {
+				$_->attr('href','/?duckduckhack_css=1');
+            	$has_css = 1;
+            } else {
+            	$_->attr('href','/?duckduckhack_ignore=1');
+            }
 		} elsif (defined $_->attr('href') && substr($_->attr('href'),0,1) eq '/') {
 			$_->attr('href','http://'.$self->hostname.''.$_->attr('href'));
 		}
