@@ -60,7 +60,7 @@ sub get_local_version {
 sub cpanminus_install_error {
 	shift->app->print_text(
 		"[ERROR] Failure on installation of modules!",
-		"This could have several reasons, for first you can just restart this installer, cause it could be a pure download problem. If this isnt the case, please read the build.log mentioned on the errors and see if you can fix the problem yourself. Otherwise, please report the problem via email to use at open\@duckduckgo.com with the build.log attached. If there is no build.log mentioned, just attach the output you see.",
+		"This could have several reasons. First, you can just restart this installer, because it could be a pure download problem. If this isn't the case, please read the build.log mentioned in the errors and see if you can fix the problem yourself. Otherwise, please report the problem via email to open\@duckduckgo.com with the build.log attached. If there is no build.log mentioned, just attach the output you see.",
 	);
 	exit 1;	
 }
