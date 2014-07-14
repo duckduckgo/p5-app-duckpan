@@ -65,7 +65,7 @@ sub cpanminus_install_error {
         "2. Some other error occured - Please read the `build.log` mentioned in the errors and see if you can fix the problem yourself.",
         "If you are unable to solve the problem, please let us know by making a GitHub Issue in the DuckPAN Repo:",
         "https://github.com/duckduckgo/p5-app-duckpan/issues",
-        "Make sure to attach the `build.log` file if it exists, otherwise copy/paste the output you see."
+        "Make sure to attach the `build.log` file if it exists. Otherwise, copy/paste the output you see."
 	);
 	exit 1;	
 }
