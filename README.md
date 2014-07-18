@@ -34,7 +34,7 @@ That being said, we are more than willing to help you debug any installation pro
 
 Getting started with DuckPAN is easy! Here's a list of ways you can get DuckPAN up & running:
 
-- Use our Codio Project Template ([see below](#codio-project-template)). This is the *quickest* way to get started, and **our recommended choice**.
+- Use our Codio Project Template ([see below](#codio-project-template)). **We recommended this choice!** It's *super* quick and easy.
 - Use our DuckDuckHack development virtual machine image ([see below](#duckduckhack-development-virtual-machine))
 - Use the Vagrant virtual environment ([see below](#vagrant-virtual-environment))
 - Install DuckPAN locally ([see below](#installing-duckpan)). Keep in mind, this **requires Linux or Mac OS X**. We suggest you install [Ubuntu](http://www.ubuntu.com/download).
