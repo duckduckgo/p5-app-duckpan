@@ -14,16 +14,36 @@ As well, **there have been reported issues with installing DuckPAN on Windows**,
 
 That being said, we are more than willing to help you debug any installation problems, so please come to us with your problems and we'll try to get your issues sorted out. If you'd like some help from our community, feel free to engage with them on the [DuckDuckGo forum](http://duck.co/).
 
+------
+
+## Index
+
+- [Getting Started](#getting-started)
+- [Using the Codio Project Template](#using-the-codio-project-template)
+- [DuckDuckHack Development Virtual Machine](#duckduckhack-development-virtual-machine)
+    + [Using the Virtual Machine](#using-the-virtual-machine)
+- [Vagrant Virtual Environment](#vagrant-virtual-environment)
+    + [Setup Instructions](#setup-instructions-2)
+- [Installing DuckPAN](#installing-duckpan)
+    + [Adding Shell Completion](#adding-shell-completion)
+- [Using DuckPAN](#using-duckpan)
+
+------
+
 ## Getting Started
 
-The easiest way to get started with DuckPAN is to **use our Codio Project Template ([see here](#codio-project-template))**. Here are other ways to install DuckPAN:
+Getting started with DuckPAN is easy! Here's a list of ways you can get DuckPAN up & running:
 
-- Use our DuckDuckHack development virtual machine image ([see below](#duckduckhack-development-virtual-machine)); or
-- Use the Vagrant virtual environment to run DuckDuckHack ([see below](#vagrant-virtual-environment)); or
-- Download and install [Ubuntu](http://www.ubuntu.com/download) yourself; or
-- Download and install a different Linux distro (but as mentioned above, you may run into issues).
+- Use our Codio Project Template ([see below](#codio-project-template)). **We recommended this choice!** It's *super* quick and easy.
+- Use our DuckDuckHack development virtual machine image ([see below](#duckduckhack-development-virtual-machine))
+- Use the Vagrant virtual environment ([see below](#vagrant-virtual-environment))
+- Install DuckPAN locally ([see below](#installing-duckpan)). Keep in mind, this **requires Linux or Mac OS X**. We suggest you install [Ubuntu](http://www.ubuntu.com/download).
 
-## Codio Project Template
+After installing DuckPAN, be sure to checkout the [Using DuckPAN](#using-duckpan) section below!
+
+------
+
+## Using the Codio Project Template
 
 1. Create an account on [Codio](https://codio.com/).
 2. Go to https://codio.com/duckduckgo/duckduckhack and fork the project. Make sure to fork the project and the box.  
@@ -37,6 +57,8 @@ The easiest way to get started with DuckPAN is to **use our Codio Project Templa
 ![Codio Success](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_success.png)
 
 Try typing in queries like "define hello," and see if it works for you. You might be wondering why there are no search results in the page. It's because DuckPAN isn't configured to work with search results—it's only for testing instant answers.
+
+------
 
 ## DuckDuckHack Development Virtual Machine
 
@@ -71,14 +93,14 @@ https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
 - Docker support
 - Public AMI for use on EC2
 
-## Using the Virtual Machine
+### Using the Virtual Machine
 
 To use the Virtual Machine, you will need to download and install **VirtualBox**, **VMWare Workstation** or **VMWare Player**, depending on your current OS.
 
 #### VirtualBox (free)
 
 Website: https://www.virtualbox.org/  
-Supports: Windows, OSX, Linux
+Supports: Windows, OS X, Linux
 
 ##### Setup Instructions
 
@@ -111,6 +133,7 @@ Once you have installed the virtual machine you should be able to start up the V
 
 **The DuckPAN client has already been installed for you.** You can now clone the instant answer repos and start developing/testing.
 
+------
 
 ## Vagrant Virtual Environment
 
@@ -118,7 +141,7 @@ The Vagrant-based DuckDuckHack virtual environment provides a similar sandbox to
 
 Through the Vagrant configuration, you can easily switch back and forth between a headless-mode and the traditional VirtualBox interface.  The configuration defaults to headless.
 
-##### Setup Instructions
+### Setup Instructions
 
 1. Install: [Vagrant](http://docs.vagrantup.com/v2/installation/index.html) and [Bundler](http://bundler.io/#getting-started)
 
@@ -158,6 +181,7 @@ Run these commands from the directory containing your `Vagrantfile`.
 
 For more information, please see the (excellent) [Vagrant docs](http://docs.vagrantup.com/).
 
+------
 
 ## Installing DuckPAN
 
@@ -190,6 +214,20 @@ cpanm App::DuckPAN
 App::DuckPAN is up to date.
 ```
 
+### Adding Shell Completion
+
+Some of our awesome community members have written shell completion scripts for DuckPAN, which should save you tons of time. Feel free to improve these, or contribute new ones!
+
+#### Bash
+    
+- Submitted by: [mattr555](https://github.com/mattr555)
+- link: https://github.com/mattr555/dotfiles/blob/master/bin/duckpancomp.sh
+
+#### Z Shell
+
+- Submitted by: [elebow](https://github.com/elebow)
+- link: https://github.com/elebow/duckpan-completion
+
 ### Dealing With Installation Issues
 
 If during the course of your DuckPAN install you run into errors, don't panic, there are a few things you can try.
@@ -211,6 +249,8 @@ cpanm Test::More --force
 ```
 
 If this ***still*** doesn't work, please create a GitHub Issue in the DuckPAN Repo [here](https://github.com/duckduckgo/p5-app-duckpan/issues). Be sure to paste the contents of your `build.log` and also let us know the details of your OS (`$ uname -a` is great). Once you've made the issue, we'll work with you to try and solve any problems you're having.
+
+------
 
 ## Using DuckPAN
 
