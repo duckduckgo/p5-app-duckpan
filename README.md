@@ -24,7 +24,7 @@ That being said, we are more than willing to help you debug any installation pro
     + [Using the Virtual Machine](#using-the-virtual-machine)
 - [Vagrant Virtual Environment](#vagrant-virtual-environment)
     + [Setup Instructions](#setup-instructions-2)
-- [Installing DuckPAN](#installing-duckpan)
+- [Installing DuckPAN Locally](#installing-duckpan-locally)
     + [Adding Shell Completion](#adding-shell-completion)
 - [Using DuckPAN](#using-duckpan)
 
@@ -183,11 +183,11 @@ For more information, please see the (excellent) [Vagrant docs](http://docs.vagr
 
 ------
 
-## Installing DuckPAN
+## Installing DuckPAN Locally
 
-**\*\*Note**: You don't need to install DuckPAN if you're using our DuckDuckHack virtual machine or the Vagrant virtual environment. It's already installed for you!
+**\*\*Note**: You don't need to install DuckPAN locally if you're using our DuckDuckHack virtual machine or the Vagrant virtual environment. It's already installed for you!
 
-To install DuckPan, open your terminal and run:
+To install DuckPAN, open your terminal and run:
 
 ```shell
 curl http://duckpan.org/install.pl | perl
