@@ -94,9 +94,9 @@ sub duckpan_install {
 				my $duckpan_module_version = version->parse($module->version);
 				my $duckpan_module_url = $self->app->duckpan.'authors/id/'.$module->distribution->pathname;
 
-				if ($pin_version) {
+				if ($pin_version && $localver) {
 					print "$_: $localver installed, $pin_version pin, $duckpan_module_version latest\n";
-					if ($localver && $pin_version > $localver && $duckpan_module_version > $localver && $duckpan_module_version <= $pin_version) {
+					if ($pin_version > $localver && $duckpan_module_version > $localver && $duckpan_module_version <= $pin_version) {
 						push @to_install, $duckpan_module_url unless grep { $_ eq $duckpan_module_url } @to_install;
 					}
 				} elsif ($localver && $localver == $duckpan_module_version) {
