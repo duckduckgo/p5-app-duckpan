@@ -354,7 +354,7 @@ sub request {
 					my $template_content = $calls_template{$spice_name}{$template_name}{"content"}->slurp;
 					"<script class='duckduckhack_spice_template' spice-name='$spice_name' template-name='$template_name' is-ct-self='$is_ct_self' type='text/plain'>$template_content</script>"
 
-				} keys $calls_template{$spice_name});
+				} keys %{ $calls_template{$spice_name} });
 			}
 		}
 
