@@ -184,6 +184,8 @@ sub request {
 		$body = $self->page_templates;
 	} elsif ($request->param('q') && $request->path_info eq '/') {
 		my $query = $request->param('q');
+		$query =~ s/^\s*//g; # remove front whitespace
+		$query =~ s/\s*$//g; # remove back whitespace
 		Encode::_utf8_on($query);
 		my $ddg_request = DDG::Request->new(
 			query_raw => $query,
