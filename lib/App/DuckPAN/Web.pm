@@ -321,7 +321,10 @@ sub request {
 				$duckbar_static_sep->attr(class => "zcm__sep--h");
 
 				my $html = $root->look_down(_tag => "html");
-				$html->attr(class => "set-header--fixed  has-zcm js no-touch csstransforms3d csstransitions svg use-opts has-active-zci")
+				$html->attr(class => "set-header--fixed  has-zcm js no-touch csstransforms3d csstransitions svg use-opts has-active-zci");
+
+				# Make sure we only show one Goodie (this will change down the road)
+				last;
 
 			# If not Spice or Goodie,
 			# inject raw Dumper() output from into page
