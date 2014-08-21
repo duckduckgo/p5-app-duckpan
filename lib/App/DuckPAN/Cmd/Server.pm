@@ -29,6 +29,14 @@ option verbose => (
     default => sub { 0 }
 );
 
+option port => (
+    is => 'ro',
+    format => 'i',
+    lazy => 1,
+    short => 'p',
+    default => sub { 5000 }
+);
+
 has page_js_filename => (
     is => 'rw',
 );
@@ -178,6 +186,7 @@ sub run {
         app => sub { $web->run_psgi(@_) },
     );
     #$runner->loader->watch("./lib");
+    $runner->parse_options("--port", $self->port);
     exit $runner->run;
 }
 
