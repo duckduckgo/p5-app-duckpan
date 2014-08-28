@@ -19,9 +19,14 @@ use IO::All;
 sub run {
 	my ( $self, @args ) = @_;
 
-	# Instant Answer name as parameter
+	# Instant Answer name, description, source domain, and template group as parameters
 	my $name = $args[0] || $self->app->get_reply('Please enter a name for your Instant Answer');
+	my $desc = $args[1] || $self->app->get_reply('Enter a description (optional)');
+	my $domain = $args[2] || $self->app->get_reply('Enter a source domain (e.g. example.com) (optional)');
+	my $group = $args[3] || $self->app->get_reply('Enter a template group (optional)');
 	my $lc_name = $self->app->camel_to_underscore($name);
+
+	my $rel_string;
 
 	# %templates forms the spine data structure which is used
 	# as a guide to discovering content which is moved around
@@ -74,6 +79,21 @@ sub run {
 	# Check if we're in a Spice repository
 	elsif (-d $templates{'spice'}{'lib_dir'}) {
 
+		# Relevancy block setup
+		my $rel_bool = $args[4] || $self->app->get_reply('Do you want a relevancy block added? (y/n)');
+		if ($rel_bool eq 'y') {
+			$rel_string = '},
+            relevancy: {
+                type: String,
+                skip_words: [, String],
+                primary: [, Object],
+                dup: String,
+            }';
+		}
+		else {
+			$rel_string = '}';
+		}
+
 		if (-d $templates{'spice'}{'share_dir'}) {
 			$self->app->print_text("[ERROR] Instant answer already exists: $name");
 			exit -1;
@@ -93,8 +113,7 @@ sub run {
 			mkdir $templates{'spice'}{'share_dir'};
 			while (my ($source, $dest) = each(%{$templates{'spice'}{'files'}})) {
 				my $tx = Text::Xslate->new();
-				my %vars = (ia_name => $name,
-					lia_name => $lc_name);
+				my %vars = (ia_name => $name,	ia_desc => $desc,	ia_domain => $domain,	ia_rel => $rel_string,	ia_group => $group,	lia_name => $lc_name);
 				my $content = $tx->render($source, \%vars);
 
 				io($dest)->append($content);
