@@ -20,7 +20,8 @@ sub run {
 	my ( $self, @args ) = @_;
 
 	# Instant Answer name as parameter
-	my $name = $args[0] || $self->app->get_reply('Please enter a name for your Instant Answer');
+	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer');
+	my $name = $self->app->phrase_to_camel($entered_name);
 	my $lc_name = $self->app->camel_to_underscore($name);
 
 	# %templates forms the spine data structure which is used
