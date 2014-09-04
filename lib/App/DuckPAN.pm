@@ -222,6 +222,12 @@ sub camel_to_underscore {
 	return lc $name;
 }
 
+sub phrase_to_camel {
+ my ($self, $phrase) = @_;
+	# Other things imply camelCase, we're going with CamelCase, kinda.
+	return join('', map { ucfirst $_; } (split /\s+/, $phrase));
+}
+
 sub check_requirements {
 	my ( $self ) = @_;
 	my $fail = 0;
