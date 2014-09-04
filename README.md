@@ -298,6 +298,12 @@ duckpan check
 Check if you fulfill all requirements for the development
 environment (this is run automatically during setup)
 
+```shell
+duckpan reinstall
+```
+
+Force installation of the latest released versions of DuckPAN and DDG
+
 ### Instant Answer Testing
 
 ```shell
