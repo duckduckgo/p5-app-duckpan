@@ -172,7 +172,7 @@ sub execute {
 				$_ =~ /^ddg/i ||
 				$_ =~ /^app/i) {
 				push @modules, $_;
-			} elsif ($_ =~ m/^(duckpan|upgrade|update)$/i) {
+			} elsif ($_ =~ m/^(duckpan|upgrade|update|reinstall)$/i) {
 				# Clear cache so share files are written into cache
 				my $cache = $self->cfg->cache_path;
 				if (-d $cache){
@@ -181,7 +181,8 @@ sub execute {
 					print "Done\n";
 				}
 				push @modules, 'App::DuckPAN';
-				push @modules, 'DDG' if lc($_) eq 'upgrade';
+				push @modules, 'DDG' if $_ =~ /^(?:upgrade|reinstall)$/i;
+				unshift @modules, 'force' if lc($_) eq 'reinstall';
 			} else {
 				push @left_args, $_;
 			}
