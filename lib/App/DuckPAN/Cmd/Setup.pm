@@ -49,7 +49,7 @@ sub get_email { shift->app->get_reply( 'What is your email (public in your relea
 
 sub run {
 	my ( $self ) = @_;
-	exit if $self->app->check_requirements != 0
+	exit if $self->app->check_requirements != 0;
 	if (my $dzil_config = $self->app->perl->get_dzil_config) {
 		print "\nFound existing Dist::Zilla config!\n\n";
 		my $name = $dzil_config->{'%User'}->{name};
