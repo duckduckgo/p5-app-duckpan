@@ -224,8 +224,8 @@ sub camel_to_underscore {
 
 sub phrase_to_camel {
  my ($self, $phrase) = @_;
-	# Other things imply camelCase, we're going with CamelCase.
-	return join('', map { ucfirst lc $_; } (split /\s+/, $phrase));
+	# Other things imply camelCase, we're going with CamelCase, kinda.
+	return join('', map { ucfirst $_; } (split /\s+/, $phrase));
 }
 
 sub check_requirements {
