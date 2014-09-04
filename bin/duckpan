@@ -76,6 +76,15 @@ B<duckpan release>:
 B<duckpan setup>:
   Helps configure your environment so you can use L<Dist::Zilla::Plugin::UploadToDuckPAN>, which is used by B<duckpan release>.
 
+B<duckpan update>:
+   Update DuckPAN to the latest version.
+
+B<duckpan upgrade>:
+   Upgrade DuckPAN and DDG to the latest versions.
+
+B<duckpan reinstall>:
+   Force installation of the latest released versions of DuckPAN and DDG.
+
 =head2 ENVIRONMENT VARIABLES
 
 B<duckpan env name value>
