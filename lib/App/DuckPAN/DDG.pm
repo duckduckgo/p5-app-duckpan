@@ -7,6 +7,7 @@ with 'App::DuckPAN::HasApp';
 use Module::Pluggable::Object;
 use Class::Load ':all';
 use Data::Printer;
+use List::Util qw (first);
 
 sub get_dukgo_user_pass {
     my ( $self ) = @_;
@@ -28,7 +29,7 @@ sub print_failed_modules {
     if(%failed_to_load) {
         print "\nThese instant answers were not loaded:\n";
         p(%failed_to_load);
-        print "To learn more about installing Perl dependencies, please read https://duck.co/duckduckhack/faq#how-do-i-install-a-missing-perl-dependency.\nNote: You can ignore these errors if you're not working on these instant answers.\n" if (my ($matched) = grep { /dependencies/ } values %failed_to_load);
+        print "To learn more about installing Perl dependencies, please read https://duck.co/duckduckhack/faq#how-do-i-install-a-missing-perl-dependency.\nNote: You can ignore these errors if you're not working on these instant answers.\n" if first { /dependencies/ } values %failed_to_load;
     }
 }
 
