@@ -164,7 +164,7 @@ sub request {
 						$response->code($res->code);
 						$response->content_type($res->content_type);
 					} else {
-						warn $res->status_line, "\n";
+						p($res->status_line, color => { string => 'red' });
 						$body = "";
 					}
 				}
