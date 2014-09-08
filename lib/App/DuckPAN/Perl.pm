@@ -11,6 +11,7 @@ use Config::INI::Reader;
 use Config::INI::Writer;
 use Data::Dumper;
 use LWP::Simple;
+use List::Util qw/ first /;
 use File::Temp qw/ :POSIX /;
 use version;
 use Parse::CPAN::Packages::Fast;
@@ -115,7 +116,7 @@ sub duckpan_install {
 				} else {
 					$install_it = 1;
 				}
-				push @to_install, $duckpan_module_url if ($install_it && !(scalar grep { $_ eq $duckpan_module_url } @to_install));
+				push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
 			} else {
 				$self->app->print_text("[ERROR] Can't find package ".$_." on ".$self->app->duckpan."\n");
 				$error = 1;
