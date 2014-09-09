@@ -37,10 +37,15 @@ Please see L<https://github.com/duckduckgo/p5-app-duckpan#installing-duckpan> fo
 B<duckpan check>:
     Checks if you fulfill all requirements for the development environment. This will run automatically during a B<duckpan release>.
 
-B<duckpan query>:
+B<duckpan query>: (<Spice|Goodie>::<answer-name>)
     Test Goodie and Spice triggers interactively on the command line. For each query, the instant answers triggered will be displayed. This tool should be used to ensure your instant answer triggers correctly.
 
-B<duckpan server>: [--verbose] [--no-cache] [--port <number>]
+     <Spice|Goodie>::<answer-name>
+        Loads the specified instant answer only
+        duckpan query Spice::Npm
+        duckpan query Goodie::MD5
+
+B<duckpan server>: [--verbose] [--no-cache] [--port <number>] (<Spice|Goodie>::<answer-name>)
     Starts a local web server, which emulates the DuckDuckGo production environment. Allows for live testing of Goodie and Spice instant answers.  This tool should be used to ensure your instant answer displays correctly. For Spice instant answers, this is especially important to verify API calls are successful and no JavaScript errors exist.
 
     -v, --verbose:
@@ -51,6 +56,11 @@ B<duckpan server>: [--verbose] [--no-cache] [--port <number>]
 
     -p, --port <number>:
         Forces DuckPAN server to run on the specified port (default port is 5000)
+
+    <Spice|Goodie>::<answer-name>
+        Loads the specified instant answer only
+        duckpan server Spice::Npm
+        duckpan server Goodie::MD5
 
 B<duckpan help>:
     Shows you the DuckPAN help page which briefly describes DuckPAN and its features.

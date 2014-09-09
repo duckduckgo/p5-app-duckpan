@@ -307,14 +307,19 @@ Force installation of the latest released versions of DuckPAN and DDG
 ### Instant Answer Testing
 
 ```shell
-duckpan query
+duckpan query (<Spice|Goodie>::<answer-name>)
 ```
 
 Test Goodie and Spice triggers interactively on the command line
 
+Commands:
+
+- <Spice|Goodie>::<answer-name> to load a specific instant answer only
+   duckpan query Spice::Npm
+   duckpan query Goodie::MD5
 
 ```shell
-duckpan server [--verbose] [--no-cache] [--port <number>]
+duckpan server [--verbose] [--no-cache] [--port <number>] (<Spice|Goodie>::<answer-name>)
 ```
 
 Test Goodie and Spice instant answers on a local web server (for design/layout purposes)
@@ -324,6 +329,12 @@ Options:
 - `--verbose` to provide more details
 - `--no-cache` to prevent DuckPAN's cache from being used (this forces the requested files to be pushed into the cache)
 - `--port` to specify which port DuckPAN's server should run on (defaults to 5000)
+
+Commands:
+
+- <Spice|Goodie>::<answer-name> to load a specific instant answer only
+   duckpan server Spice::Npm 
+   duckpan server Goodie::MD5
 
 ### Advanced Features 
 
