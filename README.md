@@ -37,7 +37,7 @@ Getting started with DuckPAN is easy! Here's a list of ways you can get DuckPAN 
 - Use our Codio Project Template ([see below](#codio-project-template)). **We recommended this choice!** It's *super* quick and easy.
 - Use our DuckDuckHack development virtual machine image ([see below](#duckduckhack-development-virtual-machine))
 - Use the Vagrant virtual environment ([see below](#vagrant-virtual-environment))
-- Install DuckPAN locally ([see below](#installing-duckpan)). Keep in mind, this **requires Linux or Mac OS X**. We suggest you install [Ubuntu](http://www.ubuntu.com/download).
+- Install DuckPAN locally ([see below](#installing-duckpan-locally)). Keep in mind, this **requires Linux or Mac OS X**. We suggest you install [Ubuntu](http://www.ubuntu.com/download).
 
 After installing DuckPAN, be sure to checkout the [Using DuckPAN](#using-duckpan) section below!
 
@@ -46,14 +46,14 @@ After installing DuckPAN, be sure to checkout the [Using DuckPAN](#using-duckpan
 ## Using the Codio Project Template
 
 1. Create an account on [Codio](https://codio.com/).
-2. Go to https://codio.com/duckduckgo/duckduckhack and fork the project. Make sure to fork the project and the box.  
+2. Go to https://codio.com/duckduckgo/duckduckhack and fork the project. Make sure to fork the project and the box.
 ![Codio Fork](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_fork.png)
 ![Codio Fork Both](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_fork_both.png)
-3. Visit one of our instant answer repositories (such as https://github.com/duckduckgo/zeroclickinfo-spice), and follow GitHub's instructions to first [fork](https://help.github.com/articles/fork-a-repo) the repository. You can then clone the repo into your Codio machine (You need to open the Terminal for this).  
+3. Visit one of our instant answer repositories (such as https://github.com/duckduckgo/zeroclickinfo-spice), and follow GitHub's instructions to first [fork](https://help.github.com/articles/fork-a-repo) the repository. You can then clone the repo into your Codio machine (You need to open the Terminal for this).
 ![Codio Terminal](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_terminal.png)
-4. Go into the directory (by typing in `cd zeroclickinfo-spice`) and run `duckpan server`. Click on "DuckPAN Server" to view the webpage.  
+4. Go into the directory (by typing in `cd zeroclickinfo-spice`) and run `duckpan server`. Click on "DuckPAN Server" to view the webpage.
 ![Codio Server](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_server.png)
-5. You're all set!  
+5. You're all set!
 ![Codio Success](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_success.png)
 
 Try typing in queries like "define hello," and see if it works for you. You might be wondering why there are no search results in the page. It's because DuckPAN isn't configured to work with search results—it's only for testing instant answers.
@@ -78,14 +78,14 @@ The purpose of our DuckDuckHack VM is to provide a sandbox for DuckDuckGo Instan
 
 #### For VirtualBox hosts
 
-ddh-vbox.rar  
-MD5: 1734373cbecc5820bb7d18406eb42854  
+ddh-vbox.rar
+MD5: 1734373cbecc5820bb7d18406eb42854
 https://ddg-community.s3.amazonaws.com/ddh-vbox.rar
 
 #### For VMWare hosts
 
-ddh-vmw.rar:  
-MD5: 95ad9acfacadb4b0cb0cf23ffaa3516e  
+ddh-vmw.rar:
+MD5: 95ad9acfacadb4b0cb0cf23ffaa3516e
 https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
 
 #### Roadmap
@@ -99,12 +99,12 @@ To use the Virtual Machine, you will need to download and install **VirtualBox**
 
 #### VirtualBox (free)
 
-Website: https://www.virtualbox.org/  
+Website: https://www.virtualbox.org/
 Supports: Windows, OS X, Linux
 
 ##### Setup Instructions
 
-1. Download the rar and verify the checksum--decompress: This archive contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files. 
+1. Download the rar and verify the checksum--decompress: This archive contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
 
 2. Open VirtualBox, click "File" and then click "Import Appliance"
 
@@ -114,7 +114,7 @@ Supports: Windows, OS X, Linux
 
 #### VMWare Player (free)
 
-Website: https://www.vmware.com/products/player/  
+Website: https://www.vmware.com/products/player/
 Supports: Windows, Linux
 
 ##### Setup Instructions
@@ -127,7 +127,7 @@ Supports: Windows, Linux
 
 #### Happy Hacking!
 
-Once you have installed the virtual machine you should be able to start up the VM and login with the following credentials: 
+Once you have installed the virtual machine you should be able to start up the VM and login with the following credentials:
 - **username** : `dax`
 - **password** : `duckduckhack`
 
@@ -219,7 +219,7 @@ App::DuckPAN is up to date.
 Some of our awesome community members have written shell completion scripts for DuckPAN, which should save you tons of time. Feel free to improve these, or contribute new ones!
 
 #### Bash
-    
+
 - Submitted by: [mattr555](https://github.com/mattr555)
 - link: https://github.com/mattr555/dotfiles/blob/master/bin/duckpancomp.sh
 
