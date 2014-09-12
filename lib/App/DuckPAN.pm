@@ -15,7 +15,6 @@ use LWP::UserAgent;
 use LWP::Simple;
 use Parse::CPAN::Packages::Fast;
 use File::Temp qw/ :POSIX /;
-use Class::Load ':all';
 use Term::UI;
 use Term::ReadLine;
 use Carp;
