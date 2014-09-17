@@ -334,8 +334,13 @@ Arguments:
 
 - `[spice_package|goodie_package]` to load a specific spice or goodie instant answer only
 
-  ```duckpan query Spice::Npm```
-  ```duckpan server Goodie::MD5```
+```shell
+duckpan query Spice::Npm
+```
+
+```shell
+duckpan server Goodie::MD5
+```
 
 ### Advanced Features 
 
