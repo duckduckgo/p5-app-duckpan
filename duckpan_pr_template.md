@@ -11,3 +11,6 @@ We ask that you please use this template when submitting a pull request so we ca
 **Are you having any problems? Do you need our help with anything?**
 
 
+**Where did you hear about DuckDuckHack? (For first time contributors)**
+
+
