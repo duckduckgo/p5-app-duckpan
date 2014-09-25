@@ -284,6 +284,8 @@ Install all requirements of the specific DuckDuckHack project (if
 possible), like zeroclickinfo-spice, zeroclickinfo-goodie, duckduckgo
 or community-platform
 
+---
+
 ```shell
 duckpan roadrunner
 ```
@@ -291,12 +293,16 @@ duckpan roadrunner
 Same as `installdeps`, but avoids testing anything. Useful for speed, but
 not recommended unless you know what you are doing.
 
+---
+
 ```shell
 duckpan check
 ```
 
 Check if you fulfill all requirements for the development
 environment (this is run automatically during setup)
+
+---
 
 ```shell
 duckpan reinstall
@@ -307,14 +313,13 @@ Force installation of the latest released versions of DuckPAN and DDG
 ### Instant Answer Testing
 
 ```shell
-duckpan query
+duckpan query [spice_package|goodie_package]
 ```
 
 Test Goodie and Spice triggers interactively on the command line
 
-
 ```shell
-duckpan server [--verbose] [--no-cache] [--port <number>]
+duckpan server [--verbose] [--no-cache] [--port <number>] [spice_package|goodie_package]
 ```
 
 Test Goodie and Spice instant answers on a local web server (for design/layout purposes)
@@ -325,6 +330,18 @@ Options:
 - `--no-cache` to prevent DuckPAN's cache from being used (this forces the requested files to be pushed into the cache)
 - `--port` to specify which port DuckPAN's server should run on (defaults to 5000)
 
+Arguments:
+
+- `[spice_package|goodie_package]` to load a specific spice or goodie instant answer only
+
+```shell
+duckpan query Spice::Npm
+```
+
+```shell
+duckpan server Goodie::MD5
+```
+
 ### Advanced Features 
 
 ```shell
@@ -333,6 +350,8 @@ duckpan env
 
 View env commands and also shows the env variables currently stored in ~/.duckpan/env.ini
 
+---
+
 ```shell
 duckpan env <name> <value>
 ```
@@ -340,17 +359,23 @@ duckpan env <name> <value>
 Add an environment variable that duckpan will remember. Useful for
 spice API keys. Variables are stored in ~/.duckpan/env.ini
 
+---
+
 ```shell
 duckpan env <name>
 ```
 
 Retrieve the matching key for a given env variable.
 
+---
+
 ```shell
 duckpan env rm <name>
 ```
 
 Remove an environment variable from duckpan
+
+---
 
 ```shell
 duckpan release
