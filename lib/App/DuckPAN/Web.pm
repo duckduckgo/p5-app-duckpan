@@ -283,26 +283,37 @@ sub request {
 				# We have a Goodie result so modify HTML and return content
 				# Grab ZCI div, push in required HTML
 				my $zci_container = HTML::Element->new('div', id => "zci-answer", class => "zci zci--answer is-active");
-				$zci_container->push_content(
-					HTML::TreeBuilder->new_from_content(
-						q(<div class="cw">
-							<div class="zci__main  zci__main--detail">
-								<div class="zci__body"></div>
-							</div>
-						</div>)
-					)->guts
-				);
-				my $zci_body = $zci_container->look_down(class => 'zci__body');
+				if ($result->has_structured_answer) {
+					# Inject a script which prints out what we want.
+					# There is no error-checking or support for non-auto-templates here.
+					my $structured = $result->structured_answer;
+					my $template_name = 'goodie_'.scalar @{$structured->{input}}.'_inputs';
+					my $json_string = encode_json({Answer => $structured});
+					$zci_container->push_content(HTML::TreeBuilder->new_from_content("<script>\$(window).load(function(){"
+								. "document.getElementById('zci-answer').innerHTML = DDG.exec_template('$template_name', $json_string);"
+								. "});</script>")->guts);
+				} else {
+					$zci_container->push_content(
+						HTML::TreeBuilder->new_from_content(
+							q(<div class="cw">
+								<div class="zci__main  zci__main--detail">
+									<div class="zci__body"></div>
+								</div>
+							</div>)
+						)->guts
+					);
+					my $zci_body = $zci_container->look_down(class => 'zci__body');
 
-				# Stick the answer inside $zci_body
-				my $answer = $result->answer;
-				if ($result->has_html) {
-					my $tb = HTML::TreeBuilder->new();
-					# Specifically allow unknown tags to support <svg> and <canvas>
-					$tb->ignore_unknown(0);
-					$answer = $tb->parse_content($result->html)->guts;
+					# Stick the answer inside $zci_body
+					my $answer = $result->answer;
+					if ($result->has_html) {
+						my $tb = HTML::TreeBuilder->new();
+						# Specifically allow unknown tags to support <svg> and <canvas>
+						$tb->ignore_unknown(0);
+						$answer = $tb->parse_content($result->html)->guts;
+					}
+					$zci_body->push_content($answer);
 				}
-				$zci_body->push_content($answer);
 
 				my $zci_wrapper = $root->look_down(id => "zero_click_wrapper");
 				$zci_wrapper->insert_element($zci_container);
