@@ -133,7 +133,7 @@ sub run {
         io(file($self->app->cfg->cache_path, $_))->slurp;
     } @{$self->page_css_filenames});
     my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_filename))->slurp;
-
+    my $page_locales = io(file($self->app->cfg->cache_path,$self->page_locales_filename))->slurp;
     # Concatenate duckpan.js to g.js
     # This way duckpan.js runs after all dependencies are loaded
     my $page_templates = io(file($self->app->cfg->cache_path,$self->page_templates_filename))->slurp;
@@ -152,6 +152,7 @@ sub run {
         page_spice => $page_spice,
         page_css => $page_css,
         page_js => $page_js,
+        page_locales => $page_locales,
         page_templates => $page_templates,
         server_hostname => $self->hostname,
     );
@@ -247,6 +248,8 @@ sub change_html {
                 } else {
                     $_->attr('src','/?duckduckhack_js=1');
                 }
+            } elsif (substr($src,0,8) eq '/locales') {
+                $_->attr('src','/?duckduckhack_locales=1');
             } elsif (substr($src,0,1) eq '/') {
                 $_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
             }
@@ -296,6 +299,10 @@ sub get_assets {
                 $self->page_js_filename($1);
             } elsif ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
                 $self->page_templates_filename($1);
+            } elsif ($src =~ m/^\/(locales(?:.*)\.js)/) {
+                my $long_name = $1;
+                $long_name =~ s#/#_#g;  # Turn long path into crazy-long filename
+                $self->page_locales_filename($long_name);
             }
         }
     }
@@ -314,7 +321,7 @@ sub get_assets {
     }
 
     # Check if we need to request any new assets from hostname, otherwise use cached copies
-    for my $curr_asset ($self->page_js_filename, $self->page_templates_filename, @{$self->page_css_filenames}) {
+    for my $curr_asset ($self->page_js_filename, $self->page_templates_filename, @{$self->page_css_filenames}, $self->page_locales_filename) {
         # Request file unless cache is disabled, or cache already contains file
         if ($self->no_cache || ! -f file($self->app->cfg->cache_path,$curr_asset)) {
             my $url = 'http://'.$self->hostname.'/'.$curr_asset;
