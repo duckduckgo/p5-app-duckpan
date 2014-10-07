@@ -45,6 +45,10 @@ has page_templates_filename => (
     is => 'rw',
 );
 
+has page_locales_filename => (
+    is => 'rw',
+);
+
 # We set this into an array because there can be multiple
 # CSS files in the page.
 has page_css_filenames => (
@@ -116,36 +120,7 @@ sub run {
 
         my $path = $assets{$file_name}{'file_path'};
         my $url = 'http://'.$self->hostname.''.$path;
-        print "\nRequesting: $url..." if $self->verbose;
-        my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
-
-        if ($res->is_success){
-            print "success!\n" if $self->verbose;
-            my $content = $res->decoded_content(charset => 'none');
-
-            # Make sure we cache DDG js/css and only
-            # request new copies when they exist
-            if ($file_name eq "page_spice.html") {
-                $self->get_assets($content);
-            }
-
-            # The following block writes the requested files into the cache.
-            # Each file, depending on the type (js/css/html) first has all
-            # links within the file modified by the appropriate function
-            # ie. change_js, change_css, change_html which are explained below.
-
-            if ($file_name =~ m/\.js$/){
-                io(file($self->app->cfg->cache_path,$file_name))->print($self->change_js($content));
-            } elsif  ($file_name =~ m/\.css$/){
-                io(file($self->app->cfg->cache_path,$file_name))->print($self->change_css($content));
-            } else {
-                io(file($self->app->cfg->cache_path,$file_name))->print($self->change_html($content));
-            }
-            print "\nWrote \"$file_name\" into cache.\n" if $self->verbose;
-        } else {
-            print "[ERROR] Request for \"$file_name\" failed with response: $res\n";
-            print "\nUsing cached version";
-        }
+        $self->retrieve_and_cache($url, $file_name, 1);
     }
 
     # Pull files out of cache to be served later by DuckPAN server
@@ -343,28 +318,56 @@ sub get_assets {
         # Request file unless cache is disabled, or cache already contains file
         if ($self->no_cache || ! -f file($self->app->cfg->cache_path,$curr_asset)) {
             my $url = 'http://'.$self->hostname.'/'.$curr_asset;
-            print "\nRequesting: $url..." if $self->verbose;
-            my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
-
-            if ($res->is_success) {
-                print "Request successful!\n" if $self->verbose;
-                my $content = $res->decoded_content(charset => 'none');
-                if ($curr_asset =~ m/\.js$/){
-                    io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_js($content));
-                } elsif  ($curr_asset =~ m/\.css$/){
-                    io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_css($content));
-                } else {
-                    io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_html($content));
-                }
-                print "\nWrote \"$curr_asset\" into cache.\n" if $self->verbose;
-            } else {
-                print "[ERROR] Request for \"$curr_asset\" failed with response: $res\n";
-                print "\nUsing cached version";
-            }
+            $self->retrieve_and_cache($url, $curr_asset, 0);
         } else {
             print "\n$curr_asset already exists in cache -- no request made.\n" if $self->verbose;
         }
     }
+}
+
+sub retrieve_and_cache {
+    my ($self, $url, $file_name, $recurse) = @_;
+    # I don't think the recurse parameter is actually needed, but it maintains parity
+    # with the previous code this cay
+
+    my $cache_path = $self->app->cfg->cache_path;
+    if ($self->verbose) {
+        print "\nCache path: " . $cache_path;
+        print "\nRequesting: $url...";
+    }
+    my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
+
+    if ($res->is_success) {
+        print "success!\n" if $self->verbose;
+        my $content = $res->decoded_content(charset => 'none');
+
+        # Make sure we cache DDG js/css and only
+        # request new copies when they exist
+        if ($recurse && $file_name eq "page_spice.html") {
+            $self->get_assets($content);
+        }
+
+        # The following block writes the requested files into the cache.
+        # Each file, depending on the type (js/css/html) first has all
+        # links within the file modified by the appropriate function
+        # ie. change_js, change_css, change_html which are explained below.
+
+        my $where = file($cache_path, $file_name);
+        if ($file_name =~ m/\.js$/) {
+            io($where)->print($self->change_js($content));
+        } elsif ($file_name =~ m/\.css$/) {
+            io($where)->print($self->change_css($content));
+        } else {
+            io($where)->print($self->change_html($content));
+        }
+        print "Wrote cache: \"$where\".\n\n" if $self->verbose;
+    } else {
+        print "failed!\n" if $self->verbose;
+        print "\n[ERROR] Request for \"$file_name\" failed with response: $res->status_line\n";
+        print "Using cached version\n";
+    }
+
+    return;
 }
 
 1;
