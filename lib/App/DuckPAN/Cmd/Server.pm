@@ -352,14 +352,13 @@ sub retrieve_and_cache {
     # with the previous code this way
 
     return unless ($asset->{internal} && $asset->{external});
+
     my $asset_name = $asset->{name} // '';
     my $file_name  = $asset->{internal};
     my $url        = 'http://' . $self->hostname . '/' . $asset->{external};
-    my $cache_path = $self->app->cfg->cache_path;
-    if ($self->verbose) {
-        print "Cache path: " . $cache_path . "\n";
-        print "\nRequesting: $asset_name from $url...";
-    }
+
+    print "\nRequesting: $asset_name from $url..." if ($self->verbose);
+
     my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
     if ($res->is_success) {
@@ -372,7 +371,7 @@ sub retrieve_and_cache {
         # Choose a method for rewriting internal connections.
         my $change_method = ($file_name =~ m/\.js$/) ? 'change_js' : ($file_name =~ m/\.css$/) ? 'change_css' : 'change_html';
         # Put rewriten file into our cache.
-        my $where = file($cache_path, $file_name);
+        my $where = file($self->app->cfg->cache_path, $file_name);
         io($where)->print($self->$change_method($content));
         print "Wrote cache: \"$where\".\n\n" if $self->verbose;
     } else {
