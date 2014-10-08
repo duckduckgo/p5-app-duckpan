@@ -37,21 +37,21 @@ option port => (
     default => sub { 5000 }
 );
 
-has page_js_filename => (
+has page_js_files => (
     is => 'rw',
 );
 
-has page_templates_filename => (
+has page_templates_files => (
     is => 'rw',
 );
 
-has page_locales_filename => (
+has page_locales_files => (
     is => 'rw',
 );
 
 # We set this into an array because there can be multiple
 # CSS files in the page.
-has page_css_filenames => (
+has page_css_files_list => (
     is => 'rw',
     default => sub { [] },
 );
@@ -84,16 +84,28 @@ sub run {
     #                   - used for error page when no instant answers trigger
     #
     # page_spice.html : DDG SERP
-    #                     - this is the page we inject Spice and Goodie results into
+    #                   - this is the page we inject Spice and Goodie results into
     #
     # duckpan.js      : Small script DuckPAN runs on SERP load
     #                   - used to compile Spice templates
     #                   - stored locally, no need to make web request for this
+    #
 
-    my %assets = (
-        'page_root.html'            => { name => 'DuckDuckGo Landing Page', file_path => '/' },
-        'page_spice.html'           => { name => 'DuckDuckGo SERP', file_path => '/?q=duckduckhack-template-for-spice2' },
-        'duckpan.js'                => { } # no name/path required; always pulled from the cache
+    my @assets = ({
+            name     => 'DuckDuckGo Landing Page',
+            internal => 'page_root.html',
+            external => '/'
+        },
+        {
+            name     => 'DuckDuckGo SERP',
+            internal => 'page_spice.html',
+            external => '/?q=duckduckhack-template-for-spice2'
+        },
+        {
+            name     => 'DuckPAN JS',
+            internal => 'duckpan.js',
+            external => undef,
+        },
     );
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
@@ -109,18 +121,15 @@ sub run {
     # requested from DuckDuckGo again. Then we push this new copy of the file into
     # the DuckPAN cache.
 
-    for my $file_name (keys %assets) {
+    foreach my $asset (@assets) {
 
+        my $file_name = $asset->{internal};
         # copy all files in /share (dist_dir) into cache, unless they already exist
         unless (-f file($self->app->cfg->cache_path,$file_name)) {
             copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name));
         }
 
-        next unless defined $assets{$file_name}{'file_path'};
-
-        my $path = $assets{$file_name}{'file_path'};
-        my $url = 'http://'.$self->hostname.''.$path;
-        $self->retrieve_and_cache($url, $file_name, 1);
+        $self->retrieve_and_cache($asset, 1);
     }
 
     # Pull files out of cache to be served later by DuckPAN server
@@ -130,13 +139,13 @@ sub run {
     # Since there are multiple CSS files to slurp in,
     # we iterate through each one.
     my $page_css = join('', map { 
-        io(file($self->app->cfg->cache_path, $_))->slurp;
-    } @{$self->page_css_filenames});
-    my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_filename))->slurp;
-    my $page_locales = io(file($self->app->cfg->cache_path,$self->page_locales_filename))->slurp;
+        io(file($self->app->cfg->cache_path, $_->{internal}))->slurp;
+    } @{$self->page_css_files_list});
+    my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_files->{internal}))->slurp;
+    my $page_locales = io(file($self->app->cfg->cache_path,$self->page_locales_files->{internal}))->slurp;
     # Concatenate duckpan.js to g.js
     # This way duckpan.js runs after all dependencies are loaded
-    my $page_templates = io(file($self->app->cfg->cache_path,$self->page_templates_filename))->slurp;
+    my $page_templates = io(file($self->app->cfg->cache_path,$self->page_templates_files->{internal}))->slurp;
     $page_templates .= "\n//duckpan.js\n";
     $page_templates .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
 
@@ -232,7 +241,7 @@ sub change_html {
     my $has_dpanjs = 0;
     for (@script) {
         if (my $src = $_->attr('src')) {
-
+            next if ($src =~ m/^\/\?duckduckhack_/);    # Already updated, no need to do again
             if ($src =~ m/^\/(dpan\d+|duckpan_dev)\.js/) {
                 $_->attr('src','/?duckduckhack_js=1');
                 $has_dpanjs = 1;
@@ -248,7 +257,7 @@ sub change_html {
                 } else {
                     $_->attr('src','/?duckduckhack_js=1');
                 }
-            } elsif (substr($src,0,8) eq '/locales') {
+            } elsif ($src =~ /locales/) {
                 $_->attr('src','/?duckduckhack_locales=1');
             } elsif (substr($src,0,1) eq '/') {
                 $_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
@@ -296,13 +305,14 @@ sub get_assets {
     for (@script) {
         if (my $src = $_->attr('src')) {
             if ($src =~ m/^\/((?:dpan\d+|duckpan_dev)\.js)/) {
-                $self->page_js_filename($1);
+                $self->page_js_files({name => 'Main JS', internal => $1, external=> $1});
             } elsif ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
-                $self->page_templates_filename($1);
+                $self->page_templates_files({name=>'Templating JS',  internal => $1, external => $1});
             } elsif ($src =~ m/^\/(locales(?:.*)\.js)/) {
-                my $long_name = $1;
-                $long_name =~ s#/#_#g;  # Turn long path into crazy-long filename
-                $self->page_locales_filename($long_name);
+                my $long_path = $1;
+                my $cache_name = $long_path;
+                $cache_name =~ s#^.+(\.\d+\.\d+\.js)#locales$1#g;  # Turn long path into cacheable name
+                $self->page_locales_files({name => 'Locales JS', internal => $cache_name, external => $long_path});
             }
         }
     }
@@ -314,7 +324,8 @@ sub get_assets {
                 # We're looking for txxx.css and sxxx.css.
                 # style.css and static.css are for development mode.
                 if ($href =~ m/^\/((?:[st]\d+|style|static)\.css)/) {
-                    push(@{$self->page_css_filenames}, $1);
+                    my $name = $1;
+                    push(@{$self->page_css_files_list}, {name => $name.' CSS',internal =>  $name, external => $name});
                 }
             }
         }
@@ -324,26 +335,30 @@ sub get_assets {
         print "\nCaching turned off; assets will not be loaded.\n";
     } else {
         # Check if we need to request any new assets from hostname, otherwise use cached copies
-        for my $curr_asset ($self->page_js_filename, $self->page_templates_filename, @{$self->page_css_filenames}, $self->page_locales_filename) {
-            if (-f file($self->app->cfg->cache_path, $curr_asset)) {
-                print "\n$curr_asset already exists in cache -- no request made.\n" if $self->verbose;
+        foreach my $curr_asset ($self->page_js_files, $self->page_templates_files, @{$self->page_css_files_list}, $self->page_locales_files) {
+            my $file_name = $curr_asset->{internal};
+            if (-f file($self->app->cfg->cache_path, $file_name)) {
+                print "\n$file_name already exists in cache -- no request made.\n" if $self->verbose;
             } else {
-                my $url = 'http://' . $self->hostname . '/' . $curr_asset;
-                $self->retrieve_and_cache($url, $curr_asset, 0);
+                $self->retrieve_and_cache($curr_asset, 0);
             }
         }
     }
 }
 
 sub retrieve_and_cache {
-    my ($self, $url, $file_name, $recurse) = @_;
+    my ($self, $asset, $recurse) = @_;
     # I don't think the recurse parameter is actually needed, but it maintains parity
     # with the previous code this way
 
+    return unless ($asset->{internal} && $asset->{external});
+    my $asset_name = $asset->{name} // '';
+    my $file_name  = $asset->{internal};
+    my $url        = 'http://' . $self->hostname . '/' . $asset->{external};
     my $cache_path = $self->app->cfg->cache_path;
     if ($self->verbose) {
-        print "\nCache path: " . $cache_path;
-        print "\nRequesting: $url...";
+        print "Cache path: " . $cache_path . "\n";
+        print "\nRequesting: $asset_name from $url...";
     }
     my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
