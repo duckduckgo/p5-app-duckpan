@@ -97,9 +97,10 @@ sub run {
             external => '/'
         },
         {
-            name     => 'DuckDuckGo SERP',
-            internal => 'page_spice.html',
-            external => '/?q=duckduckhack-template-for-spice2'
+            name            => 'DuckDuckGo SERP',
+            internal        => 'page_spice.html',
+            external        => '/?q=duckduckhack-template-for-spice2',
+            load_sub_assets => 1,
         },
         {
             name     => 'DuckPAN JS',
@@ -129,7 +130,7 @@ sub run {
             copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name));
         }
 
-        $self->retrieve_and_cache($asset, 1);
+        $self->retrieve_and_cache($asset);
     }
 
     # Pull files out of cache to be served later by DuckPAN server
@@ -287,8 +288,8 @@ sub change_html {
 # any links and store them in the cache. Otherwise we
 # serve the current versions from the cache.
 
-sub get_assets {
-    my ($self, $html ) = @_;
+sub get_sub_assets {
+    my ($self, $from, $html) = @_;
 
     my $root = HTML::TreeBuilder->new;
     $root->parse($html);
@@ -340,24 +341,24 @@ sub get_assets {
             if (-f file($self->app->cfg->cache_path, $file_name)) {
                 print "\n$file_name already exists in cache -- no request made.\n" if $self->verbose;
             } else {
-                $self->retrieve_and_cache($curr_asset, 0);
+                $self->retrieve_and_cache($curr_asset, $from);
             }
         }
     }
 }
 
 sub retrieve_and_cache {
-    my ($self, $asset, $recurse) = @_;
-    # I don't think the recurse parameter is actually needed, but it maintains parity
-    # with the previous code this way
+    my ($self, $asset, $sub_of) = @_;
 
     return unless ($asset->{internal} && $asset->{external});
 
     my $asset_name = $asset->{name} // '';
     my $file_name  = $asset->{internal};
-    my $url        = 'http://' . $self->hostname . '/' . $asset->{external};
+    my $path_start = (substr($asset->{external}, 0, 1) eq '/') ? '' : '/';
+    my $url        = 'http://' . $self->hostname . $path_start . $asset->{external};
+    my $prefix     = ($sub_of) ? '  [via ' . $sub_of->{name} . '] ' : '';
 
-    print "\nRequesting: $asset_name from $url..." if ($self->verbose);
+    print "\n" . $prefix . "Requesting: $asset_name from $url..." if ($self->verbose);
 
     my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
@@ -366,14 +367,14 @@ sub retrieve_and_cache {
         my $content = $res->decoded_content(charset => 'none');
 
         # We need to load the assets on the SERPs for reuse.
-        $self->get_assets($content) if ($recurse && $file_name eq "page_spice.html");
+        $self->get_sub_assets($asset, $content) if ($asset->{load_sub_assets});
 
         # Choose a method for rewriting internal connections.
         my $change_method = ($file_name =~ m/\.js$/) ? 'change_js' : ($file_name =~ m/\.css$/) ? 'change_css' : 'change_html';
         # Put rewriten file into our cache.
         my $where = file($self->app->cfg->cache_path, $file_name);
         io($where)->print($self->$change_method($content));
-        print "Wrote cache: \"$where\".\n\n" if $self->verbose;
+        print $prefix. "Wrote $asset_name cache: \"$where\".\n" if $self->verbose;
     } else {
         print "failed!\n" if $self->verbose;
         die qq~[FATAL ERROR] Request for "$file_name" failed with response: ~ . $res->status_line . "\n";
