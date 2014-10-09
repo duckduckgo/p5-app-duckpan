@@ -37,17 +37,21 @@ option port => (
     default => sub { 5000 }
 );
 
-has page_js_filename => (
+has page_js_files => (
     is => 'rw',
 );
 
-has page_templates_filename => (
+has page_templates_files => (
+    is => 'rw',
+);
+
+has page_locales_files => (
     is => 'rw',
 );
 
 # We set this into an array because there can be multiple
 # CSS files in the page.
-has page_css_filenames => (
+has page_css_files_list => (
     is => 'rw',
     default => sub { [] },
 );
@@ -80,16 +84,29 @@ sub run {
     #                   - used for error page when no instant answers trigger
     #
     # page_spice.html : DDG SERP
-    #                     - this is the page we inject Spice and Goodie results into
+    #                   - this is the page we inject Spice and Goodie results into
     #
     # duckpan.js      : Small script DuckPAN runs on SERP load
     #                   - used to compile Spice templates
     #                   - stored locally, no need to make web request for this
+    #
 
-    my %assets = (
-        'page_root.html'            => { name => 'DuckDuckGo Landing Page', file_path => '/' },
-        'page_spice.html'           => { name => 'DuckDuckGo SERP', file_path => '/?q=duckduckhack-template-for-spice2' },
-        'duckpan.js'                => { } # no name/path required; always pulled from the cache
+    my @assets = ({
+            name     => 'DuckDuckGo Landing Page',
+            internal => 'page_root.html',
+            external => '/'
+        },
+        {
+            name            => 'DuckDuckGo SERP',
+            internal        => 'page_spice.html',
+            external        => '/?q=duckduckhack-template-for-spice2',
+            load_sub_assets => 1,
+        },
+        {
+            name     => 'DuckPAN JS',
+            internal => 'duckpan.js',
+            external => undef,
+        },
     );
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
@@ -105,47 +122,15 @@ sub run {
     # requested from DuckDuckGo again. Then we push this new copy of the file into
     # the DuckPAN cache.
 
-    for my $file_name (keys %assets) {
+    foreach my $asset (@assets) {
 
+        my $file_name = $asset->{internal};
         # copy all files in /share (dist_dir) into cache, unless they already exist
         unless (-f file($self->app->cfg->cache_path,$file_name)) {
             copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name));
         }
 
-        next unless defined $assets{$file_name}{'file_path'};
-
-        my $path = $assets{$file_name}{'file_path'};
-        my $url = 'http://'.$self->hostname.''.$path;
-        print "\nRequesting: $url..." if $self->verbose;
-        my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
-
-        if ($res->is_success){
-            print "success!\n" if $self->verbose;
-            my $content = $res->decoded_content(charset => 'none');
-
-            # Make sure we cache DDG js/css and only
-            # request new copies when they exist
-            if ($file_name eq "page_spice.html") {
-                $self->get_assets($content);
-            }
-
-            # The following block writes the requested files into the cache.
-            # Each file, depending on the type (js/css/html) first has all
-            # links within the file modified by the appropriate function
-            # ie. change_js, change_css, change_html which are explained below.
-
-            if ($file_name =~ m/\.js$/){
-                io(file($self->app->cfg->cache_path,$file_name))->print($self->change_js($content));
-            } elsif  ($file_name =~ m/\.css$/){
-                io(file($self->app->cfg->cache_path,$file_name))->print($self->change_css($content));
-            } else {
-                io(file($self->app->cfg->cache_path,$file_name))->print($self->change_html($content));
-            }
-            print "\nWrote \"$file_name\" into cache.\n" if $self->verbose;
-        } else {
-            print "[ERROR] Request for \"$file_name\" failed with response: $res\n";
-            print "\nUsing cached version";
-        }
+        $self->retrieve_and_cache($asset);
     }
 
     # Pull files out of cache to be served later by DuckPAN server
@@ -155,13 +140,13 @@ sub run {
     # Since there are multiple CSS files to slurp in,
     # we iterate through each one.
     my $page_css = join('', map { 
-        io(file($self->app->cfg->cache_path, $_))->slurp;
-    } @{$self->page_css_filenames});
-    my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_filename))->slurp;
-
+        io(file($self->app->cfg->cache_path, $_->{internal}))->slurp;
+    } @{$self->page_css_files_list});
+    my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_files->{internal}))->slurp;
+    my $page_locales = io(file($self->app->cfg->cache_path,$self->page_locales_files->{internal}))->slurp;
     # Concatenate duckpan.js to g.js
     # This way duckpan.js runs after all dependencies are loaded
-    my $page_templates = io(file($self->app->cfg->cache_path,$self->page_templates_filename))->slurp;
+    my $page_templates = io(file($self->app->cfg->cache_path,$self->page_templates_files->{internal}))->slurp;
     $page_templates .= "\n//duckpan.js\n";
     $page_templates .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
 
@@ -177,6 +162,7 @@ sub run {
         page_spice => $page_spice,
         page_css => $page_css,
         page_js => $page_js,
+        page_locales => $page_locales,
         page_templates => $page_templates,
         server_hostname => $self->hostname,
     );
@@ -256,7 +242,7 @@ sub change_html {
     my $has_dpanjs = 0;
     for (@script) {
         if (my $src = $_->attr('src')) {
-
+            next if ($src =~ m/^\/\?duckduckhack_/);    # Already updated, no need to do again
             if ($src =~ m/^\/(dpan\d+|duckpan_dev)\.js/) {
                 $_->attr('src','/?duckduckhack_js=1');
                 $has_dpanjs = 1;
@@ -272,6 +258,8 @@ sub change_html {
                 } else {
                     $_->attr('src','/?duckduckhack_js=1');
                 }
+            } elsif ($src =~ /locales/) {
+                $_->attr('src','/?duckduckhack_locales=1');
             } elsif (substr($src,0,1) eq '/') {
                 $_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
             }
@@ -297,11 +285,11 @@ sub change_html {
 # This is where we cache and check for newer versions
 # of DDG JS and CSS by parsing the HTML requested from
 # DuckDuckGo. If new files exits, we grab them, rewrite
-# any links and store them in the cache. Otherwise we 
+# any links and store them in the cache. Otherwise we
 # serve the current versions from the cache.
 
-sub get_assets {
-    my ($self, $html ) = @_;
+sub get_sub_assets {
+    my ($self, $from, $html) = @_;
 
     my $root = HTML::TreeBuilder->new;
     $root->parse($html);
@@ -318,9 +306,14 @@ sub get_assets {
     for (@script) {
         if (my $src = $_->attr('src')) {
             if ($src =~ m/^\/((?:dpan\d+|duckpan_dev)\.js)/) {
-                $self->page_js_filename($1);
+                $self->page_js_files({name => 'Main JS', internal => $1, external=> $1});
             } elsif ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
-                $self->page_templates_filename($1);
+                $self->page_templates_files({name=>'Templating JS',  internal => $1, external => $1});
+            } elsif ($src =~ m/^\/(locales(?:.*)\.js)/) {
+                my $long_path = $1;
+                my $cache_name = $long_path;
+                $cache_name =~ s#^.+(\.\d+\.\d+\.js)#locales$1#g;  # Turn long path into cacheable name
+                $self->page_locales_files({name => 'Locales JS', internal => $cache_name, external => $long_path});
             }
         }
     }
@@ -332,39 +325,66 @@ sub get_assets {
                 # We're looking for txxx.css and sxxx.css.
                 # style.css and static.css are for development mode.
                 if ($href =~ m/^\/((?:[st]\d+|style|static)\.css)/) {
-                    push(@{$self->page_css_filenames}, $1);
+                    my $name = $1;
+                    push(@{$self->page_css_files_list}, {name => $name.' CSS',internal =>  $name, external => $name});
                 }
             }
         }
     }
 
-    # Check if we need to request any new assets from hostname, otherwise use cached copies
-    for my $curr_asset ($self->page_js_filename, $self->page_templates_filename, @{$self->page_css_filenames}) {
-        # Request file unless cache is disabled, or cache already contains file
-        if ($self->no_cache || ! -f file($self->app->cfg->cache_path,$curr_asset)) {
-            my $url = 'http://'.$self->hostname.'/'.$curr_asset;
-            print "\nRequesting: $url..." if $self->verbose;
-            my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
-
-            if ($res->is_success) {
-                print "Request successful!\n" if $self->verbose;
-                my $content = $res->decoded_content(charset => 'none');
-                if ($curr_asset =~ m/\.js$/){
-                    io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_js($content));
-                } elsif  ($curr_asset =~ m/\.css$/){
-                    io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_css($content));
-                } else {
-                    io(file($self->app->cfg->cache_path,$curr_asset))->print($self->change_html($content));
-                }
-                print "\nWrote \"$curr_asset\" into cache.\n" if $self->verbose;
+    if ($self->no_cache) {
+        print "\nCaching turned off; assets will not be loaded.\n";
+    } else {
+        # Check if we need to request any new assets from hostname, otherwise use cached copies
+        foreach my $curr_asset ($self->page_js_files, $self->page_templates_files, @{$self->page_css_files_list}, $self->page_locales_files) {
+            my $file_name = $curr_asset->{internal};
+            if (-f file($self->app->cfg->cache_path, $file_name)) {
+                print "\n$file_name already exists in cache -- no request made.\n" if $self->verbose;
             } else {
-                print "[ERROR] Request for \"$curr_asset\" failed with response: $res\n";
-                print "\nUsing cached version";
+                $self->retrieve_and_cache($curr_asset, $from);
             }
-        } else {
-            print "\n$curr_asset already exists in cache -- no request made.\n" if $self->verbose;
         }
     }
+}
+
+sub retrieve_and_cache {
+    my ($self, $asset, $sub_of) = @_;
+
+    return unless ($asset->{internal} && $asset->{external});
+
+    my $file_name  = $asset->{internal};
+    my $path_start = (substr($asset->{external}, 0, 1) eq '/') ? '' : '/';
+    my $url        = 'http://' . $self->hostname . $path_start . $asset->{external};
+    my $prefix     = ($sub_of) ? '  [via ' . $sub_of->{name} . '] ' : '';
+    $prefix .= '[' . $asset->{name} . '] ';
+
+    print "\n" . $prefix . "requesting from: $url..." if ($self->verbose);
+
+    my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
+
+    if ($res->is_success) {
+        print "success!\n" if $self->verbose;
+        my $content = $res->decoded_content(charset => 'none');
+
+        # We need to load the assets on the SERPs for reuse.
+        if ($asset->{load_sub_assets}) {
+            print $prefix. "parsing for additional assets\n";
+            $self->get_sub_assets($asset, $content) if ($asset->{load_sub_assets});
+            print $prefix. "assets loaded\n";
+        }
+
+        # Choose a method for rewriting internal connections.
+        my $change_method = ($file_name =~ m/\.js$/) ? 'change_js' : ($file_name =~ m/\.css$/) ? 'change_css' : 'change_html';
+        # Put rewriten file into our cache.
+        my $where = file($self->app->cfg->cache_path, $file_name);
+        io($where)->print($self->$change_method($content));
+        print $prefix. "written to cache: $where\n" if $self->verbose;
+    } else {
+        print "failed!\n" if $self->verbose;
+        die qq~$prefix [FATAL ERROR] request failed with response: ~ . $res->status_line . "\n";
+    }
+
+    return;
 }
 
 1;
