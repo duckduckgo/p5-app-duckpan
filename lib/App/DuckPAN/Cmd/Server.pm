@@ -370,7 +370,7 @@ sub retrieve_and_cache {
         if ($asset->{load_sub_assets}) {
             print $prefix. "parsing for additional assets\n";
             $self->get_sub_assets($asset, $content) if ($asset->{load_sub_assets});
-            print $prefix. "assets loaded\n`";
+            print $prefix. "assets loaded\n";
         }
 
         # Choose a method for rewriting internal connections.
