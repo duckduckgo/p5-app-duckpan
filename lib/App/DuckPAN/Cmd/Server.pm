@@ -352,13 +352,13 @@ sub retrieve_and_cache {
 
     return unless ($asset->{internal} && $asset->{external});
 
-    my $asset_name = $asset->{name} // '';
     my $file_name  = $asset->{internal};
     my $path_start = (substr($asset->{external}, 0, 1) eq '/') ? '' : '/';
     my $url        = 'http://' . $self->hostname . $path_start . $asset->{external};
     my $prefix     = ($sub_of) ? '  [via ' . $sub_of->{name} . '] ' : '';
+    $prefix .= '[' . $asset->{name} . '] ';
 
-    print "\n" . $prefix . "Requesting: $asset_name from $url..." if ($self->verbose);
+    print "\n" . $prefix . "requesting from: $url..." if ($self->verbose);
 
     my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
 
@@ -367,17 +367,21 @@ sub retrieve_and_cache {
         my $content = $res->decoded_content(charset => 'none');
 
         # We need to load the assets on the SERPs for reuse.
-        $self->get_sub_assets($asset, $content) if ($asset->{load_sub_assets});
+        if ($asset->{load_sub_assets}) {
+            print $prefix. "parsing for additional assets\n";
+            $self->get_sub_assets($asset, $content) if ($asset->{load_sub_assets});
+            print $prefix. "assets loaded\n`";
+        }
 
         # Choose a method for rewriting internal connections.
         my $change_method = ($file_name =~ m/\.js$/) ? 'change_js' : ($file_name =~ m/\.css$/) ? 'change_css' : 'change_html';
         # Put rewriten file into our cache.
         my $where = file($self->app->cfg->cache_path, $file_name);
         io($where)->print($self->$change_method($content));
-        print $prefix. "Wrote $asset_name cache: \"$where\".\n" if $self->verbose;
+        print $prefix. "written to cache: $where\n" if $self->verbose;
     } else {
         print "failed!\n" if $self->verbose;
-        die qq~[FATAL ERROR] Request for "$file_name" failed with response: ~ . $res->status_line . "\n";
+        die qq~$prefix [FATAL ERROR] request failed with response: ~ . $res->status_line . "\n";
     }
 
     return;
