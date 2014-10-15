@@ -70,9 +70,8 @@ sub _build_hostname {
 sub run {
     my ( $self, @args ) = @_;
 
-    # Check if newer version of App::Duckpan or DDG exists
-    exit 1 unless $self->app->check_app_duckpan;
-    exit 1 unless $self->app->check_ddg;
+    # Ensure eveything is up do date, or exit.
+    $self->app->verify_versions;
 
     dir($self->app->cfg->cache_path)->mkpath unless -d $self->app->cfg->cache_path;
 

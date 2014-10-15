@@ -20,6 +20,7 @@ use Term::ReadLine;
 use Carp;
 use Encode;
 use Path::Class;
+use Perl::Version;
 use File::Path;
 
 our $VERSION ||= '9.999';
@@ -285,6 +286,29 @@ sub get_local_ddg_version {
 sub get_local_app_duckpan_version {
 	my ( $self ) = @_;
 	return $self->perl->get_local_version('App::DuckPAN');
+}
+
+my %perl_versions = (
+    required    => Perl::Version->new('v5.10'),
+    recommended => Perl::Version->new('v5.16'),
+);
+
+sub verify_versions {
+	my ($self) = @_;
+
+	my $installed_version = Perl::Version->new($]);
+
+	if ($installed_version->vcmp($perl_versions{required}) < 0) {
+		print '[ERROR] perl ' . $perl_versions{required}->normal . ' or higher is required. ' . $installed_version->normal . " is installed.\n";
+		exit 1;
+	} elsif ($installed_version->vcmp($perl_versions{recommended}) < 0) {
+		print '[NOTICE] perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ' . $installed_version->normal . " is installed.\n";
+	}
+
+	exit 1 unless $self->check_app_duckpan;
+	exit 1 unless $self->check_ddg;
+
+	return;
 }
 
 sub check_app_duckpan {
