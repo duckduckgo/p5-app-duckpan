@@ -367,9 +367,9 @@ sub retrieve_and_cache {
 
         # We need to load the assets on the SERPs for reuse.
         if ($asset->{load_sub_assets}) {
-            print $prefix. "parsing for additional assets\n";
+            print $prefix. "parsing for additional assets\n" if $self->verbose;
             $self->get_sub_assets($asset, $content) if ($asset->{load_sub_assets});
-            print $prefix. "assets loaded\n";
+            print $prefix. "assets loaded\n" if $self->verbose;
         }
 
         # Choose a method for rewriting internal connections.
