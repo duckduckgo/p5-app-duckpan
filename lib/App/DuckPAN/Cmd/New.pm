@@ -39,16 +39,18 @@ sub run {
 
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer');
+	$entered_name =~ s/\//::/g; #change "/" to "::" for easier handling
 	my $name = $self->app->phrase_to_camel($entered_name);
 	my ($path, $lc_path) = ("", "");
 	my $package_name = $name;
+	my $separated_name = $package_name;
+	$separated_name =~ s/::/ /g;
 
-	if ($entered_name =~ m/::|\//) {
-		my @path_parts = split(/::|\//, $entered_name);
+	if ($entered_name =~ m/::/) {
+		my @path_parts = split(/::/, $entered_name);
 		$name = pop @path_parts;
 		$path = join("/", @path_parts);
-		$lc_path = $self->app->camel_to_underscore($path);
-		$package_name =~ s/\//::/;
+		$lc_path = join("_", map { lc } @path_parts);
 	}
 
 	my $lc_name = $self->app->camel_to_underscore($name);
@@ -104,7 +106,14 @@ sub run {
 		}
 
 		my $tx = Text::Xslate->new();
-		my %vars = (ia_name => $name, lia_name => $lc_name);
+		my %vars = (
+			ia_name => $name,
+			ia_packge_name => $package_name,
+			ia_name_separated => $separated_name,
+			lia_name => $lc_path."_".$lc_name,
+			ia_path => $lc_path
+		);
+
 		my $content = $tx->render($source, \%vars);
 		$io->file->assert->append($content); #create file path and append to file
 		$self->app->print_text("Created file: $dest");
