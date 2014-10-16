@@ -50,7 +50,7 @@ sub run {
 		my @path_parts = split(/::/, $entered_name);
 		$name = pop @path_parts;
 		$path = join("/", @path_parts);
-		$lc_path = join("_", map { lc } @path_parts);
+		$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
 	}
 
 	my $lc_name = $self->app->camel_to_underscore($name);
@@ -106,6 +106,7 @@ sub run {
 		}
 
 		my $tx = Text::Xslate->new();
+		$lc_path =~ s/\//_/g;
 		my %vars = (
 			ia_name => $name,
 			ia_package_name => $package_name,
