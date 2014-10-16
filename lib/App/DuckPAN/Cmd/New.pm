@@ -47,7 +47,6 @@ sub run {
 		my @path_parts = split(/::|\//, $entered_name);
 		$name = pop @path_parts;
 		$path = join("/", @path_parts);
-		$path .= "/";
 		$lc_path = $self->app->camel_to_underscore($path);
 		$package_name =~ s/\//::/;
 	}
@@ -63,13 +62,13 @@ sub run {
 				"./t/$path",
 			],
 			files => {
-				"./template/lib/DDG/Goodie/Example.pm" => "./lib/DDG/Goodie/$path"."$name.pm",
-				"./template/t/Example.t" => "./t/$path"."$name.t",
+				"./template/lib/DDG/Goodie/Example.pm" => "./lib/DDG/Goodie/$path/$name.pm",
+				"./template/t/Example.t" => "./t/$path/$name.t",
 			},
 		},
 
 		Spice => {
-			share_dir => "./share/spice/$lc_path"."$lc_name",
+			share_dir => "./share/spice/$lc_path/$lc_name",
 			dirs => [
 				"./lib/DDG/Spice/$path",
 				"./t/$path",
@@ -77,10 +76,10 @@ sub run {
 				"./share/spice/$lc_path",
 			],
 			files => {
-				"./template/lib/DDG/Spice/Example.pm" => "./lib/DDG/Spice/$path"."$name.pm",
-				"./template/t/Example.t" => "./t/$path"."$name.t",
-				"./template/share/spice/example/example.handlebars" => "./share/spice/$lc_path"."$lc_name/$lc_name.handlebars",
-				"./template/share/spice/example/example.js" => "./share/spice/$lc_path"."$lc_name/$lc_name.js"
+				"./template/lib/DDG/Spice/Example.pm" => "./lib/DDG/Spice/$path/$name.pm",
+				"./template/t/Example.t" => "./t/$path/$name.t",
+				"./template/share/spice/example/example.handlebars" => "./share/spice/$lc_path/$lc_name/$lc_name.handlebars",
+				"./template/share/spice/example/example.js" => "./share/spice/$lc_path/$lc_name/$lc_name.js"
 			}
 		},
 		Fathead => {
