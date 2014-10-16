@@ -118,7 +118,7 @@ sub run {
 		$io->file->assert->append($content); #create file path and append to file
 		$self->app->print_text("Created file: $dest");
 	}
-	$self->app->print_text("Successfully created $type: $name");
+	$self->app->print_text("Successfully created $type: $package_name");
 }
 
 1;
