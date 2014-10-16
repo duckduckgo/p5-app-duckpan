@@ -108,7 +108,7 @@ sub run {
 		my $tx = Text::Xslate->new();
 		my %vars = (
 			ia_name => $name,
-			ia_packge_name => $package_name,
+			ia_package_name => $package_name,
 			ia_name_separated => $separated_name,
 			lia_name => $lc_path."_".$lc_name,
 			ia_path => $path
