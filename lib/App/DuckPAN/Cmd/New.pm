@@ -18,6 +18,25 @@ use IO::All;
 sub run {
 	my ( $self, @args ) = @_;
 
+	# Check which IA repo we're in...
+	my $type = "";
+	if (-d "./lib/DDG/Goodie") {
+		$type = "Goodie";
+	} elsif (-d "./lib/DDG/Spice") {
+		$type = "Spice";
+	} elsif (-d "./lib/DDG/Fathead") {
+		$type = "Fathead";
+		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Fatheads yet!");
+		exit -1;
+	} elsif (-d "./lib/DDG/Longtail") {
+		$type = "Longtail";
+		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Longtails yet!");
+		exit -1;
+	} else {
+		$self->app->print_text("[ERROR] No lib/DDG/Goodie, lib/DDG/Spice, lib/DDG/Fathead or lib/DDG/Longtail found");
+		exit -1;
+	}
+
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer');
 	my $name = $self->app->phrase_to_camel($entered_name);
@@ -39,7 +58,6 @@ sub run {
 	# as a guide to discovering content which is moved around
 	my %templates = (
 		Goodie => {
-			lib_dir => "./lib/DDG/Goodie",
 			dirs => [
 				"./lib/DDG/Goodie/$path",
 				"./t/$path",
@@ -51,7 +69,6 @@ sub run {
 		},
 
 		Spice => {
-			lib_dir => "./lib/DDG/Spice",
 			share_dir => "./share/spice/$lc_path"."$lc_name",
 			dirs => [
 				"./lib/DDG/Spice/$path",
@@ -67,32 +84,12 @@ sub run {
 			}
 		},
 		Fathead => {
-			lib_dir => "./lib/DDG/Fathead",
 			# [TODO] Implement Fathead templates
 		},
 		Longtail => {
-			lib_dir => "./lib/DDG/Longtail",
 			# [TODO] Implement Fathead templates
 		}
 	);
-
-	# Check which IA repo we're in...
-	my $type = "";
-	if (-d $templates{'Goodie'}{'lib_dir'}) {
-		$type = "Goodie";
-	} elsif (-d $templates{'Spice'}{'lib_dir'}) {
-		$type = "Spice";
-	} elsif (-d $templates{'Fathead'}{'lib_dir'}) {
-		$type = "Fathead";
-		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Fatheads yet!");
-		exit -1;
-	} elsif (-d $templates{'Longtail'}{'lib_dir'}) {
-		$type = "Longtail";
-		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Longtails yet!");
-		exit -1;
-	} else {
-		$self->app->print_text("[ERROR] No lib/DDG/Goodie, lib/DDG/Spice, lib/DDG/Fathead or lib/DDG/Longtail found");
-	}
 
 	while (my ($source, $dest) = each(%{$templates{$type}{'files'}})) {
 		my $io = io($dest);
