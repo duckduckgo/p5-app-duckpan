@@ -111,7 +111,7 @@ sub run {
 			ia_packge_name => $package_name,
 			ia_name_separated => $separated_name,
 			lia_name => $lc_path."_".$lc_name,
-			ia_path => $lc_path
+			ia_path => $path
 		);
 
 		my $content = $tx->render($source, \%vars);
