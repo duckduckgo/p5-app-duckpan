@@ -11,7 +11,6 @@ package App::DuckPAN::Cmd::New;
 # 	- <name.handlebars> is created in /share/spice/<name>
 
 use Moo;
-use Data::Dumper;
 with qw( App::DuckPAN::Cmd );
 use Text::Xslate qw(mark_raw);
 use IO::All;
@@ -19,98 +18,108 @@ use IO::All;
 sub run {
 	my ( $self, @args ) = @_;
 
+	# Check which IA repo we're in...
+	my $type = "";
+	if (-d "./lib/DDG/Goodie") {
+		$type = "Goodie";
+	} elsif (-d "./lib/DDG/Spice") {
+		$type = "Spice";
+	} elsif (-d "./lib/DDG/Fathead") {
+		$type = "Fathead";
+		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Fatheads yet!");
+		exit -1;
+	} elsif (-d "./lib/DDG/Longtail") {
+		$type = "Longtail";
+		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Longtails yet!");
+		exit -1;
+	} else {
+		$self->app->print_text("[ERROR] No lib/DDG/Goodie, lib/DDG/Spice, lib/DDG/Fathead or lib/DDG/Longtail found");
+		exit -1;
+	}
+
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer');
+	$entered_name =~ s/\//::/g; #change "/" to "::" for easier handling
 	my $name = $self->app->phrase_to_camel($entered_name);
+	my ($path, $lc_path) = ("", "");
+	my $package_name = $name;
+	my $separated_name = $package_name;
+	$separated_name =~ s/::/ /g;
+
+	if ($entered_name =~ m/::/) {
+		my @path_parts = split(/::/, $entered_name);
+		$name = pop @path_parts;
+		$path = join("/", @path_parts);
+		$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
+	}
+
 	my $lc_name = $self->app->camel_to_underscore($name);
 
 	# %templates forms the spine data structure which is used
 	# as a guide to discovering content which is moved around
 	my %templates = (
-		goodie => {
-			lib_dir => "./lib/DDG/Goodie",
+		Goodie => {
+			dirs => [
+				"./lib/DDG/Goodie/$path",
+				"./t/$path",
+			],
 			files => {
-				"./template/lib/DDG/Goodie/Example.pm" => "./lib/DDG/Goodie/$name.pm",
-				"./template/t/Example.t" => "./t/$name.t",
+				"./template/lib/DDG/Goodie/Example.pm" => "./lib/DDG/Goodie/$path/$name.pm",
+				"./template/t/Example.t" => "./t/$path/$name.t",
 			},
 		},
 
-		spice => {
-			lib_dir => "./lib/DDG/Spice",
-			share_dir => "./share/spice/$lc_name",
+		Spice => {
+			share_dir => "./share/spice/$lc_path/$lc_name",
+			dirs => [
+				"./lib/DDG/Spice/$path",
+				"./t/$path",
+				"./share/spice/$lc_path",
+				"./share/spice/$lc_path",
+			],
 			files => {
-				"./template/lib/DDG/Spice/Example.pm" => "./lib/DDG/Spice/$name.pm",
-				"./template/t/Example.t" => "./t/$name.t",
-				"./template/share/spice/example/example.handlebars" => "./share/spice/$lc_name/$lc_name.handlebars",
-				"./template/share/spice/example/example.js" => "./share/spice/$lc_name/$lc_name.js"
+				"./template/lib/DDG/Spice/Example.pm" => "./lib/DDG/Spice/$path/$name.pm",
+				"./template/t/Example.t" => "./t/$path/$name.t",
+				"./template/share/spice/example/example.handlebars" => "./share/spice/$lc_path/$lc_name/$lc_name.handlebars",
+				"./template/share/spice/example/example.js" => "./share/spice/$lc_path/$lc_name/$lc_name.js"
 			}
+		},
+		Fathead => {
+			# [TODO] Implement Fathead templates
+		},
+		Longtail => {
+			# [TODO] Implement Fathead templates
 		}
 	);
 
-	# Check if we're in a Goodie repository
-	if (-d $templates{'goodie'}{'lib_dir'}) {
-		
-		for my $filename (keys %{$templates{'goodie'}{'files'}}) {
-			my $dest = $templates{'goodie'}{'files'}{$filename};
-			if (-e $dest) {
-				$self->app->print_text("[ERROR] File already exists: $name $dest");
-				exit -1;
-			}
-			unless (-e $filename) {
-				$self->app->print_text("[ERROR] Template does not exist: $filename");
-				exit -1;
-			}
-		}
-
-		while (my ($source, $dest) = each(%{$templates{'goodie'}{'files'}})) {
-			my $tx = Text::Xslate->new();
-			my %vars = (ia_name => $name,	lia_name => $lc_name);
-			my $content = $tx->render($source, \%vars);
-			io($dest)->append($content);
-			$self->app->print_text("Created file: $dest");
-		}
-		$self->app->print_text("Successfully created Goodie: $name ");
-	}
-
-	# Check if we're in a Spice repository
-	elsif (-d $templates{'spice'}{'lib_dir'}) {
-
-		if (-d $templates{'spice'}{'share_dir'}) {
-			$self->app->print_text("[ERROR] Instant answer already exists: $name");
+	while (my ($source, $dest) = each(%{$templates{$type}{'files'}})) {
+		my $io = io($dest);
+		if ($io->exists) {
+			my $filename = $io->filename;
+			my $filepath= $io->filepath;
+			$self->app->print_text("[ERROR] File already exists: \"$filename\" in $filepath");
 			exit -1;
-		}	else {
-			for my $filename (keys %{$templates{'spice'}{'files'}}) {
-				my $dest = $templates{'spice'}{'files'}{$filename};
-				if (-e $dest) {
-					$self->app->print_text("[ERROR] File already exists: $name $dest");
-					exit -1;
-				}
-				unless (-e $filename) {
-					$self->app->print_text("[ERROR] Template does not exist: $filename");
-					exit -1;
-				}
-			}
-
-			mkdir $templates{'spice'}{'share_dir'};
-			while (my ($source, $dest) = each(%{$templates{'spice'}{'files'}})) {
-				my $tx = Text::Xslate->new();
-				my %vars = (ia_name => $name,
-					lia_name => $lc_name);
-				my $content = $tx->render($source, \%vars);
-
-				io($dest)->append($content);
-
-				$self->app->print_text("Created file: $dest");
-			}
-			$self->app->print_text("Successfully created Spice: $name");
 		}
-	}
+		unless (-e $source) {
+			$self->app->print_text("[ERROR] Template does not exist: $source");
+			exit -1;
+		}
 
-	# [TODO] Implement Fathead and Longtail templates
+		my $tx = Text::Xslate->new();
+		$lc_path =~ s/\//_/g;
+		my %vars = (
+			ia_name => $name,
+			ia_package_name => $package_name,
+			ia_name_separated => $separated_name,
+			lia_name => $lc_path."_".$lc_name,
+			ia_path => $path
+		);
 
-	else {
-		$self->app->print_text("[ERROR] No lib/DDG/Goodie, lib/DDG/Spice, lib/DDG/Fathead or lib/DDG/Longtail found");
+		my $content = $tx->render($source, \%vars);
+		$io->file->assert->append($content); #create file path and append to file
+		$self->app->print_text("Created file: $dest");
 	}
+	$self->app->print_text("Successfully created $type: $package_name");
 }
 
 1;
