@@ -14,7 +14,6 @@ use Moo;
 with qw( App::DuckPAN::Cmd );
 use Text::Xslate qw(mark_raw);
 use IO::All;
-use File::Path qw(make_path);
 
 sub run {
 	my ( $self, @args ) = @_;
