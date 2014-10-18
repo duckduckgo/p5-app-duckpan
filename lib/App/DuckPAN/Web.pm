@@ -83,7 +83,8 @@ sub request {
 
 	if ($request->request_uri eq "/"){
 		$response->content_type("text/html");
-		$body = $self->page_root;
+		$body = $self->page_root unless $error;
+		$body = $self->_inject_error() and $error = "" if $error;
 	} elsif (@path_parts && $path_parts[0] eq 'share') {
 		my $filename = pop @path_parts;
 		my $share_dir = join('/',@path_parts);
@@ -167,7 +168,8 @@ sub request {
 						$response->content_type($res->content_type);
 					} else {
 						p($res->status_line, color => { string => 'red' });
-						$body = "";
+						$error = encode_entities($res->status_line);
+						$body = "window.location.replace('http://127.0.0.1:5000/')";
 					}
 				}
 			}
@@ -191,6 +193,7 @@ sub request {
 		my $query = $request->param('q');
 		$query =~ s/^\s+|\s+$//g; # strip leading & trailing whitespace
 		Encode::_utf8_on($query);
+		$self->_query($query);
 		my $ddg_request = DDG::Request->new(
 			query_raw => $query,
 			location => test_location_by_env(),
@@ -225,7 +228,6 @@ sub request {
 		if (!scalar(@results)) {
 			$error = "Sorry, no hit for your plugins";
 			p($error, color => { string => 'red' });
-			$self->_query($query);
 			$page = $self->_inject_error();
 		}
 
