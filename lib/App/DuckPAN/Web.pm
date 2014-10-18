@@ -223,8 +223,8 @@ sub request {
 
 		# Check for no results
 		if (!scalar(@results)) {
-			print "NO RESULTS\n";
 			$error = "Sorry, no hit for your plugins";
+			p($error, color => { string => 'red' });
 			$self->_query($query);
 			$page = $self->_inject_error();
 		}
