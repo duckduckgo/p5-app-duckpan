@@ -31,6 +31,7 @@ has server_hostname => ( is => 'ro', required => 0 );
 has _share_dir_hash => ( is => 'rw' );
 has _path_hash => ( is => 'rw' );
 has _rewrite_hash => ( is => 'rw' );
+has _query => ( is => 'rw' );
 
 has ua => (
 	is => 'ro',
@@ -71,7 +72,7 @@ sub run_psgi {
 }
 
 my $has_common_js = 0;
-
+my $error;
 sub request {
 	my ( $self, $request ) = @_;
 	my $hostname = $self->server_hostname;
@@ -222,21 +223,10 @@ sub request {
 
 		# Check for no results
 		if (!scalar(@results)) {
-
 			print "NO RESULTS\n";
-
-			$root = HTML::TreeBuilder->new;
-			$root->parse($self->page_root);
-			my $text_field = $root->look_down(
-				"name", "q"
-			);
-			$text_field->attr( value => $query );
-			$root->find_by_tag_name('body')->push_content(
-				HTML::TreeBuilder->new_from_content(
-					q(<script type="text/javascript">seterr('Sorry, no hit for your plugins')</script>)
-				)->guts
-			);
-			$page = $root->as_HTML;
+			$error = "Sorry, no hit for your plugins";
+			$self->_query($query);
+			$page = $self->_inject_error();
 		}
 
 		# Iterate over results,
@@ -377,8 +367,8 @@ sub request {
 				} keys %{ $calls_template{$spice_name} });
 			}
 		}
-
-		$page = $root->as_HTML;
+		
+		$error ? $error = "" :  $page = $root->as_HTML;
 
 		$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
 		$page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
@@ -402,5 +392,18 @@ sub request {
 	$response->body($body);
 	return $response;
 }
-
+sub _inject_error {
+	my $self = shift;
+	my $query = $self->_query;
+	my $root = HTML::TreeBuilder->new;
+	$root->parse($self->page_root);
+	my $text_field = $root->look_down(
+		"name", "q"
+	);
+	$text_field->attr( value => $query );
+	$root->find_by_tag_name('body')->push_content(
+		HTML::TreeBuilder->new_from_content("<script type=\"text/javascript\">seterr('$error')</script>")->guts
+	);
+	return $root->as_HTML;
+}
 1;
