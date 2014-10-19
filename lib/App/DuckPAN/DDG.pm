@@ -46,17 +46,31 @@ sub get_blocks_from_current_dir {
     if (scalar @args == 0) {
         my @plugins = $finder->plugins;
         push @args, sort { $a cmp $b } @plugins;
+        @args = map {
+                $_ =~ s!/!::!g;
+                my @parts = split('::',$_);
+                shift @parts;
+                join('::',@parts);
+        } @args;
     } else {
-        @args = map { $_ = "lib::DDG::$_" unless m,^lib(::|/)DDG,; $_; } @args;
+        my $type = "";
+        if (-d "./lib/DDG/Goodie") {
+                $type = "Goodie";
+        } elsif (-d "./lib/DDG/Spice") {
+                $type = "Spice";
+        } elsif (-d "./lib/DDG/Fathead") {
+                $type = "Fathead";
+                $self->app->print_text("[ERROR] Sorry, DuckPAN does not support Fatheads yet!");
+                exit -1;
+        } elsif (-d "./lib/DDG/Longtail") {
+                $type = "Longtail";
+                $self->app->print_text("[ERROR] Sorry, DuckPAN does not support Longtails yet!");
+                exit -1;
+        }
+        @args = map { $_ = "DDG::". $type ."::$_" unless m,^lib(::|/)DDG,; $_; } @args;
     }
-    @args = map {
-        $_ =~ s!/!::!g;
-        my @parts = split('::',$_);
-        shift @parts;
-        join('::',@parts);
-    } @args;
     unless (@args) {
-        print "\n[ERROR] No DDG::Goodie::*, DDG::Spice::*, DDG::Fathead::* or DDG::Longtail::* packages found\n";
+        print "\n[ERROR] No DDG::Goodie::*, DDG::Spice::* packages found\n";
         print "\nHint: You must be in the root of your repository so that this works.\n\n";
         exit 1;
     }
