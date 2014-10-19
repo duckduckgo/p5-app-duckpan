@@ -26,6 +26,7 @@ has page_css => ( is => 'ro', required => 1 );
 has page_js => ( is => 'ro', required => 1 );
 has page_locales => ( is => 'ro', required => 1 );
 has page_templates => ( is => 'ro', required => 1 );
+has port => ( is => 'rw', required => 0 );
 has server_hostname => ( is => 'ro', required => 0 );
 
 has _share_dir_hash => ( is => 'rw' );
@@ -169,7 +170,7 @@ sub request {
 					} else {
 						p($res->status_line, color => { string => 'red' });
 						$error = encode_entities($res->status_line);
-						$body = "window.location.replace('http://127.0.0.1:5000/')";
+						$body = "window.location.replace('http://127.0.0.1:" . $self->port . "/')";
 					}
 				}
 			}
