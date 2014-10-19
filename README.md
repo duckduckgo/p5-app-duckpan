@@ -340,14 +340,16 @@ Options:
 
 Arguments:
 
-- `[spice_package|goodie_package]` to load a specific spice or goodie instant answer only
+- `[spice_package|goodie_package]` to load a specific spice or goodie instant answer only. You can also pass multiple packages.
 
 ```shell
-duckpan query Spice::Npm
+duckpan query Npm
+duckpan query Twitter IsItUp
 ```
 
 ```shell
-duckpan server Goodie::MD5
+duckpan server Movie
+duckpan server IDN Sort Morse
 ```
 
 ### Advanced Features 
