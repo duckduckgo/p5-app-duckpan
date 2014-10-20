@@ -41,9 +41,9 @@ B<duckpan query> [spice_package|goodie_package]
     Test Goodie and Spice triggers interactively on the command line. For each query, the instant answers triggered will be displayed. This tool should be used to ensure your instant answer triggers correctly.
 
     [spice_package|goodie_package]:
-        Loads the specified spice or goodie instant answer only
-        duckpan query Spice::Npm
-        duckpan query Goodie::MD5
+        Loads the specified spice or goodie instant answer only, you can pass multiple instant answers.
+        duckpan query Npm
+        duckpan query Twitter IsItUp
 
 B<duckpan server> [--verbose] [--no-cache] [--port <number>] [spice_package|goodie_package]
     Starts a local web server, which emulates the DuckDuckGo production environment. Allows for live testing of Goodie and Spice instant answers.  This tool should be used to ensure your instant answer displays correctly. For Spice instant answers, this is especially important to verify API calls are successful and no JavaScript errors exist.
@@ -59,8 +59,8 @@ B<duckpan server> [--verbose] [--no-cache] [--port <number>] [spice_package|good
 
     [spice_package|goodie_package]:
         Loads the specified spice or goodie instant answer only
-        duckpan server Spice::Npm
-        duckpan server Goodie::MD5
+        duckpan server Movie
+        duckpan server IDN Sort Morse
 
 B<duckpan help>:
     Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
