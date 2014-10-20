@@ -340,7 +340,7 @@ Options:
 
 Arguments:
 
-- `[spice_package|goodie_package]` to load a specific spice or goodie instant answer only. You can also pass multiple packages.
+- `[spice_package|goodie_package]` to load a specific spice or goodie instant answer only. You can pass multiple instant answers.
 
 ```shell
 duckpan query Npm
