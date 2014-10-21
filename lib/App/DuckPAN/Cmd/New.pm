@@ -19,41 +19,33 @@ sub run {
 	my ( $self, @args ) = @_;
 
 	# Check which IA repo we're in...
-	my $type = "";
-	if (-d "./lib/DDG/Goodie") {
-		$type = "Goodie";
-	} elsif (-d "./lib/DDG/Spice") {
-		$type = "Spice";
-	} elsif (-d "./lib/DDG/Fathead") {
-		$type = "Fathead";
-		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Fatheads yet!");
-		exit -1;
-	} elsif (-d "./lib/DDG/Longtail") {
-		$type = "Longtail";
-		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Longtails yet!");
-		exit -1;
-	} else {
-		$self->app->print_text("[ERROR] No lib/DDG/Goodie, lib/DDG/Spice, lib/DDG/Fathead or lib/DDG/Longtail found");
-		exit -1;
-	}
+	my $type = $self->app->get_ia_type();
 
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer');
 	$entered_name =~ s/\//::/g; #change "/" to "::" for easier handling
 	my $name = $self->app->phrase_to_camel($entered_name);
-	my ($path, $lc_path) = ("", "");
-	my $package_name = $name;
-	my $separated_name = $package_name;
+	my ($package_name, $separated_name, $path, $lc_path) = ($name, $name, "", "");
 	$separated_name =~ s/::/ /g;
 
 	if ($entered_name =~ m/::/) {
 		my @path_parts = split(/::/, $entered_name);
-		$name = pop @path_parts;
-		$path = join("/", @path_parts);
-		$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
+		if (scalar @path_parts > 1) {
+			$name = pop @path_parts;
+			$path = join("/", @path_parts);
+			$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
+		} else {
+			$self->app->print_text("[ERROR] Malformed input. Please provide a properaly formatted package name for your Instant Answer.");
+		}
 	}
 
 	my $lc_name = $self->app->camel_to_underscore($name);
+	my $filepath    = ($path eq "") 	? $name    : "$path/$name";
+	my $lc_filepath = ($lc_path eq "") 	? $lc_name : "$lc_path/$lc_name";
+	if (scalar $lc_path) {
+		$lc_path =~ s/\//_/g; #safe to modify, we already used this in $lc_filepath
+		$lc_name = $lc_path."_".$lc_name;
+	}
 
 	# %templates forms the spine data structure which is used
 	# as a guide to discovering content which is moved around
@@ -64,13 +56,13 @@ sub run {
 				"./t/$path",
 			],
 			files => {
-				"./template/lib/DDG/Goodie/Example.pm" => "./lib/DDG/Goodie/$path/$name.pm",
-				"./template/t/Example.t" => "./t/$path/$name.t",
+				"./template/lib/DDG/Goodie/Example.pm" => "./lib/DDG/Goodie/$filepath.pm",
+				"./template/t/Example.t" => "./t/$filepath.t",
 			},
 		},
 
 		Spice => {
-			share_dir => "./share/spice/$lc_path/$lc_name",
+			share_dir => "./share/spice/$lc_filepath",
 			dirs => [
 				"./lib/DDG/Spice/$path",
 				"./t/$path",
@@ -78,10 +70,10 @@ sub run {
 				"./share/spice/$lc_path",
 			],
 			files => {
-				"./template/lib/DDG/Spice/Example.pm" => "./lib/DDG/Spice/$path/$name.pm",
-				"./template/t/Example.t" => "./t/$path/$name.t",
-				"./template/share/spice/example/example.handlebars" => "./share/spice/$lc_path/$lc_name/$lc_name.handlebars",
-				"./template/share/spice/example/example.js" => "./share/spice/$lc_path/$lc_name/$lc_name.js"
+				"./template/lib/DDG/Spice/Example.pm" => "./lib/DDG/Spice/$filepath.pm",
+				"./template/t/Example.t" => "./t/$filepath.t",
+				"./template/share/spice/example/example.handlebars" => "./share/spice/$lc_filepath/$lc_name.handlebars",
+				"./template/share/spice/example/example.js" => "./share/spice/$lc_filepath/$lc_name.js"
 			}
 		},
 		Fathead => {
@@ -91,6 +83,11 @@ sub run {
 			# [TODO] Implement Fathead templates
 		}
 	);
+
+	unless (defined $templates{$type}) {
+		$self->app->print_text("[ERROR] No templates exist for this IA Type: $type");
+		exit -1;
+	}
 
 	while (my ($source, $dest) = each(%{$templates{$type}{'files'}})) {
 		my $io = io($dest);
@@ -106,13 +103,12 @@ sub run {
 		}
 
 		my $tx = Text::Xslate->new();
-		$lc_path =~ s/\//_/g;
 		my %vars = (
 			ia_name => $name,
 			ia_package_name => $package_name,
 			ia_name_separated => $separated_name,
-			lia_name => $lc_path."_".$lc_name,
-			ia_path => $path
+			lia_name => $lc_name,
+			ia_path => $filepath
 		);
 
 		my $content = $tx->render($source, \%vars);

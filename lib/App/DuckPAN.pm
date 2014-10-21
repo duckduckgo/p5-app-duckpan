@@ -52,7 +52,6 @@ sub _ua_string {
   my ($self) = @_;
   my $class   = ref $self || $self;
   my $version = $class->VERSION;
- 
   return "$class/$version";
 }
 
@@ -143,7 +142,7 @@ has perl => (
 	lazy => 1,
 );
 
-sub _build_perl { 
+sub _build_perl {
 	load_class('App::DuckPAN::Perl');
 	App::DuckPAN::Perl->new( app => shift );
 }
@@ -154,7 +153,7 @@ has ddg => (
 	lazy => 1,
 );
 
-sub _build_ddg { 
+sub _build_ddg {
 	load_class('App::DuckPAN::DDG');
 	App::DuckPAN::DDG->new( app => shift );
 }
@@ -358,6 +357,42 @@ sub checking_dukgo_user {
 	$response->code == 302 ? 1 : 0; # workaround, need something in dukgo
 }
 
+
+sub get_ia_type {
+	my ( $self ) = @_;
+	my $ia_type  = "";
+	my %dirs = (
+		Goodie   => "./lib/DDG/Goodie",
+		Spice    => "./lib/DDG/Spice",
+		Fathead  => "./lib/DDG/Fathead",
+		Longtail => "./lib/DDG/Longtail",
+		DuckPAN  => "./lib/App/DuckPAN"
+	);
+
+	while (my($type, $path) = each (%dirs)){
+		if (-d $path){
+			$ia_type = $type;
+			last;
+		}
+	}
+
+	unless ($ia_type) {
+		$self->print_text("[ERROR] No lib/DDG/Goodie, or lib/DDG/Spice found.");
+		exit -1;
+	}
+
+	if ($ia_type eq "Fathead" || $ia_type eq "Longtail"){
+		$self->print_text("[ERROR] Sorry, DuckPAN does not support $ia_type yet!");
+		exit -1;
+	}
+
+	if ($ia_type eq "DuckPAN"){
+		$self->print_text("[WARN] You are in the DuckPAN directory. I assume you know what you're doing?");
+	}
+
+	return $ia_type;
+}
+
 sub BUILD {
 	my ( $self ) = @_;
 	if ($^O eq 'MSWin32') {
@@ -412,11 +447,11 @@ B<IRC>:
     We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
 
 B<Repository>:
-    
+
     L<https://github.com/duckduckgo/p5-app-duckpan>
 
 B<Issue Tracker>:
-    
+
     L<https://github.com/duckduckgo/p5-app-duckpan/issues>
 
 =cut
