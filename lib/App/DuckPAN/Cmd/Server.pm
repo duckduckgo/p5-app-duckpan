@@ -70,9 +70,8 @@ sub _build_hostname {
 sub run {
     my ( $self, @args ) = @_;
 
-    # Check if newer version of App::Duckpan or DDG exists
-    exit 1 unless $self->app->check_app_duckpan;
-    exit 1 unless $self->app->check_ddg;
+    # Ensure eveything is up do date, or exit.
+    $self->app->verify_versions;
 
     dir($self->app->cfg->cache_path)->mkpath unless -d $self->app->cfg->cache_path;
 
@@ -368,9 +367,9 @@ sub retrieve_and_cache {
 
         # We need to load the assets on the SERPs for reuse.
         if ($asset->{load_sub_assets}) {
-            print $prefix. "parsing for additional assets\n";
+            print $prefix. "parsing for additional assets\n" if $self->verbose;
             $self->get_sub_assets($asset, $content) if ($asset->{load_sub_assets});
-            print $prefix. "assets loaded\n";
+            print $prefix. "assets loaded\n" if $self->verbose;
         }
 
         # Choose a method for rewriting internal connections.
