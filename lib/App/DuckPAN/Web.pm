@@ -227,7 +227,7 @@ sub request {
 
 		# Check for no results
 		if (!scalar(@results)) {
-			$error = "Sorry, no hit for your plugins";
+			$error = "Sorry, no hit for your instant answer";
 			p($error, color => { string => 'red' });
 			$page = $self->_inject_error();
 		}
