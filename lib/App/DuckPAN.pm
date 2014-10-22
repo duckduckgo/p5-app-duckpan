@@ -259,6 +259,7 @@ sub execute {
 
 sub print_text {
 	shift;
+	return unless @_;
 	for (@_) {
 		print "\n";
 		my @words = split(/\s+/,$_);
@@ -275,6 +276,14 @@ sub print_text {
 		print $current_line."\n" if length $current_line;
 	}
 	print "\n";
+}
+
+sub exit_with_msg {
+	my ($self, $exit_code, @msg) = @_;
+
+	$self->print_text('[ERROR] ' . shift @msg) if (@msg);
+	$self->print_text(@msg);
+	exit $exit_code;
 }
 
 sub camel_to_underscore {
@@ -428,14 +437,10 @@ sub get_ia_type {
 
 	my $ia_type = first { -d $_->{dir} } @{$self->ia_types};
 
-	if (!$ia_type) {
-		$self->print_text("[ERROR] Must be run from the root of a checked-out Instant Answer repository.");
-		exit -1;
-	}
+	$self->exit_with_msg(-1, 'Must be run from the root of a checked-out Instant Answer repository.') unless ($ia_type);
 
 	if ($ia_type->{supported} == 0) {
-		$self->print_text("[ERROR] Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!");
-		exit -1;
+		$self->exit_with_msg(-1, "Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!");
 	} elsif ($ia_type->{supported} == -1) {
 		$self->print_text("[WARN] You are in the " . $ia_type->{name} . " directory. I assume you know what you're doing?");
 	}

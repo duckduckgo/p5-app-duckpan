@@ -59,8 +59,8 @@ sub get_local_version {
 }
 
 sub cpanminus_install_error {
-	shift->app->print_text(
-		"[ERROR] Failure on installation of modules!",
+	shift->app->exit_with_msg(1,
+		"Failure on installation of modules!",
         "There are several possible explanations and fixes for this error:",
         "1. The download from CPAN was unsuccessful - Please restart this installer.",
         "2. Some other error occured - Please read the `build.log` mentioned in the errors and see if you can fix the problem yourself.",
@@ -68,7 +68,6 @@ sub cpanminus_install_error {
         "https://github.com/duckduckgo/p5-app-duckpan/issues",
         "Make sure to attach the `build.log` file if it exists. Otherwise, copy/paste the output you see."
 	);
-	exit 1;	
 }
 
 sub duckpan_install {
@@ -85,7 +84,6 @@ sub duckpan_install {
 	if (is_success(getstore($self->app->duckpan_packages,$tempfile))) {
 		my $packages = Parse::CPAN::Packages::Fast->new($tempfile);
 		my @to_install;
-		my $error = 0;
 		for (@modules) {
 			my $module = $packages->package($_);
 			if ($module) {
@@ -118,17 +116,14 @@ sub duckpan_install {
 				}
 				push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
 			} else {
-				$self->app->print_text("[ERROR] Can't find package ".$_." on ".$self->app->duckpan."\n");
-				$error = 1;
+				$self->app->exit_with_msg(1, "Can't find package ".$_." on ".$self->app->duckpan);
 			}
 		}
-		return 1 if $error;
 		return 0 unless @to_install;
 		unshift @to_install,'-f'  if ($force_install); # cpanm will do the actual forcing.
 		return system("cpanm ".join(" ",@to_install));
 	} else {
-		$self->app->print_text("[ERROR] Can't reach duckpan at ".$self->app->duckpan."!\n");
-		return 1;
+		$self->app->exit_with_msg(1, "Can't reach duckpan at ".$self->app->duckpan."!");
 	}
 }
 

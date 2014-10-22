@@ -35,7 +35,7 @@ sub run {
 			$path    = join("/", @path_parts);
 			$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
 		} else {
-			$self->app->print_text("[ERROR] Malformed input. Please provide a properaly formatted package name for your Instant Answer.");
+			$self->app->exit_with_msg(-1, "Malformed input. Please provide a properly formatted package name for your Instant Answer.");
 		}
 	}
 
@@ -47,10 +47,7 @@ sub run {
 		$lc_name = $lc_path . "_" . $lc_name;
 	}
 
-	if (!defined $type->{templates}) {
-		$self->app->print_text("[ERROR] No templates exist for this IA Type: ".$type->{name});
-		exit -1;
-	}
+	$self->app->exit_with_msg(-1, "No templates exist for this IA Type: " . $type->{name}) if (!defined $type->{templates});
 
 	my %template_info = %{$type->{templates}};
 	my $tx            = Text::Xslate->new();
@@ -68,16 +65,10 @@ sub run {
 	);
 	foreach my $template_type (sort keys %template_info) {
 		my ($source, $dest) = ($template_info{$template_type}{in}, $template_info{$template_type}{out});
-		unless ($source->exists) {
-			$self->app->print_text("[ERROR] Template does not exist: $source");
-			exit -1;
-		}
+		$self->app->exit_with_msg(-1, 'Template does not exist: ' . $source) unless ($source->exists);
 		# Update dest based on type:
 		$dest = $dest->file(join '/', @{$files{$template_type}});
-		if ($dest->exists) {
-			$self->app->print_text('[ERROR] File already exists: "' . $dest->filename . '" in ' . $dest->filepath);
-			exit -1;
-		}
+		$self->app->exit_with_msg(-1, 'File already exists: "' . $dest->filename . '" in ' . $dest->filepath) if ($dest->exists);
 		my $content = $tx->render("$source", \%vars);
 		$dest->file->assert->append($content);    #create file path and append to file
 		$self->app->print_text("Created file: $dest");
