@@ -21,6 +21,7 @@ use Carp;
 use Encode;
 use Path::Class;
 use File::Path;
+use IO::All;
 
 our $VERSION ||= '9.999';
 
@@ -77,6 +78,71 @@ has term => (
 );
 
 sub _build_term { Term::ReadLine->new('duckpan') }
+
+has ia_types => (
+	is => 'ro',
+	lazy => 1,
+	builder => '_build_ia_types',
+);
+
+sub _build_ia_types {
+    my @ddg_bits = ('lib', 'DDG');
+    my $t_dir = io('t');
+    return [{
+            name      => 'Goodie',
+            dir       => dir(@ddg_bits, 'Goodie'),
+            supported => 1,
+            templates => {
+                code => {
+                    in  => io('template/lib/DDG/Goodie/Example.pm'),
+                    out => io(join '/', @ddg_bits,  'Goodie')
+                },
+                test => {
+                    in  => io('template/t/Example.t'),
+                    out => $t_dir
+                },
+            },
+        },
+        {
+            name      => 'Spice',
+            dir       => dir(@ddg_bits, 'Spice'),
+            supported => 1,
+            templates => {
+                code => {
+                    in  => io('template/lib/DDG/Spice/Example.pm'),
+                    out => io(join '/', @ddg_bits,  'Spice')
+                },
+                test => {
+                    in  => io('template/t/Example.t'),
+                    out => $t_dir
+                },
+                handlebars => {
+                    in  => io('template/share/spice/example/example.handlebars'),
+                    out => io('share/spice')
+                },
+                js => {
+                    in  => io('template/share/spice/example/example.js'),
+                    out => io('share/spice')
+                },
+            },
+        },
+        {
+            name      => 'Fathead',
+            dir       => dir(@ddg_bits, 'Fathead'),
+            supported => 0
+        },
+        {
+            name      => 'Longtail',
+            dir       => dir(@ddg_bits, 'Longtail'),
+            supported => 0
+        },
+        {
+            name      => 'DuckPAN',
+            dir       => dir('lib', 'App', 'DuckPAN'),
+            supported => -1                              # Supported, with warning.
+        },
+    ];
+}
 
 sub get_reply {
 	my ( $self, $prompt, %params ) = @_;
@@ -357,37 +423,21 @@ sub checking_dukgo_user {
 	$response->code == 302 ? 1 : 0; # workaround, need something in dukgo
 }
 
-
 sub get_ia_type {
-	my ( $self ) = @_;
-	my $ia_type  = "";
-	my %dirs = (
-		Goodie   => "./lib/DDG/Goodie",
-		Spice    => "./lib/DDG/Spice",
-		Fathead  => "./lib/DDG/Fathead",
-		Longtail => "./lib/DDG/Longtail",
-		DuckPAN  => "./lib/App/DuckPAN"
-	);
+	my ($self) = @_;
 
-	while (my($type, $path) = each (%dirs)){
-		if (-d $path){
-			$ia_type = $type;
-			last;
-		}
-	}
+	my $ia_type = first { -d $_->{dir} } @{$self->ia_types};
 
-	unless ($ia_type) {
-		$self->print_text("[ERROR] No lib/DDG/Goodie, or lib/DDG/Spice found.");
+	if (!$ia_type) {
+		$self->print_text("[ERROR] Must be run from the root of a checked-out Instant Answer repository.");
 		exit -1;
 	}
 
-	if ($ia_type eq "Fathead" || $ia_type eq "Longtail"){
-		$self->print_text("[ERROR] Sorry, DuckPAN does not support $ia_type yet!");
+	if ($ia_type->{supported} == 0) {
+		$self->print_text("[ERROR] Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!");
 		exit -1;
-	}
-
-	if ($ia_type eq "DuckPAN"){
-		$self->print_text("[WARN] You are in the DuckPAN directory. I assume you know what you're doing?");
+	} elsif ($ia_type->{supported} == -1) {
+		$self->print_text("[WARN] You are in the " . $ia_type->{name} . " directory. I assume you know what you're doing?");
 	}
 
 	return $ia_type;
