@@ -26,9 +26,9 @@ has page_css => ( is => 'ro', required => 1 );
 has page_js => ( is => 'ro', required => 1 );
 has page_locales => ( is => 'ro', required => 1 );
 has page_templates => ( is => 'ro', required => 1 );
-has port => ( is => 'rw', required => 0 );
 has server_hostname => ( is => 'ro', required => 0 );
 
+has _our_hostname => ( is => 'rw' );
 has _share_dir_hash => ( is => 'rw' );
 has _path_hash => ( is => 'rw' );
 has _rewrite_hash => ( is => 'rw' );
@@ -67,6 +67,7 @@ sub BUILD {
 
 sub run_psgi {
 	my ( $self, $env ) = @_;
+	$self->_our_hostname($env->{HTTP_HOST}) unless $self->_our_hostname;
 	my $request = Plack::Request->new($env);
 	my $response = $self->request($request);
 	return $response->finalize;
@@ -170,7 +171,7 @@ sub request {
 					} else {
 						p($res->status_line, color => { string => 'red' });
 						$error = encode_entities($res->status_line);
-						$body = "window.location.replace('http://127.0.0.1:" . $self->port . "/')";
+						$body = "window.location.replace('http://" . $self->_our_hostname . "/')";
 					}
 				}
 			}

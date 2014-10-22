@@ -173,9 +173,6 @@ sub run {
     );
     #$runner->loader->watch("./lib");
     $runner->parse_options("--port", $self->port);
-    my $index = 0;
-    ++$index until eval { $runner->{options}[$index] eq 'port' };
-    $web->port($runner->{options}->[$index+1]);
     exit $runner->run;
 }
 
