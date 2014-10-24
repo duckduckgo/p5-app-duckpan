@@ -53,21 +53,8 @@ sub get_blocks_from_current_dir {
                 join('::',@parts);
         } @args;
     } else {
-        my $type = "";
-        if (-d "./lib/DDG/Goodie") {
-                $type = "Goodie";
-        } elsif (-d "./lib/DDG/Spice") {
-                $type = "Spice";
-        } elsif (-d "./lib/DDG/Fathead") {
-                $type = "Fathead";
-                $self->app->print_text("[ERROR] Sorry, DuckPAN does not support Fatheads yet!");
-                exit -1;
-        } elsif (-d "./lib/DDG/Longtail") {
-                $type = "Longtail";
-                $self->app->print_text("[ERROR] Sorry, DuckPAN does not support Longtails yet!");
-                exit -1;
-        }
-        @args = map { $_ = "DDG::". $type ."::$_" unless m,^lib(::|/)DDG,; $_; } @args;
+        my $type = $self->app->get_ia_type();
+        @args = map { $_ = "DDG::". $type->{name} ."::$_" unless m,^lib(::|/)DDG,; $_; } @args;
     }
     unless (@args) {
         print "\n[ERROR] No DDG::Goodie::*, DDG::Spice::* packages found\n";
