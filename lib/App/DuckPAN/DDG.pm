@@ -40,25 +40,21 @@ sub get_blocks_from_current_dir {
         print "\nTo get the installation command, please run: duckpan check\n\n";
         exit 1;
     }
+    my $type = $self->app->get_ia_type();
     my $finder = Module::Pluggable::Object->new(
-        search_path => ['lib/DDG/Spice','lib/DDG/Goodie','lib/DDG/Fathead','lib/DDG/Longtail'],
+        search_path => [$type->{dir}],
     );
     if (scalar @args == 0) {
         my @plugins = $finder->plugins;
         push @args, sort { $a cmp $b } @plugins;
+        @args = map {
+                $_ =~ s!/!::!g;
+                my @parts = split('::',$_);
+                shift @parts;
+                join('::',@parts);
+        } @args;
     } else {
-        @args = map { $_ = "lib::DDG::$_" unless m,^lib(::|/)DDG,; $_; } @args;
-    }
-    @args = map {
-        $_ =~ s!/!::!g;
-        my @parts = split('::',$_);
-        shift @parts;
-        join('::',@parts);
-    } @args;
-    unless (@args) {
-        print "\n[ERROR] No DDG::Goodie::*, DDG::Spice::*, DDG::Fathead::* or DDG::Longtail::* packages found\n";
-        print "\nHint: You must be in the root of your repository so that this works.\n\n";
-        exit 1;
+        @args = map { $_ = "DDG::". $type->{name} ."::$_" unless m,^lib(::|/)DDG,; $_; } @args;
     }
     require lib;
     lib->import('lib');
