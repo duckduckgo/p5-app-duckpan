@@ -321,13 +321,13 @@ Force installation of the latest released versions of DuckPAN and DDG
 ### Instant Answer Testing
 
 ```shell
-duckpan query [spice_package|goodie_package]
+duckpan query [spice_package|goodie_package] ...
 ```
 
 Test Goodie and Spice triggers interactively on the command line
 
 ```shell
-duckpan server [--verbose] [--no-cache] [--port <number>] [spice_package|goodie_package]
+duckpan server [--verbose] [--no-cache] [--port <number>] [spice_package|goodie_package] ...
 ```
 
 Test Goodie and Spice instant answers on a local web server (for design/layout purposes)
@@ -340,14 +340,16 @@ Options:
 
 Arguments:
 
-- `[spice_package|goodie_package]` to load a specific spice or goodie instant answer only
+- `[spice_package|goodie_package]` to load a specific spice or goodie instant answer only. You can pass multiple instant answers.
 
 ```shell
-duckpan query Spice::Npm
+duckpan query Npm
+duckpan query Twitter IsItUp
 ```
 
 ```shell
-duckpan server Goodie::MD5
+duckpan server Movie
+duckpan server IDN Sort Morse
 ```
 
 ### Advanced Features 
