@@ -137,11 +137,6 @@ sub _build_ia_types {
             dir       => dir(@ddg_bits, 'Longtail'),
             supported => 0
         },
-        {
-            name      => 'DuckPAN',
-            dir       => dir('lib', 'App', 'DuckPAN'),
-            supported => -1                              # Supported, with warning.
-        },
     ];
 }
 
@@ -462,12 +457,7 @@ sub get_ia_type {
 	my $ia_type = first { -d $_->{dir} } @{$self->ia_types};
 
 	$self->exit_with_msg(-1, 'Must be run from the root of a checked-out Instant Answer repository.') unless ($ia_type);
-
-	if ($ia_type->{supported} == 0) {
-		$self->exit_with_msg(-1, "Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!");
-	} elsif ($ia_type->{supported} == -1) {
-		$self->print_text("[WARN] You are in the " . $ia_type->{name} . " directory. I assume you know what you're doing?");
-	}
+	$self->exit_with_msg(-1, "Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!") if $ia_type->{supported} == 0;
 
 	return $ia_type;
 }
