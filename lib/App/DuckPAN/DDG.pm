@@ -42,7 +42,7 @@ sub get_blocks_from_current_dir {
     }
     my $type = $self->app->get_ia_type();
     my $finder = Module::Pluggable::Object->new(
-        search_path => ['lib/DDG/Spice','lib/DDG/Goodie','lib/DDG/Fathead','lib/DDG/Longtail'],
+        search_path => [$type->{dir}],
     );
     if (scalar @args == 0) {
         my @plugins = $finder->plugins;
