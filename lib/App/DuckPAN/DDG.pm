@@ -40,6 +40,7 @@ sub get_blocks_from_current_dir {
         print "\nTo get the installation command, please run: duckpan check\n\n";
         exit 1;
     }
+    my $type = $self->app->get_ia_type();
     my $finder = Module::Pluggable::Object->new(
         search_path => ['lib/DDG/Spice','lib/DDG/Goodie','lib/DDG/Fathead','lib/DDG/Longtail'],
     );
@@ -53,7 +54,6 @@ sub get_blocks_from_current_dir {
                 join('::',@parts);
         } @args;
     } else {
-        my $type = $self->app->get_ia_type();
         @args = map { $_ = "DDG::". $type->{name} ."::$_" unless m,^lib(::|/)DDG,; $_; } @args;
     }
     unless (@args) {
