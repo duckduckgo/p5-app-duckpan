@@ -16,110 +16,65 @@ use Text::Xslate qw(mark_raw);
 use IO::All;
 
 sub run {
-	my ( $self, @args ) = @_;
+	my ($self, @args) = @_;
 
 	# Check which IA repo we're in...
-	my $type = "";
-	if (-d "./lib/DDG/Goodie") {
-		$type = "Goodie";
-	} elsif (-d "./lib/DDG/Spice") {
-		$type = "Spice";
-	} elsif (-d "./lib/DDG/Fathead") {
-		$type = "Fathead";
-		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Fatheads yet!");
-		exit -1;
-	} elsif (-d "./lib/DDG/Longtail") {
-		$type = "Longtail";
-		$self->app->print_text("[ERROR] Sorry, DuckPAN does not support Longtails yet!");
-		exit -1;
-	} else {
-		$self->app->print_text("[ERROR] No lib/DDG/Goodie, lib/DDG/Spice, lib/DDG/Fathead or lib/DDG/Longtail found");
-		exit -1;
-	}
+	my $type = $self->app->get_ia_type();
 
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer');
-	$entered_name =~ s/\//::/g; #change "/" to "::" for easier handling
+	$self->app->exit_with_msg(-1, "Must supply a name for your Instant Answer.") unless $entered_name;
+	$entered_name =~ s/\//::/g;    #change "/" to "::" for easier handling
 	my $name = $self->app->phrase_to_camel($entered_name);
-	my ($path, $lc_path) = ("", "");
-	my $package_name = $name;
-	my $separated_name = $package_name;
+	my ($package_name, $separated_name, $path, $lc_path) = ($name, $name, "", "");
 	$separated_name =~ s/::/ /g;
 
 	if ($entered_name =~ m/::/) {
 		my @path_parts = split(/::/, $entered_name);
-		$name = pop @path_parts;
-		$path = join("/", @path_parts);
-		$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
+		if (scalar @path_parts > 1) {
+			$name    = pop @path_parts;
+			$path    = join("/", @path_parts);
+			$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
+		} else {
+			$self->app->exit_with_msg(-1, "Malformed input. Please provide a properly formatted package name for your Instant Answer.");
+		}
 	}
 
-	my $lc_name = $self->app->camel_to_underscore($name);
+	my $lc_name     = $self->app->camel_to_underscore($name);
+	my $filepath    = ($path eq "") ? $name : "$path/$name";
+	my $lc_filepath = ($lc_path eq "") ? $lc_name : "$lc_path/$lc_name";
+	if (scalar $lc_path) {
+		$lc_path =~ s/\//_/g;    #safe to modify, we already used this in $lc_filepath
+		$lc_name = $lc_path . "_" . $lc_name;
+	}
 
-	# %templates forms the spine data structure which is used
-	# as a guide to discovering content which is moved around
-	my %templates = (
-		Goodie => {
-			dirs => [
-				"./lib/DDG/Goodie/$path",
-				"./t/$path",
-			],
-			files => {
-				"./template/lib/DDG/Goodie/Example.pm" => "./lib/DDG/Goodie/$path/$name.pm",
-				"./template/t/Example.t" => "./t/$path/$name.t",
-			},
-		},
+	$self->app->exit_with_msg(-1, "No templates exist for this IA Type: " . $type->{name}) if (!defined $type->{templates});
 
-		Spice => {
-			share_dir => "./share/spice/$lc_path/$lc_name",
-			dirs => [
-				"./lib/DDG/Spice/$path",
-				"./t/$path",
-				"./share/spice/$lc_path",
-				"./share/spice/$lc_path",
-			],
-			files => {
-				"./template/lib/DDG/Spice/Example.pm" => "./lib/DDG/Spice/$path/$name.pm",
-				"./template/t/Example.t" => "./t/$path/$name.t",
-				"./template/share/spice/example/example.handlebars" => "./share/spice/$lc_path/$lc_name/$lc_name.handlebars",
-				"./template/share/spice/example/example.js" => "./share/spice/$lc_path/$lc_name/$lc_name.js"
-			}
-		},
-		Fathead => {
-			# [TODO] Implement Fathead templates
-		},
-		Longtail => {
-			# [TODO] Implement Fathead templates
-		}
+	my %template_info = %{$type->{templates}};
+	my $tx            = Text::Xslate->new();
+	my %files         = (
+		test       => ["$filepath.t"],
+		code       => ["$filepath.pm"],
+		handlebars => [$lc_filepath, "$lc_name.handlebars"],
+		js         => [$lc_filepath, "$lc_name.js"]);
+	my %vars = (
+		ia_name           => $name,
+		ia_package_name   => $package_name,
+		ia_name_separated => $separated_name,
+		lia_name          => $lc_name,
+		ia_path           => $filepath
 	);
-
-	while (my ($source, $dest) = each(%{$templates{$type}{'files'}})) {
-		my $io = io($dest);
-		if ($io->exists) {
-			my $filename = $io->filename;
-			my $filepath= $io->filepath;
-			$self->app->print_text("[ERROR] File already exists: \"$filename\" in $filepath");
-			exit -1;
-		}
-		unless (-e $source) {
-			$self->app->print_text("[ERROR] Template does not exist: $source");
-			exit -1;
-		}
-
-		my $tx = Text::Xslate->new();
-		$lc_path =~ s/\//_/g;
-		my %vars = (
-			ia_name => $name,
-			ia_package_name => $package_name,
-			ia_name_separated => $separated_name,
-			lia_name => $lc_path."_".$lc_name,
-			ia_path => $path
-		);
-
-		my $content = $tx->render($source, \%vars);
-		$io->file->assert->append($content); #create file path and append to file
+	foreach my $template_type (sort keys %template_info) {
+		my ($source, $dest) = ($template_info{$template_type}{in}, $template_info{$template_type}{out});
+		$self->app->exit_with_msg(-1, 'Template does not exist: ' . $source) unless ($source->exists);
+		# Update dest based on type:
+		$dest = $dest->file(join '/', @{$files{$template_type}});
+		$self->app->exit_with_msg(-1, 'File already exists: "' . $dest->filename . '" in ' . $dest->filepath) if ($dest->exists);
+		my $content = $tx->render("$source", \%vars);
+		$dest->file->assert->append($content);    #create file path and append to file
 		$self->app->print_text("Created file: $dest");
 	}
-	$self->app->print_text("Successfully created $type: $package_name");
+	$self->app->print_text("Successfully created " . $type->{name} . ": $package_name");
 }
 
 1;

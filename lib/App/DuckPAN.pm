@@ -22,6 +22,7 @@ use Encode;
 use Path::Class;
 use Perl::Version;
 use File::Path;
+use IO::All;
 
 our $VERSION ||= '9.999';
 
@@ -53,7 +54,6 @@ sub _ua_string {
   my ($self) = @_;
   my $class   = ref $self || $self;
   my $version = $class->VERSION;
- 
   return "$class/$version";
 }
 
@@ -79,6 +79,71 @@ has term => (
 );
 
 sub _build_term { Term::ReadLine->new('duckpan') }
+
+has ia_types => (
+	is => 'ro',
+	lazy => 1,
+	builder => '_build_ia_types',
+);
+
+sub _build_ia_types {
+    my @ddg_bits = ('lib', 'DDG');
+    my $t_dir = io('t');
+    return [{
+            name      => 'Goodie',
+            dir       => dir(@ddg_bits, 'Goodie'),
+            supported => 1,
+            templates => {
+                code => {
+                    in  => io('template/lib/DDG/Goodie/Example.pm'),
+                    out => io(join '/', @ddg_bits,  'Goodie')
+                },
+                test => {
+                    in  => io('template/t/Example.t'),
+                    out => $t_dir
+                },
+            },
+        },
+        {
+            name      => 'Spice',
+            dir       => dir(@ddg_bits, 'Spice'),
+            supported => 1,
+            templates => {
+                code => {
+                    in  => io('template/lib/DDG/Spice/Example.pm'),
+                    out => io(join '/', @ddg_bits,  'Spice')
+                },
+                test => {
+                    in  => io('template/t/Example.t'),
+                    out => $t_dir
+                },
+                handlebars => {
+                    in  => io('template/share/spice/example/example.handlebars'),
+                    out => io('share/spice')
+                },
+                js => {
+                    in  => io('template/share/spice/example/example.js'),
+                    out => io('share/spice')
+                },
+            },
+        },
+        {
+            name      => 'Fathead',
+            dir       => dir(@ddg_bits, 'Fathead'),
+            supported => 0
+        },
+        {
+            name      => 'Longtail',
+            dir       => dir(@ddg_bits, 'Longtail'),
+            supported => 0
+        },
+        {
+            name      => 'DuckPAN',
+            dir       => dir('lib', 'App', 'DuckPAN'),
+            supported => -1                              # Supported, with warning.
+        },
+    ];
+}
 
 sub get_reply {
 	my ( $self, $prompt, %params ) = @_;
@@ -144,7 +209,7 @@ has perl => (
 	lazy => 1,
 );
 
-sub _build_perl { 
+sub _build_perl {
 	load_class('App::DuckPAN::Perl');
 	App::DuckPAN::Perl->new( app => shift );
 }
@@ -155,7 +220,7 @@ has ddg => (
 	lazy => 1,
 );
 
-sub _build_ddg { 
+sub _build_ddg {
 	load_class('App::DuckPAN::DDG');
 	App::DuckPAN::DDG->new( app => shift );
 }
@@ -195,6 +260,7 @@ sub execute {
 
 sub print_text {
 	shift;
+	return unless @_;
 	for (@_) {
 		print "\n";
 		my @words = split(/\s+/,$_);
@@ -211,6 +277,14 @@ sub print_text {
 		print $current_line."\n" if length $current_line;
 	}
 	print "\n";
+}
+
+sub exit_with_msg {
+	my ($self, $exit_code, @msg) = @_;
+
+	$self->print_text('[ERROR] ' . shift @msg) if (@msg);
+	$self->print_text(@msg);
+	exit $exit_code;
 }
 
 sub camel_to_underscore {
@@ -382,6 +456,22 @@ sub checking_dukgo_user {
 	$response->code == 302 ? 1 : 0; # workaround, need something in dukgo
 }
 
+sub get_ia_type {
+	my ($self) = @_;
+
+	my $ia_type = first { -d $_->{dir} } @{$self->ia_types};
+
+	$self->exit_with_msg(-1, 'Must be run from the root of a checked-out Instant Answer repository.') unless ($ia_type);
+
+	if ($ia_type->{supported} == 0) {
+		$self->exit_with_msg(-1, "Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!");
+	} elsif ($ia_type->{supported} == -1) {
+		$self->print_text("[WARN] You are in the " . $ia_type->{name} . " directory. I assume you know what you're doing?");
+	}
+
+	return $ia_type;
+}
+
 sub BUILD {
 	my ( $self ) = @_;
 	if ($^O eq 'MSWin32') {
@@ -436,11 +526,11 @@ B<IRC>:
     We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
 
 B<Repository>:
-    
+
     L<https://github.com/duckduckgo/p5-app-duckpan>
 
 B<Issue Tracker>:
-    
+
     L<https://github.com/duckduckgo/p5-app-duckpan/issues>
 
 =cut
