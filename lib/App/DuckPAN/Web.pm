@@ -28,9 +28,11 @@ has page_locales => ( is => 'ro', required => 1 );
 has page_templates => ( is => 'ro', required => 1 );
 has server_hostname => ( is => 'ro', required => 0 );
 
+has _our_hostname => ( is => 'rw' );
 has _share_dir_hash => ( is => 'rw' );
 has _path_hash => ( is => 'rw' );
 has _rewrite_hash => ( is => 'rw' );
+has _query => ( is => 'rw' );
 
 has ua => (
 	is => 'ro',
@@ -65,13 +67,14 @@ sub BUILD {
 
 sub run_psgi {
 	my ( $self, $env ) = @_;
+	$self->_our_hostname($env->{HTTP_HOST}) unless $self->_our_hostname;
 	my $request = Plack::Request->new($env);
 	my $response = $self->request($request);
 	return $response->finalize;
 }
 
 my $has_common_js = 0;
-
+my $error;
 sub request {
 	my ( $self, $request ) = @_;
 	my $hostname = $self->server_hostname;
@@ -82,7 +85,8 @@ sub request {
 
 	if ($request->request_uri eq "/"){
 		$response->content_type("text/html");
-		$body = $self->page_root;
+		$body = $self->page_root unless $error;
+		$body = $self->_inject_error() and $error = "" if $error;
 	} elsif (@path_parts && $path_parts[0] eq 'share') {
 		my $filename = pop @path_parts;
 		my $share_dir = join('/',@path_parts);
@@ -166,7 +170,8 @@ sub request {
 						$response->content_type($res->content_type);
 					} else {
 						p($res->status_line, color => { string => 'red' });
-						$body = "";
+						$error = encode_entities($res->status_line);
+						$body = "window.location.replace('http://" . $self->_our_hostname . "/')";
 					}
 				}
 			}
@@ -190,6 +195,7 @@ sub request {
 		my $query = $request->param('q');
 		$query =~ s/^\s+|\s+$//g; # strip leading & trailing whitespace
 		Encode::_utf8_on($query);
+		$self->_query($query);
 		my $ddg_request = DDG::Request->new(
 			query_raw => $query,
 			location => test_location_by_env(),
@@ -222,21 +228,9 @@ sub request {
 
 		# Check for no results
 		if (!scalar(@results)) {
-
-			print "NO RESULTS\n";
-
-			$root = HTML::TreeBuilder->new;
-			$root->parse($self->page_root);
-			my $text_field = $root->look_down(
-				"name", "q"
-			);
-			$text_field->attr( value => $query );
-			$root->find_by_tag_name('body')->push_content(
-				HTML::TreeBuilder->new_from_content(
-					q(<script type="text/javascript">seterr('Sorry, no hit for your plugins')</script>)
-				)->guts
-			);
-			$page = $root->as_HTML;
+			$error = "Sorry, no hit for your instant answer";
+			p($error, color => { string => 'red' });
+			$page = $self->_inject_error();
 		}
 
 		# Iterate over results,
@@ -377,8 +371,8 @@ sub request {
 				} keys %{ $calls_template{$spice_name} });
 			}
 		}
-
-		$page = $root->as_HTML;
+		
+		$error ? $error = "" :  $page = $root->as_HTML;
 
 		$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
 		$page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
@@ -402,5 +396,18 @@ sub request {
 	$response->body($body);
 	return $response;
 }
-
+sub _inject_error {
+	my $self = shift;
+	my $query = $self->_query;
+	my $root = HTML::TreeBuilder->new;
+	$root->parse($self->page_root);
+	my $text_field = $root->look_down(
+		"name", "q"
+	);
+	$text_field->attr( value => $query );
+	$root->find_by_tag_name('body')->push_content(
+		HTML::TreeBuilder->new_from_content("<script type=\"text/javascript\">seterr('$error')</script>")->guts
+	);
+	return $root->as_HTML;
+}
 1;

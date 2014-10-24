@@ -53,7 +53,7 @@ sub run {
 				}
 			}
 			unless ($hit) {
-				print "\nSorry, no hit on your plugins\n\n";
+				print "\nSorry, no hit on your instant answer\n\n";
 			}
 		};
 		if ($@) {
