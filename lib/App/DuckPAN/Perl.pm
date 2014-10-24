@@ -6,7 +6,7 @@ with 'App::DuckPAN::HasApp';
 
 use Config::INI;
 use Dist::Zilla::Util;
-use Path::Class;
+use Path::Tiny;
 use Config::INI::Reader;
 use Config::INI::Writer;
 use Data::Dumper;
@@ -18,7 +18,7 @@ use Parse::CPAN::Packages::Fast;
 use Class::Load ':all';
 
 sub dzil_root { Dist::Zilla::Util->_global_config_root }
-sub dzil_config { file(shift->dzil_root,'config.ini') }
+sub dzil_config { path(shift->dzil_root,'config.ini') }
 
 sub setup {
 	my ( $self, %params ) = @_;

@@ -5,6 +5,7 @@ use Moo;
 use DDG::Request;
 use DDG::Test::Location;
 use DDG::Test::Language;
+use Path::Tiny;
 use Plack::Request;
 use Plack::Response;
 use Plack::MIME;
@@ -12,7 +13,6 @@ use HTML::Entities;
 use HTML::TreeBuilder;
 use HTML::Element;
 use Data::Printer;
-use IO::All;
 use HTTP::Request;
 use LWP::UserAgent;
 use URI::Escape;
@@ -103,14 +103,14 @@ sub request {
 			my $parent_name = $2;
 			my $common_js = $parent_dir."$parent_name.js";
 
-			$body = io($common_js)->slurp;
+			$body = path($common_js)->slurp_utf8;
 			warn "\nAppended $common_js to $filename\n\n";
 		}
 
 		my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename);
 		my $content_type = Plack::MIME->mime_type($filename);
 		$response->content_type($content_type);
-		$body .= -f $filename_path ? io($filename_path)->slurp : "";
+		$body .= -f $filename_path ? path($filename_path)->slurp_utf8 : "";
 
 	} elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
 		for (keys %{$self->_path_hash}) {
@@ -251,27 +251,22 @@ sub request {
 				&& $result->caller->can('module_share_dir')) {
 				# grab associated JS, Handlebars and CSS
 				# and add them to correct arrays for injection into page
-				my $io;
-				my @files;
-				my $share_dir = $result->caller->module_share_dir;
+				my $share_dir = path($result->caller->module_share_dir);
 				my @path = split(/\/+/, $share_dir);
 				my $ia_name = join("_", @path[2..$#path]);
 
-				$io = io($result->caller->module_share_dir);
-				push(@files, @$io);
-
-				foreach (@files){
-					if ($_->filename =~ /$ia_name\.js$/){
+				foreach ($share_dir->children) {
+					my $name = $_->basename;
+					if ($name =~ /$ia_name\.js$/){
 						push (@calls_script, $_);
 
-					} elsif ($_->filename =~ /$ia_name\.css$/){
+					} elsif ($name =~ /$ia_name\.css$/){
 						push (@calls_nrc, $_);
 
-					} elsif ($_->filename =~ /^.+handlebars$/){
-						my $template_name = $_->filename;
-						$template_name =~ s/\.handlebars//;
-						$calls_template{$ia_name}{$template_name}{"content"} = $_;
-						$calls_template{$ia_name}{$template_name}{"is_ct_self"} = $result->call_type eq 'self';
+					} elsif ($name =~ /handlebars$/){
+						$name =~ s/\.handlebars//;
+						$calls_template{$ia_name}{$name}{"content"} = $_;
+						$calls_template{$ia_name}{$name}{"is_ct_self"} = $result->call_type eq 'self';
 					}
 				}
 				push (@calls_nrj, $result->call_path) if ($result->can('call_path'));
@@ -365,7 +360,7 @@ sub request {
 				$calls_script .= join("",map {
 					my $template_name = $_;
 					my $is_ct_self = $calls_template{$spice_name}{$template_name}{"is_ct_self"};
-					my $template_content = $calls_template{$spice_name}{$template_name}{"content"}->slurp;
+					my $template_content = $calls_template{$spice_name}{$template_name}{"content"}->slurp_utf8;
 					"<script class='duckduckhack_spice_template' spice-name='$spice_name' template-name='$template_name' is-ct-self='$is_ct_self' type='text/plain'>$template_content</script>"
 
 				} keys %{ $calls_template{$spice_name} });

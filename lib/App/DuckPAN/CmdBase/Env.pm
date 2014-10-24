@@ -2,7 +2,7 @@ package App::DuckPAN::CmdBase::Env;
 # ABSTRACT: Base class for ENV related functionality of duckpan (duckpan env and duckpan rm)
 
 use MooX qw( Options );
-use Path::Class;
+use Path::Tiny;
 use Config::INI;
 
 has env_ini => (
@@ -11,7 +11,7 @@ has env_ini => (
   builder => 1,
 );
 
-sub _build_env_ini { file(shift->app->cfg->config_path, 'env.ini') }
+sub _build_env_ini { path(shift->app->cfg->config_path, 'env.ini') }
 
 sub load_env_ini {
   my ( $self ) = @_;

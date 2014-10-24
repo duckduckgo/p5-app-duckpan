@@ -19,10 +19,9 @@ use Term::UI;
 use Term::ReadLine;
 use Carp;
 use Encode;
-use Path::Class;
 use Perl::Version;
 use File::Path;
-use IO::All;
+use Path::Tiny;
 
 our $VERSION ||= '9.999';
 
@@ -87,54 +86,54 @@ has ia_types => (
 );
 
 sub _build_ia_types {
-    my @ddg_bits = ('lib', 'DDG');
-    my $t_dir = io('t');
+    my $ddg_path = path('lib', 'DDG');
+    my $t_dir = path('t');
     return [{
             name      => 'Goodie',
-            dir       => dir(@ddg_bits, 'Goodie'),
+            dir       => $ddg_path->child('Goodie'),
             supported => 1,
             templates => {
                 code => {
-                    in  => io('template/lib/DDG/Goodie/Example.pm'),
-                    out => io(join '/', @ddg_bits,  'Goodie')
+                    in  => path('template', 'lib', 'DDG', 'Goodie', 'Example.pm'),
+                    out => $ddg_path->child('Goodie')
                 },
                 test => {
-                    in  => io('template/t/Example.t'),
+                    in  => path('template', 't', 'Example.t'),
                     out => $t_dir
                 },
             },
         },
         {
             name      => 'Spice',
-            dir       => dir(@ddg_bits, 'Spice'),
+            dir       => $ddg_path->child('Spice'),
             supported => 1,
             templates => {
                 code => {
-                    in  => io('template/lib/DDG/Spice/Example.pm'),
-                    out => io(join '/', @ddg_bits,  'Spice')
+                    in  => path('template', 'lib', 'DDG', 'Spice', 'Example.pm'),
+                    out => $ddg_path->child('Spice')
                 },
                 test => {
-                    in  => io('template/t/Example.t'),
+                    in  => path('template', 't', 'Example.t'),
                     out => $t_dir
                 },
                 handlebars => {
-                    in  => io('template/share/spice/example/example.handlebars'),
-                    out => io('share/spice')
+                    in  => path('template', 'share', 'spice', 'example', 'example.handlebars'),
+                    out => path('share',    'spice')
                 },
                 js => {
-                    in  => io('template/share/spice/example/example.js'),
-                    out => io('share/spice')
+                    in  => path('template', 'share', 'spice', 'example', 'example.js'),
+                    out => path('share',    'spice')
                 },
             },
         },
         {
             name      => 'Fathead',
-            dir       => dir(@ddg_bits, 'Fathead'),
+            dir       => $ddg_path->child('Fathead'),
             supported => 0
         },
         {
             name      => 'Longtail',
-            dir       => dir(@ddg_bits, 'Longtail'),
+            dir       => $ddg_path->child('Longtail'),
             supported => 0
         },
     ];
@@ -468,9 +467,9 @@ sub BUILD {
 		print "\n[ERROR] We dont support Win32\n\n";
 		exit 1;
 	}
-    my $env_config = file($self->cfg->config_path, 'env.ini');
-    if (-e $env_config) {
-        my $env = Config::INI::Reader->read_file(file($self->cfg->config_path, 'env.ini'));
+    my $env_config = path($self->cfg->config_path, 'env.ini');
+    if ($env_config->exists) {
+        my $env = Config::INI::Reader->read_file($env_config);
         map { $ENV{$_} = $env->{'_'}{$_}; } keys %{$env->{'_'}} if $env->{'_'};
     }
 }

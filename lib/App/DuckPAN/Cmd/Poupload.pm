@@ -7,7 +7,6 @@ with qw( App::DuckPAN::Cmd );
 use MooX::Options protect_argv => 0;
 use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
-use Path::Class;
 use Dist::Zilla::Util;
 
 option domain => (

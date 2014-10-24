@@ -13,7 +13,8 @@ package App::DuckPAN::Cmd::New;
 use Moo;
 with qw( App::DuckPAN::Cmd );
 use Text::Xslate qw(mark_raw);
-use IO::All;
+use Path::Tiny;
+
 
 sub run {
 	my ($self, @args) = @_;
@@ -68,10 +69,10 @@ sub run {
 		my ($source, $dest) = ($template_info{$template_type}{in}, $template_info{$template_type}{out});
 		$self->app->exit_with_msg(-1, 'Template does not exist: ' . $source) unless ($source->exists);
 		# Update dest based on type:
-		$dest = $dest->file(join '/', @{$files{$template_type}});
-		$self->app->exit_with_msg(-1, 'File already exists: "' . $dest->filename . '" in ' . $dest->filepath) if ($dest->exists);
+		$dest = $dest->child(@{$files{$template_type}});
+		$self->app->exit_with_msg(-1, 'File already exists: "' . $dest->basename . '" in ' . $dest->parent) if ($dest->exists);
 		my $content = $tx->render("$source", \%vars);
-		$dest->file->assert->append($content);    #create file path and append to file
+		$dest->touchpath->append_utf8($content);    #create file path and append to file
 		$self->app->print_text("Created file: $dest");
 	}
 	$self->app->print_text("Successfully created " . $type->{name} . ": $package_name");

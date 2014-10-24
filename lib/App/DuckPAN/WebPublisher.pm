@@ -4,11 +4,9 @@ package App::DuckPAN::WebPublisher;
 use Moo;
 with qw( App::DuckPAN::HasApp );
 
-use IO::All -utf8;
 use HTTP::Request;
 use Plack::Request;
 use Plack::Response;
-use Path::Class;
 
 has sites => ( is => 'ro', required => 1 );
 
