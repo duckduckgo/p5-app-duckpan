@@ -56,11 +56,6 @@ sub get_blocks_from_current_dir {
     } else {
         @args = map { $_ = "DDG::". $type->{name} ."::$_" unless m,^lib(::|/)DDG,; $_; } @args;
     }
-    unless (@args) {
-        print "\n[ERROR] No DDG::Goodie::*, DDG::Spice::* packages found\n";
-        print "\nHint: You must be in the root of your repository so that this works.\n\n";
-        exit 1;
-    }
     require lib;
     lib->import('lib');
     print "\nUsing the following DDG instant answers:\n\n";
