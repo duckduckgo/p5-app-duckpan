@@ -363,7 +363,7 @@ sub get_local_app_duckpan_version {
 }
 
 my %perl_versions = (
-    required    => Perl::Version->new('v5.10'),
+    required    => Perl::Version->new('v5.14'),
     recommended => Perl::Version->new('v5.16'),
 );
 
