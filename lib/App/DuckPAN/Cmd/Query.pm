@@ -8,7 +8,7 @@ with qw( App::DuckPAN::Cmd );
 sub run {
 	my ( $self, @args ) = @_;
 
-	$self->verify_versions;
+	$self->app->verify_versions;
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
 	require App::DuckPAN::Query;
