@@ -124,9 +124,12 @@ sub run {
     foreach my $asset (@assets) {
 
         my $file_name = $asset->{internal};
+        my $from_file = path(dist_dir('App-DuckPAN'), $file_name);
         my $to_file   = $cache_path->child($file_name);
         # copy all files in /share (dist_dir) into cache, unless they already exist
-        path(dist_dir('App-DuckPAN'), $file_name)->copy($to_file) unless ($to_file->exists);
+        if ($from_file->exists){
+            $from_file->copy($to_file) unless ($to_file->exists);
+        }
 
         $self->retrieve_and_cache($asset);
     }
