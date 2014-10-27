@@ -8,8 +8,7 @@ use MooX::Options protect_argv => 0;
 use Plack::Runner;
 use File::ShareDir::ProjectDistDir;
 use File::Copy;
-use Path::Class;
-use IO::All -utf8;
+use Path::Tiny;
 use LWP::Simple;
 use HTML::TreeBuilder;
 use Config::INI;
@@ -72,8 +71,9 @@ sub run {
 
     # Ensure eveything is up do date, or exit.
     $self->app->verify_versions;
+    my $cache_path = path($self->app->cfg->cache_path);
 
-    dir($self->app->cfg->cache_path)->mkpath unless -d $self->app->cfg->cache_path;
+    $cache_path->mkpath unless $cache_path->exists;
 
     # This hash contains files which DuckPAN requests
     # and stores locally in its own cache
@@ -124,30 +124,27 @@ sub run {
     foreach my $asset (@assets) {
 
         my $file_name = $asset->{internal};
+        my $to_file   = $cache_path->child($file_name);
         # copy all files in /share (dist_dir) into cache, unless they already exist
-        unless (-f file($self->app->cfg->cache_path,$file_name)) {
-            copy(file(dist_dir('App-DuckPAN'),$file_name),file($self->app->cfg->cache_path,$file_name));
-        }
+        path(dist_dir('App-DuckPAN'), $file_name)->copy($to_file) unless ($to_file->exists);
 
         $self->retrieve_and_cache($asset);
     }
 
     # Pull files out of cache to be served later by DuckPAN server
-    my $page_root = io(file($self->app->cfg->cache_path,'page_root.html'))->slurp;
-    my $page_spice = io(file($self->app->cfg->cache_path,'page_spice.html'))->slurp;
-    
+    my $page_root  = $cache_path->child('page_root.html')->slurp_utf8;
+    my $page_spice = $cache_path->child('page_spice.html')->slurp_utf8;
+
     # Since there are multiple CSS files to slurp in,
     # we iterate through each one.
-    my $page_css = join('', map { 
-        io(file($self->app->cfg->cache_path, $_->{internal}))->slurp;
-    } @{$self->page_css_files_list});
-    my $page_js = io(file($self->app->cfg->cache_path,$self->page_js_files->{internal}))->slurp;
-    my $page_locales = io(file($self->app->cfg->cache_path,$self->page_locales_files->{internal}))->slurp;
+    my $page_css = join('', map { $cache_path->child($_->{internal})->slurp_utf8 } @{$self->page_css_files_list});
+    my $page_js = $cache_path->child($self->page_js_files->{internal})->slurp_utf8;
+    my $page_locales = $cache_path->child($self->page_locales_files->{internal})->slurp_utf8;
     # Concatenate duckpan.js to g.js
     # This way duckpan.js runs after all dependencies are loaded
-    my $page_templates = io(file($self->app->cfg->cache_path,$self->page_templates_files->{internal}))->slurp;
+    my $page_templates = $cache_path->child($self->page_templates_files->{internal})->slurp_utf8;
     $page_templates .= "\n//duckpan.js\n";
-    $page_templates .= io(file($self->app->cfg->cache_path,'duckpan.js'))->slurp;
+    $page_templates .= $cache_path->child('duckpan.js')->slurp_utf8;
 
     print "\n\nStarting up webserver...";
     print "\n\nYou can stop the webserver with Ctrl-C";
@@ -337,7 +334,7 @@ sub get_sub_assets {
         # Check if we need to request any new assets from hostname, otherwise use cached copies
         foreach my $curr_asset ($self->page_js_files, $self->page_templates_files, @{$self->page_css_files_list}, $self->page_locales_files) {
             my $file_name = $curr_asset->{internal};
-            if (-f file($self->app->cfg->cache_path, $file_name)) {
+            if (path($self->app->cfg->cache_path, $file_name)->exists) {
                 print "\n$file_name already exists in cache -- no request made.\n" if $self->verbose;
             } else {
                 $self->retrieve_and_cache($curr_asset, $from);
@@ -375,8 +372,8 @@ sub retrieve_and_cache {
         # Choose a method for rewriting internal connections.
         my $change_method = ($file_name =~ m/\.js$/) ? 'change_js' : ($file_name =~ m/\.css$/) ? 'change_css' : 'change_html';
         # Put rewriten file into our cache.
-        my $where = file($self->app->cfg->cache_path, $file_name);
-        io($where)->print($self->$change_method($content));
+        my $where = path($self->app->cfg->cache_path, $file_name);
+        $where->spew_utf8($self->$change_method($content));
         print $prefix. "written to cache: $where\n" if $self->verbose;
     } else {
         print "failed!\n" if $self->verbose;

@@ -6,7 +6,7 @@ with qw( App::DuckPAN::Cmd );
 
 use MooX::Options protect_argv => 0;
 
-use Path::Class;
+use Path::Tiny;
 use Plack::Handler::Starman;
 
 for (qw( duckduckgo dontbubbleus donttrackus whatisdnt fixtracking duckduckhack )) {
@@ -22,7 +22,7 @@ sub run {
 
 	print "\n\nChecking for Publisher...\n";
 
-	my $publisher_pm = file('lib','DDG','Publisher.pm')->absolute;
+	my $publisher_pm = path('lib','DDG','Publisher.pm')->absolute;
 	die "You must be in the root of the duckduckgo-publisher repository" unless -f $publisher_pm;
 
 	print "\n\nStarting up publisher webserver...";

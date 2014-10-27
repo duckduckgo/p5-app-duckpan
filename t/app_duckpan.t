@@ -3,8 +3,7 @@
 use strict;
 use warnings;
 use Test::More;
-use File::Temp qw/ tempdir /;
-use Path::Class;
+use Path::Tiny;
 use Class::Load ':all';
 
 delete $ENV{APP_DUCKPAN_SERVER_HOSTNAME};
@@ -13,15 +12,14 @@ use App::DuckPAN;
 
 my $version = $App::DuckPAN::VERSION;
 
-my $tempdir_filetemp = tempdir( CLEANUP => 1 );
-my $tempdir = dir($tempdir_filetemp)->cleanup->resolve->stringify;
+my $tempdir = Path::Tiny->tempdir(CLEANUP => 1);
 
 my $app = App::DuckPAN->new(
 	config => $tempdir,
 );
 
 isa_ok($app,'App::DuckPAN');
-is(dir($app->cfg->config_path)->cleanup->resolve->stringify,$tempdir,"Checking temp config path of App::DuckPAN");
+is(path($app->cfg->config_path)->absolute,$tempdir,"Checking temp config path of App::DuckPAN");
 isa_ok($app->http,'LWP::UserAgent');
 is($app->server_hostname, 'duckduckgo.com','Checking for default server duckduckgo.com');
 

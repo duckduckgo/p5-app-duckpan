@@ -4,9 +4,7 @@ use strict;
 use warnings;
 use Test::More;
 use Test::Script::Run;
-use File::Temp qw/ tempdir /;
-use IO::All;
-use Path::Class;
+use Path::Tiny;
 
 use App::DuckPAN;
 
@@ -27,12 +25,12 @@ my $version = $App::DuckPAN::VERSION;
 }
 
 {
-	my $tempdir = tempdir( CLEANUP => 1 );
+	my $tempdir = Path::Tiny->tempdir(CLEANUP => 1);
 	$ENV{DUCKPAN_CONFIG_PATH} = "$tempdir";
 
 	run_ok( 'duckpan', [qw( env test me )], 'setting DuckPAN env test to me');
 
-	is(io(file($tempdir,'env.ini'))->slurp,"TEST = me\n",'checking content of env.ini');
+	is($tempdir->child('env.ini')->slurp,"TEST = me\n",'checking content of env.ini');
 
 	my ( undef, $getenvout, $getenverr ) = run_script( 'duckpan', [qw( env test )]);
 
@@ -41,7 +39,7 @@ my $version = $App::DuckPAN::VERSION;
 
 	run_ok( 'duckpan', [qw( rm test )], 'removing DuckPAN env test to me');
 
-	is(io(file($tempdir,'env.ini'))->slurp,"",'checking content of env.ini');
+	is($tempdir->child('env.ini')->slurp,"",'checking content of env.ini');
 
 	( undef, $getenvout, $getenverr ) = run_script( 'duckpan', [qw( env test )]);
 
