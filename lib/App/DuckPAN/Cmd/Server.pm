@@ -153,8 +153,6 @@ sub run {
     print "\n\nYou can stop the webserver with Ctrl-C";
     print "\n\n";
 
-    warn "\n\nMODIFIED DEVELOPMENT VERSION OF DUCKPAN\n\n";
-
     require App::DuckPAN::Web;
 
     my $web = App::DuckPAN::Web->new(
