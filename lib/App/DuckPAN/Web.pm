@@ -103,14 +103,14 @@ sub request {
 			my $parent_name = $2;
 			my $common_js = $parent_dir."$parent_name.js";
 
-			$body = path($common_js)->slurp_utf8;
+			$body = path($common_js)->slurp;
 			warn "\nAppended $common_js to $filename\n\n";
 		}
 
 		my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename);
 		my $content_type = Plack::MIME->mime_type($filename);
 		$response->content_type($content_type);
-		$body .= -f $filename_path ? path($filename_path)->slurp_utf8 : "";
+		$body .= -f $filename_path ? path($filename_path)->slurp : "";
 
 	} elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
 		for (keys %{$self->_path_hash}) {
@@ -360,7 +360,7 @@ sub request {
 				$calls_script .= join("",map {
 					my $template_name = $_;
 					my $is_ct_self = $calls_template{$spice_name}{$template_name}{"is_ct_self"};
-					my $template_content = $calls_template{$spice_name}{$template_name}{"content"}->slurp_utf8;
+					my $template_content = $calls_template{$spice_name}{$template_name}{"content"}->slurp;
 					"<script class='duckduckhack_spice_template' spice-name='$spice_name' template-name='$template_name' is-ct-self='$is_ct_self' type='text/plain'>$template_content</script>"
 
 				} keys %{ $calls_template{$spice_name} });
