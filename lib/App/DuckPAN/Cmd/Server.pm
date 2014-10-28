@@ -135,25 +135,23 @@ sub run {
     }
 
     # Pull files out of cache to be served later by DuckPAN server
-    my $page_root  = $cache_path->child('page_root.html')->slurp;
-    my $page_spice = $cache_path->child('page_spice.html')->slurp;
+    my $page_root  = $cache_path->child('page_root.html')->slurp_utf8;
+    my $page_spice = $cache_path->child('page_spice.html')->slurp_utf8;
 
     # Since there are multiple CSS files to slurp in,
     # we iterate through each one.
-    my $page_css = join('', map { $cache_path->child($_->{internal})->slurp } @{$self->page_css_files_list});
-    my $page_js = $cache_path->child($self->page_js_files->{internal})->slurp;
-    my $page_locales = $cache_path->child($self->page_locales_files->{internal})->slurp;
+    my $page_css = join('', map { $cache_path->child($_->{internal})->slurp_utf8 } @{$self->page_css_files_list});
+    my $page_js = $cache_path->child($self->page_js_files->{internal})->slurp_utf8;
+    my $page_locales = $cache_path->child($self->page_locales_files->{internal})->slurp_utf8;
     # Concatenate duckpan.js to g.js
     # This way duckpan.js runs after all dependencies are loaded
-    my $page_templates = $cache_path->child($self->page_templates_files->{internal})->slurp;
+    my $page_templates = $cache_path->child($self->page_templates_files->{internal})->slurp_utf8;
     $page_templates .= "\n//duckpan.js\n";
-    $page_templates .= $cache_path->child('duckpan.js')->slurp;
+    $page_templates .= $cache_path->child('duckpan.js')->slurp_utf8;
 
     print "\n\nStarting up webserver...";
     print "\n\nYou can stop the webserver with Ctrl-C";
     print "\n\n";
-
-    warn "\n\nMODIFIED DEVELOPMENT VERSION OF DUCKPAN\n\n";
 
     require App::DuckPAN::Web;
 
@@ -378,7 +376,7 @@ sub retrieve_and_cache {
         my $change_method = ($file_name =~ m/\.js$/) ? 'change_js' : ($file_name =~ m/\.css$/) ? 'change_css' : 'change_html';
         # Put rewriten file into our cache.
         my $where = path($self->app->cfg->cache_path, $file_name);
-        $where->spew($self->$change_method($content));
+        $where->spew_utf8($self->$change_method($content));
         print $prefix. "written to cache: $where\n" if $self->verbose;
     } else {
         print "failed!\n" if $self->verbose;
