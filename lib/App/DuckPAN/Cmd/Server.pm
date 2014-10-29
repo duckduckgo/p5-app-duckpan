@@ -39,14 +39,17 @@ option port => (
 
 has page_js_files => (
     is => 'rw',
+    default => sub { +{internal => '', external => ''}},
 );
 
 has page_templates_files => (
     is => 'rw',
+    default => sub { +{internal => '', external => ''}},
 );
 
 has page_locales_files => (
     is => 'rw',
+    default => sub { +{internal => '', external => ''}},
 );
 
 # We set this into an array because there can be multiple
@@ -139,14 +142,14 @@ sub run {
 
     # Since there are multiple CSS files to slurp in,
     # we iterate through each one.
-    my $page_css = join('', map { $cache_path->child($_->{internal})->slurp } @{$self->page_css_files_list});
-    my $page_js = $cache_path->child($self->page_js_files->{internal})->slurp;
-    my $page_locales = $cache_path->child($self->page_locales_files->{internal})->slurp;
+    my $page_css = join('', map { $self->slurp_or_empty($_->{internal}) } @{$self->page_css_files_list});
+    my $page_js = $self->slurp_or_empty($self->page_js_files->{internal});
+    my $page_locales = $self->slurp_or_empty($self->page_locales_files->{internal});
     # Concatenate duckpan.js to g.js
     # This way duckpan.js runs after all dependencies are loaded
-    my $page_templates = $cache_path->child($self->page_templates_files->{internal})->slurp;
+    my $page_templates = $self->slurp_or_empty($self->page_templates_files->{internal});
     $page_templates .= "\n//duckpan.js\n";
-    $page_templates .= $cache_path->child('duckpan.js')->slurp;
+    $page_templates .= $self->slurp_or_empty('duckpan.js');
 
     print "\n\nStarting up webserver...";
     print "\n\nYou can stop the webserver with Ctrl-C";
@@ -174,6 +177,18 @@ sub run {
     exit $runner->run;
 }
 
+sub slurp_or_empty {
+    my ($self, $which_file) = @_;
+    my $cache_path = path($self->app->cfg->cache_path);
+
+    my $contents = '';
+    if ($which_file) {
+        my $where = $cache_path->child($which_file);
+        $contents = $where->slurp if ($where->exists);
+    }
+
+    return $contents;
+}
 # Force DuckPAN to ignore requests for certain files
 # that are not needed (ie. d.js, s.js, g.js, post2.html)
 sub change_js {
@@ -330,14 +345,14 @@ sub get_sub_assets {
         }
     }
 
-    if ($self->force){
-        print "\nCache disable; Forcing request for every asset.\n";
+    if ($self->force) {
+        print "\nCache disabled; Forcing request for every asset.\n";
     }
-
     # Check if we need to request any new assets from hostname, otherwise use cached copies
-    foreach my $curr_asset ($self->page_js_files, $self->page_templates_files, @{$self->page_css_files_list}, $self->page_locales_files) {
+    foreach my $curr_asset (grep { defined $_ && $_->{internal} }
+        ($self->page_js_files, $self->page_templates_files, @{$self->page_css_files_list}, $self->page_locales_files))
+    {
         my $file_name = $curr_asset->{internal};
-
         if (path($self->app->cfg->cache_path, $file_name)->exists && !$self->force) {
             print "\n$file_name already exists in cache -- no request made.\n" if $self->verbose;
         } else {
