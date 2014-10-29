@@ -242,7 +242,7 @@ sub change_html {
     my $has_dpanjs = 0;
     for (@script) {
         if (my $src = $_->attr('src')) {
-            next if ($src =~ m/^\/\?duckduckhack_/);    # Already updated, no need to do again
+            next if ($src =~ m/^\/\?duckduckhack_/); # Already updated, no need to do again
             if ($src =~ m/^\/(dpan\d+|duckpan_dev)\.js/) {
                 $_->attr('src','/?duckduckhack_js=1');
                 $has_dpanjs = 1;
