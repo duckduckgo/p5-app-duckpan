@@ -37,26 +37,59 @@ option port => (
     default => sub { 5000 }
 );
 
-has page_js_files => (
-    is => 'rw',
-    default => sub { +{internal => '', external => ''}},
-);
-
-has page_templates_files => (
-    is => 'rw',
-    default => sub { +{internal => '', external => ''}},
-);
-
-has page_locales_files => (
-    is => 'rw',
-    default => sub { +{internal => '', external => ''}},
-);
-
-# We set this into an array because there can be multiple
-# CSS files in the page.
-has page_css_files_list => (
-    is => 'rw',
+has page_js => (
+    is      => 'ro',
     default => sub { [] },
+);
+
+has page_locales => (
+    is      => 'ro',
+    default => sub { [] },
+);
+
+has page_css => (
+    is      => 'ro',
+    default => sub { [] },
+);
+
+has page_templates => (
+    is      => 'ro',
+    default => sub {
+        [{
+                name     => 'DuckPAN JS',
+                internal => 'duckpan.js',
+                external => undef,
+            },
+        ];
+    });
+
+# page_root.html  : DDG Homepage
+#                   - used for error page when no instant answers trigger
+has page_root => (
+    is      => 'ro',
+    default => sub {
+        [{
+                name     => 'DuckDuckGo Landing Page',
+                internal => 'page_root.html',
+                external => '/'
+            },
+        ];
+    },
+);
+
+# page_spice.html : DDG SERP
+#                   - this is the page we inject Spice and Goodie results into
+has page_spice => (
+    is      => 'ro',
+    default => sub {
+        [{
+                name            => 'DuckDuckGo SERP',
+                internal        => 'page_spice.html',
+                external        => '/?q=duckduckhack-template-for-spice2',
+                load_sub_assets => 1,
+            },
+        ];
+    },
 );
 
 has hostname => (
@@ -77,38 +110,6 @@ sub run {
     $self->app->verify_versions;
     my $cache_path = $self->app->cfg->cache_path;
 
-    # This hash contains files which DuckPAN requests
-    # and stores locally in its own cache
-    # The are all necessary for DuckPAN Server to function properly
-    #
-    # page_root.html  : DDG Homepage
-    #                   - used for error page when no instant answers trigger
-    #
-    # page_spice.html : DDG SERP
-    #                   - this is the page we inject Spice and Goodie results into
-    #
-    # duckpan.js      : Small script DuckPAN runs on SERP load
-    #                   - used to compile Spice templates
-    #                   - stored locally, no need to make web request for this
-    #
-
-    my @assets = ({
-            name     => 'DuckDuckGo Landing Page',
-            internal => 'page_root.html',
-            external => '/'
-        },
-        {
-            name            => 'DuckDuckGo SERP',
-            internal        => 'page_spice.html',
-            external        => '/?q=duckduckhack-template-for-spice2',
-            load_sub_assets => 1,
-        },
-        {
-            name     => 'DuckPAN JS',
-            internal => 'duckpan.js',
-            external => undef,
-        },
-    );
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
@@ -123,8 +124,7 @@ sub run {
     # requested from DuckDuckGo again. Then we push this new copy of the file into
     # the DuckPAN cache.
 
-    foreach my $asset (@assets) {
-
+    foreach my $asset (@{$self->page_root}, @{$self->page_spice}) {
         my $file_name = $asset->{internal};
         my $from_file = path(dist_dir('App-DuckPAN'), $file_name);
         my $to_file   = $cache_path->child($file_name);
@@ -137,19 +137,13 @@ sub run {
     }
 
     # Pull files out of cache to be served later by DuckPAN server
-    my $page_root  = $cache_path->child('page_root.html')->slurp;
-    my $page_spice = $cache_path->child('page_spice.html')->slurp;
-
-    # Since there are multiple CSS files to slurp in,
-    # we iterate through each one.
-    my $page_css = join('', map { $self->slurp_or_empty($_->{internal}) } @{$self->page_css_files_list});
-    my $page_js = $self->slurp_or_empty($self->page_js_files->{internal});
-    my $page_locales = $self->slurp_or_empty($self->page_locales_files->{internal});
-    # Concatenate duckpan.js to g.js
-    # This way duckpan.js runs after all dependencies are loaded
-    my $page_templates = $self->slurp_or_empty($self->page_templates_files->{internal});
-    $page_templates .= "\n//duckpan.js\n";
-    $page_templates .= $self->slurp_or_empty('duckpan.js');
+    my %web_args = (
+        blocks          => \@blocks,
+        server_hostname => $self->hostname,
+    );
+    foreach my $key_name (map { 'page_' . $_ } (qw(css js locales templates root spice))) {
+        $web_args{$key_name} = $self->slurp_or_empty($self->$key_name);
+    }
 
     print "\n\nStarting up webserver...";
     print "\n\nYou can stop the webserver with Ctrl-C";
@@ -157,16 +151,7 @@ sub run {
 
     require App::DuckPAN::Web;
 
-    my $web = App::DuckPAN::Web->new(
-        blocks => \@blocks,
-        page_root => $page_root,
-        page_spice => $page_spice,
-        page_css => $page_css,
-        page_js => $page_js,
-        page_locales => $page_locales,
-        page_templates => $page_templates,
-        server_hostname => $self->hostname,
-    );
+    my $web = App::DuckPAN::Web->new(%web_args);
     my $runner = Plack::Runner->new(
         #loader => 'Restarter',
         includes => ['lib'],
@@ -178,17 +163,35 @@ sub run {
 }
 
 sub slurp_or_empty {
-    my ($self, $which_file) = @_;
+    my ($self, $which) = @_;
     my $cache_path = path($self->app->cfg->cache_path);
 
     my $contents = '';
-    if ($which_file) {
-        my $where = $cache_path->child($which_file);
-        $contents = $where->slurp if ($where->exists);
+    foreach my $which_file (grep { $_->{internal} } (@$which)) {
+        my $where = $cache_path->child($which_file->{internal});
+        $contents .= $self->make_source_comment($which_file) . $where->slurp if ($where->exists);
     }
 
     return $contents;
 }
+
+sub make_source_comment {
+    my ($self, $file_info) = @_;
+
+    my $comment  = '';
+    my $internal = $file_info->{internal};
+    my $title    = $file_info->{name} || $internal;
+    if ($internal =~ /js$/) {
+        $comment = '// ' . $title;
+    } elsif ($internal =~ /css$/) {
+        $comment = '/* ' . $title . '*/';
+    } elsif ($internal =~ /html$/) {
+        $comment = '<!-- ' . $title . ' -->';
+    }
+
+    return "\n$comment\n";    # Just two blank lines if we don't know how to comment for the file type.
+}
+
 # Force DuckPAN to ignore requests for certain files
 # that are not needed (ie. d.js, s.js, g.js, post2.html)
 sub change_js {
@@ -319,14 +322,14 @@ sub get_sub_assets {
     for (@script) {
         if (my $src = $_->attr('src')) {
             if ($src =~ m/^\/((?:dpan\d+|duckpan_dev)\.js)/) {
-                $self->page_js_files({name => 'Main JS', internal => $1, external=> $1});
+                unshift @{$self->page_js}, {name => 'Main JS', internal => $1, external=> $1};
             } elsif ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
-                $self->page_templates_files({name=>'Templating JS',  internal => $1, external => $1});
+                unshift @{$self->page_templates}, { name => 'Templating JS', internal => $1, external => $1 };
             } elsif ($src =~ m/^\/(locales(?:.*)\.js)/) {
                 my $long_path = $1;
                 my $cache_name = $long_path;
                 $cache_name =~ s#^.+(\.\d+\.\d+\.js)#locales$1#g;  # Turn long path into cacheable name
-                $self->page_locales_files({name => 'Locales JS', internal => $cache_name, external => $long_path});
+                unshift @{$self->page_locales}, {name => 'Locales JS', internal => $cache_name, external => $long_path};
             }
         }
     }
@@ -339,7 +342,7 @@ sub get_sub_assets {
                 # style.css and static.css are for development mode.
                 if ($href =~ m/^\/((?:[st]\d+|style|static)\.css)/) {
                     my $name = $1;
-                    push(@{$self->page_css_files_list}, {name => $name.' CSS',internal =>  $name, external => $name});
+                    unshift @{$self->page_css}, {name => $name.' CSS',internal =>  $name, external => $name};
                 }
             }
         }
@@ -349,11 +352,9 @@ sub get_sub_assets {
         print "\nCache disabled; Forcing request for every asset.\n";
     }
     # Check if we need to request any new assets from hostname, otherwise use cached copies
-    foreach my $curr_asset (grep { defined $_ && $_->{internal} }
-        ($self->page_js_files, $self->page_templates_files, @{$self->page_css_files_list}, $self->page_locales_files))
-    {
+    foreach my $curr_asset (grep { defined $_ && $_->{internal} } (@{$self->page_js}, @{$self->page_templates}, @{$self->page_css}, @{$self->page_locales})) {
         my $file_name = $curr_asset->{internal};
-        if (path($self->app->cfg->cache_path, $file_name)->exists && !$self->force) {
+        if (path($self->app->cfg->cache_path, $file_name)->exists) {
             print "\n$file_name already exists in cache -- no request made.\n" if $self->verbose;
         } else {
             $self->retrieve_and_cache($curr_asset, $from);
