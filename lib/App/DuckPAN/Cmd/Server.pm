@@ -37,60 +37,44 @@ option port => (
     default => sub { 5000 }
 );
 
-has page_js => (
+has page_info => (
     is      => 'ro',
-    default => sub { [] },
+    builder => '_build_page_info',
+    lazy=> 1,
 );
+sub _build_page_info {
+    my $self       = shift;
+    my $cache_path = $self->app->cfg->cache_path;
 
-has page_locales => (
-    is      => 'ro',
-    default => sub { [] },
-);
-
-has page_css => (
-    is      => 'ro',
-    default => sub { [] },
-);
-
-has page_templates => (
-    is      => 'ro',
-    default => sub {
-        [{
+    return +{
+        js        => [],
+        locales   => [],
+        css       => [],
+        templates => [{
                 name     => 'DuckPAN JS',
-                internal => 'duckpan.js',
+                internal => $cache_path->child('duckpan.js'),
+                # stored locally, no need to make web request for this
                 external => undef,
+                desc     => 'Small script DuckPAN runs on SERP load; compiles Spice templates',
             },
-        ];
-    });
-
-# page_root.html  : DDG Homepage
-#                   - used for error page when no instant answers trigger
-has page_root => (
-    is      => 'ro',
-    default => sub {
-        [{
-                name     => 'DuckDuckGo Landing Page',
-                internal => 'page_root.html',
-                external => '/'
+        ],
+        root => [{
+                name     => 'DDG Homepage',
+                internal => $cache_path->child('page_root.html'),
+                external => '/',
+                desc     => 'used for error page when no instant answers trigger',
             },
-        ];
-    },
-);
-
-# page_spice.html : DDG SERP
-#                   - this is the page we inject Spice and Goodie results into
-has page_spice => (
-    is      => 'ro',
-    default => sub {
-        [{
-                name            => 'DuckDuckGo SERP',
-                internal        => 'page_spice.html',
+        ],
+        spice => [{
+                name            => 'DDG SERP',
+                internal        => $cache_path->child('page_spice.html'),
                 external        => '/?q=duckduckhack-template-for-spice2',
                 load_sub_assets => 1,
+                desc            => 'this is the page we inject Spice and Goodie results into',
             },
-        ];
-    },
-);
+        ],
+    };
+}
 
 has hostname => (
     is => 'ro',
@@ -124,15 +108,11 @@ sub run {
     # requested from DuckDuckGo again. Then we push this new copy of the file into
     # the DuckPAN cache.
 
-    foreach my $asset (@{$self->page_root}, @{$self->page_spice}) {
-        my $file_name = $asset->{internal};
-        my $from_file = path(dist_dir('App-DuckPAN'), $file_name);
-        my $to_file   = $cache_path->child($file_name);
+    foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice))) {
+        my $to_file = $asset->{internal};
+        my $from_file = path(dist_dir('App-DuckPAN'), $to_file->basename);
         # copy all files in /share (dist_dir) into cache, unless they already exist
-        if ($from_file->exists){
-            $from_file->copy($to_file) unless ($to_file->exists);
-        }
-
+        $from_file->copy($to_file) if ($from_file->exists && !$to_file->exists);
         $self->retrieve_and_cache($asset);
     }
 
@@ -141,8 +121,8 @@ sub run {
         blocks          => \@blocks,
         server_hostname => $self->hostname,
     );
-    foreach my $key_name (map { 'page_' . $_ } (qw(css js locales templates root spice))) {
-        $web_args{$key_name} = $self->slurp_or_empty($self->$key_name);
+    foreach my $page (keys %{$self->page_info}) {
+        $web_args{'page_' . $page} = $self->slurp_or_empty($self->page_info->{$page});
     }
 
     print "\n\nStarting up webserver...";
@@ -168,7 +148,7 @@ sub slurp_or_empty {
 
     my $contents = '';
     foreach my $which_file (grep { $_->{internal} } (@$which)) {
-        my $where = $cache_path->child($which_file->{internal});
+        my $where = $which_file->{internal};
         $contents .= $self->make_source_comment($which_file) . $where->slurp if ($where->exists);
     }
 
@@ -318,32 +298,51 @@ sub get_sub_assets {
         "_tag", "link"
     );
 
+    my $cache_path = $self->app->cfg->cache_path;
+
     # Find version no. for d.js and g.js
     for (@script) {
         if (my $src = $_->attr('src')) {
             if ($src =~ m/^\/((?:dpan\d+|duckpan_dev)\.js)/) {
-                unshift @{$self->page_js}, {name => 'Main JS', internal => $1, external=> $1};
+                unshift @{$self->page_info->{js}},
+                  {
+                    name     => 'Main JS',
+                    internal => $cache_path->child($1),
+                    external => $1
+                  };
             } elsif ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
-                unshift @{$self->page_templates}, { name => 'Templating JS', internal => $1, external => $1 };
+                unshift @{$self->page_info->{templates}},
+                  {
+                    name     => 'Templating JS',
+                    internal => $cache_path->child($1),
+                    external => $1
+                  };
             } elsif ($src =~ m/^\/(locales(?:.*)\.js)/) {
-                my $long_path = $1;
+                my $long_path  = $1;
                 my $cache_name = $long_path;
-                $cache_name =~ s#^.+(\.\d+\.\d+\.js)#locales$1#g;  # Turn long path into cacheable name
-                unshift @{$self->page_locales}, {name => 'Locales JS', internal => $cache_name, external => $long_path};
+                $cache_name =~ s#^.+(\.\d+\.\d+\.js)#locales$1#g;    # Turn long path into cacheable name
+                unshift @{$self->page_info->{locales}},
+                  {
+                    name     => 'Locales JS',
+                    internal => $cache_path->child($cache_name),
+                    external => $long_path
+                  };
             }
         }
     }
 
-    # Find version no. for s.css
-    for (@link) {
-        if ($_->attr('type') && $_->attr('type') eq 'text/css') {
-            if (my $href = $_->attr('href')) {
-                # We're looking for txxx.css and sxxx.css.
-                # style.css and static.css are for development mode.
-                if ($href =~ m/^\/((?:[st]\d+|style|static)\.css)/) {
-                    my $name = $1;
-                    unshift @{$self->page_css}, {name => $name.' CSS',internal =>  $name, external => $name};
-                }
+    for (grep { $_->attr('type') && $_->attr('type') eq 'text/css' } @link) {
+        if (my $href = $_->attr('href')) {
+            # We're looking for txxx.css and sxxx.css.
+            # style.css and static.css are for development mode.
+            if ($href =~ m/^\/((?:[st]\d+|style|static)\.css)/) {
+                my $name = $1;
+                unshift @{$self->page_info->{css}},
+                  {
+                    name     => $name . ' CSS',
+                    internal => $cache_path->child($name),
+                    external => $name
+                  };
             }
         }
     }
@@ -352,10 +351,10 @@ sub get_sub_assets {
         print "\nCache disabled; Forcing request for every asset.\n";
     }
     # Check if we need to request any new assets from hostname, otherwise use cached copies
-    foreach my $curr_asset (grep { defined $_ && $_->{internal} } (@{$self->page_js}, @{$self->page_templates}, @{$self->page_css}, @{$self->page_locales})) {
-        my $file_name = $curr_asset->{internal};
-        if (path($self->app->cfg->cache_path, $file_name)->exists) {
-            print "\n$file_name already exists in cache -- no request made.\n" if $self->verbose;
+    foreach my $curr_asset (grep { defined $_ && $_->{internal} } map { @{$self->page_info->{$_}} } (qw(js templates css locales))) {
+        my $to_file = $curr_asset->{internal};
+        if ($to_file->exists) {
+            print "\n".$to_file->basename." already exists in cache -- no request made.\n" if $self->verbose;
         } else {
             $self->retrieve_and_cache($curr_asset, $from);
         }
@@ -367,7 +366,7 @@ sub retrieve_and_cache {
 
     return unless ($asset->{internal} && $asset->{external});
 
-    my $file_name  = $asset->{internal};
+    my $to_file    = $asset->{internal};
     my $path_start = (substr($asset->{external}, 0, 1) eq '/') ? '' : '/';
     my $url        = 'http://' . $self->hostname . $path_start . $asset->{external};
     my $prefix     = ($sub_of) ? '  [via ' . $sub_of->{name} . '] ' : '';
@@ -389,11 +388,10 @@ sub retrieve_and_cache {
         }
 
         # Choose a method for rewriting internal connections.
-        my $change_method = ($file_name =~ m/\.js$/) ? 'change_js' : ($file_name =~ m/\.css$/) ? 'change_css' : 'change_html';
+        my $change_method = ($to_file =~ m/\.js$/) ? 'change_js' : ($to_file =~ m/\.css$/) ? 'change_css' : 'change_html';
         # Put rewriten file into our cache.
-        my $where = path($self->app->cfg->cache_path, $file_name);
-        $where->spew($self->$change_method($content));
-        print $prefix. "written to cache: $where\n" if $self->verbose;
+        $to_file->spew($self->$change_method($content));
+        print $prefix. "written to cache: $to_file\n" if $self->verbose;
     } else {
         print "failed!\n" if $self->verbose;
         die qq~$prefix [FATAL ERROR] request failed with response: ~ . $res->status_line . "\n";
