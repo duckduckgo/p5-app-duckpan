@@ -37,6 +37,14 @@ option port => (
     default => sub { 5000 }
 );
 
+option cachesec => (
+    is      => 'ro',
+    format  => 'i',
+    lazy    => 1,
+    short   => 'c',
+    default => sub { 60 * 60 * 4 },    # 4 hours by default
+);
+
 has page_info => (
     is      => 'ro',
     builder => '_build_page_info',
@@ -90,10 +98,17 @@ sub _build_hostname {
 sub run {
     my ( $self, @args ) = @_;
 
-    # Ensure eveything is up do date, or exit.
-    $self->app->verify_versions;
     my $cache_path = $self->app->cfg->cache_path;
 
+    # Ensure eveything is up do date, or exit.
+    my $signal_file = $cache_path->child('perl_checked');
+    my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
+    if ($self->force || (time - $last_checked_perl) > $self->cachesec) {
+        $self->app->verify_versions;
+        $signal_file->touch;
+    } elsif ($self->verbose) {
+        print "\nPerl module versions recently checked, skipping...\n";
+    }
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
@@ -108,7 +123,7 @@ sub run {
     # requested from DuckDuckGo again. Then we push this new copy of the file into
     # the DuckPAN cache.
 
-    foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice))) {
+    foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice templates))) {
         my $to_file = $asset->{internal};
         my $from_file = path(dist_dir('App-DuckPAN'), $to_file->basename);
         # copy all files in /share (dist_dir) into cache, unless they already exist
@@ -149,7 +164,9 @@ sub slurp_or_empty {
     my $contents = '';
     foreach my $which_file (grep { $_->{internal} } (@$which)) {
         my $where = $which_file->{internal};
-        $contents .= $self->make_source_comment($which_file) . $where->slurp if ($where->exists);
+        my $change_method = ($where =~ m/\.js$/) ? 'change_js' : ($where =~ m/\.css$/) ? 'change_css' : 'change_html';
+
+        $contents .= $self->make_source_comment($which_file) . $self->$change_method($where->slurp) if ($where->exists);
     }
 
     return $contents;
@@ -285,8 +302,9 @@ sub change_html {
 # serve the current versions from the cache.
 
 sub get_sub_assets {
-    my ($self, $from, $html) = @_;
+    my ($self, $from) = @_;
 
+    my $html = $from->{internal}->slurp;
     my $root = HTML::TreeBuilder->new;
     $root->parse($html);
 
@@ -347,17 +365,9 @@ sub get_sub_assets {
         }
     }
 
-    if ($self->force) {
-        print "\nCache disabled; Forcing request for every asset.\n";
-    }
     # Check if we need to request any new assets from hostname, otherwise use cached copies
     foreach my $curr_asset (grep { defined $_ && $_->{internal} } map { @{$self->page_info->{$_}} } (qw(js templates css locales))) {
-        my $to_file = $curr_asset->{internal};
-        if ($to_file->exists) {
-            print "\n".$to_file->basename." already exists in cache -- no request made.\n" if $self->verbose;
-        } else {
-            $self->retrieve_and_cache($curr_asset, $from);
-        }
+        $self->retrieve_and_cache($curr_asset, $from);
     }
 }
 
@@ -371,30 +381,25 @@ sub retrieve_and_cache {
     my $url        = 'http://' . $self->hostname . $path_start . $asset->{external};
     my $prefix     = ($sub_of) ? '  [via ' . $sub_of->{name} . '] ' : '';
     $prefix .= '[' . $asset->{name} . '] ';
-
-    print "\n" . $prefix . "requesting from: $url..." if ($self->verbose);
-
-    my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
-
-    if ($res->is_success) {
-        print "success!\n" if $self->verbose;
-        my $content = $res->decoded_content(charset => 'none');
-
-        # We need to load the assets on the SERPs for reuse.
-        if ($asset->{load_sub_assets}) {
-            print $prefix. "parsing for additional assets\n" if $self->verbose;
-            $self->get_sub_assets($asset, $content) if ($asset->{load_sub_assets});
-            print $prefix. "assets loaded\n" if $self->verbose;
-        }
-
-        # Choose a method for rewriting internal connections.
-        my $change_method = ($to_file =~ m/\.js$/) ? 'change_js' : ($to_file =~ m/\.css$/) ? 'change_css' : 'change_html';
-        # Put rewriten file into our cache.
-        $to_file->spew($self->$change_method($content));
-        print $prefix. "written to cache: $to_file\n" if $self->verbose;
+    if (!$self->force && $to_file->exists && (time - $to_file->stat->ctime) < $self->cachesec) {
+        print $prefix . $to_file->basename . " recently cached -- no request made.\n" if $self->verbose;
     } else {
-        print "failed!\n" if $self->verbose;
-        die qq~$prefix [FATAL ERROR] request failed with response: ~ . $res->status_line . "\n";
+        print "\n" . $prefix . "requesting from: $url..." if $self->verbose;
+        my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
+        if (!$res->is_success) {
+            print "failed!\n" if $self->verbose;
+            die qq~$prefix [FATAL ERROR] request failed with response: ~ . $res->status_line . "\n";
+        } else {
+            print "success!\n" if $self->verbose;
+            $to_file->spew($res->decoded_content(charset => 'none'));
+            print $prefix. "written to cache: $to_file\n" if $self->verbose;
+        }
+    }
+    # We need to load the assets on the SERPs for reuse.
+    if ($asset->{load_sub_assets}) {
+        print $prefix. "parsing for additional assets\n" if $self->verbose;
+        $self->get_sub_assets($asset);
+        print $prefix. "assets loaded\n" if $self->verbose;
     }
 
     return;
