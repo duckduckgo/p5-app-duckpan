@@ -14,6 +14,7 @@ use HTML::TreeBuilder;
 use Config::INI;
 use Data::Printer;
 use Data::Dumper;
+use Term::ProgressBar;
 
 option force => (
     is => 'ro',
@@ -384,14 +385,39 @@ sub retrieve_and_cache {
     if (!$self->force && $to_file->exists && (time - $to_file->stat->ctime) < $self->cachesec) {
         print $prefix . $to_file->basename . " recently cached -- no request made.\n" if $self->verbose;
     } else {
-        print "\n" . $prefix . "requesting from: $url..." if $self->verbose;
-        my $res = $self->app->http->request(HTTP::Request->new(GET => $url));
+        print "\n" . $prefix . "requesting from: $url...\n" if $self->verbose;
+        $to_file->remove;
+        $to_file->touchpath;
+        my ($expected_length, $bytes_received, $progress);
+        my $next_update = 0;
+        my $res         = $self->app->http->request(
+            HTTP::Request->new(GET => $url),
+            sub {
+                my ($chunk, $res) = @_;
+                $bytes_received += length($chunk);
+                $to_file->append($chunk);
+                $expected_length //= $res->content_length || 0;
+                return unless $self->verbose;    # Progress bar is just for verbose mode;
+                if ($expected_length && !defined($progress)) {
+                    $progress = Term::ProgressBar->new({
+                        name   => $prefix,
+                        count  => $expected_length,
+                        remove => 1,
+                        ETA    => 'linear',
+                        fh     => \*STDOUT,
+                    });
+                    $progress->minor(0);
+                } elsif ($progress && $bytes_received > $next_update) {
+                    $next_update = $progress->update($bytes_received);
+                }
+            });
         if (!$res->is_success) {
-            print "failed!\n" if $self->verbose;
-            die qq~$prefix [FATAL ERROR] request failed with response: ~ . $res->status_line . "\n";
+            $self->app->exit_with_msg(-1, qq~request failed with response: ~ . $res->status_line . "\n");
+        } elsif ($expected_length && $bytes_received < $expected_length) {
+            $to_file->remove;
+            $self->app->exit_with_msg(-1, qq~only $bytes_received of $expected_length bytes received~);
         } else {
-            print "success!\n" if $self->verbose;
-            $to_file->spew($res->decoded_content(charset => 'none'));
+            $progress->update($expected_length) if ($progress && $expected_length);
             print $prefix. "written to cache: $to_file\n" if $self->verbose;
         }
     }

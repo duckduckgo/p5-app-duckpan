@@ -277,7 +277,7 @@ sub print_text {
 sub exit_with_msg {
 	my ($self, $exit_code, @msg) = @_;
 
-	$self->print_text('[ERROR] ' . shift @msg) if (@msg);
+	$msg[0] = '[ERROR] ' . $msg[0] if (@msg);
 	$self->print_text(@msg);
 	exit $exit_code;
 }
