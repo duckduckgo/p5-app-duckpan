@@ -11,6 +11,7 @@ use File::Which;
 use Class::Load ':all';
 use HTTP::Request::Common qw( GET POST );
 use HTTP::Status;
+use List::Util qw( first );
 use LWP::UserAgent;
 use LWP::Simple;
 use Parse::CPAN::Packages::Fast;
@@ -453,7 +454,7 @@ sub checking_dukgo_user {
 sub get_ia_type {
 	my ($self) = @_;
 
-	my $ia_type = first { -d $_->{dir} } @{$self->ia_types};
+	my $ia_type = first { $_->{dir}->is_dir } @{$self->ia_types};
 
 	$self->exit_with_msg(-1, 'Must be run from the root of a checked-out Instant Answer repository.') unless ($ia_type);
 	$self->exit_with_msg(-1, "Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!") if $ia_type->{supported} == 0;
