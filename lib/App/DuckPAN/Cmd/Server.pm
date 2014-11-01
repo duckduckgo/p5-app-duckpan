@@ -128,8 +128,11 @@ sub run {
         my $to_file = $asset->{internal};
         my $from_file = path(dist_dir('App-DuckPAN'), $to_file->basename);
         # copy all files in /share (dist_dir) into cache, unless they already exist
-        $from_file->copy($to_file) if ($from_file->exists && !$to_file->exists);
-        $self->retrieve_and_cache($asset);
+        if (defined $asset->{external}) {
+            $self->retrieve_and_cache($asset);
+        } else {
+            $from_file->copy($to_file) if ($from_file->exists && !$to_file->exists);
+        }
     }
 
     # Pull files out of cache to be served later by DuckPAN server
