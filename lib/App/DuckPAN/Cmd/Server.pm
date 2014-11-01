@@ -72,9 +72,7 @@ sub run {
 
     # Ensure eveything is up do date, or exit.
     $self->app->verify_versions;
-    my $cache_path = path($self->app->cfg->cache_path);
-
-    $cache_path->mkpath unless $cache_path->exists;
+    my $cache_path = $self->app->cfg->cache_path;
 
     # This hash contains files which DuckPAN requests
     # and stores locally in its own cache
