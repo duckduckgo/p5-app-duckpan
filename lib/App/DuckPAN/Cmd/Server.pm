@@ -113,24 +113,22 @@ sub run {
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-    print "\n\nHostname is: http://".$self->hostname if $self->verbose;
-    print "\n\nChecking for newest assets from: http://".$self->hostname."\n";
-    print "\n[CACHE DISABLED]. Forcing request for all assets...\n\n" if $self->verbose && $self->force;
-
-    # First we bootstrap the cache, copying all files from /share (dist_dir) into the
-    # cache. Then we get each file from given hostname (usually DuckDuckGo.com) and
-    # rewrite all links in the HTML to point to the same hostname. This also makes
-    # sure requests for assets stored locally come from DuckPAN cache so they aren't
-    # requested from DuckDuckGo again. Then we push this new copy of the file into
-    # the DuckPAN cache.
+    print "\n\n";
+    print "Hostname is: http://" . $self->hostname . "\n" if ($self->verbose);
+    if ($self->force) {
+        print "[CACHE DISABLED] Forcing request for all assets...\n";
+    } else {
+        print "Checking asset cache validity...\n";
+    }
+    print "\n";
 
     foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice templates))) {
-        my $to_file = $asset->{internal};
-        my $from_file = path(dist_dir('App-DuckPAN'), $to_file->basename);
-        # copy all files in /share (dist_dir) into cache, unless they already exist
         if (defined $asset->{external}) {
             $self->retrieve_and_cache($asset);
         } else {
+            # Files without external sources should be copied from the distribution.
+            my $to_file = $asset->{internal};
+            my $from_file = path(dist_dir('App-DuckPAN'), $to_file->basename);
             $from_file->copy($to_file) if ($from_file->exists && !$to_file->exists);
         }
     }
@@ -144,9 +142,8 @@ sub run {
         $web_args{'page_' . $page} = $self->slurp_or_empty($self->page_info->{$page});
     }
 
-    print "\n\nStarting up webserver...";
-    print "\n\nYou can stop the webserver with Ctrl-C";
-    print "\n\n";
+    print "\nStarting up webserver...\n";
+    print "You can stop the webserver with Ctrl-C\n\n";
 
     require App::DuckPAN::Web;
 
@@ -388,7 +385,7 @@ sub retrieve_and_cache {
     if (!$self->force && $to_file->exists && (time - $to_file->stat->ctime) < $self->cachesec) {
         print $prefix . $to_file->basename . " recently cached -- no request made.\n" if $self->verbose;
     } else {
-        print "\n" . $prefix . "requesting from: $url...\n" if $self->verbose;
+        print $prefix . "requesting from: $url...\n" if $self->verbose;
         $to_file->remove;
         $to_file->touchpath;
         my ($expected_length, $bytes_received, $progress);
