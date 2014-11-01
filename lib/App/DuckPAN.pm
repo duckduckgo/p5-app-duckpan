@@ -468,7 +468,7 @@ sub BUILD {
 		print "\n[ERROR] We dont support Win32\n\n";
 		exit 1;
 	}
-    my $env_config = path($self->cfg->config_path, 'env.ini');
+    my $env_config = $self->cfg->config_path->child('env.ini');
     if ($env_config->exists) {
         my $env = Config::INI::Reader->read_file($env_config);
         map { $ENV{$_} = $env->{'_'}{$_}; } keys %{$env->{'_'}} if $env->{'_'};
