@@ -25,6 +25,15 @@ my $version = $App::DuckPAN::VERSION;
 }
 
 {
+	my $fake_dir = 'fake-directory';
+	my ($return, $out, $err) = run_script('duckpan', ['-I' . $fake_dir]);
+
+	ok($return, 'DuckPAN with non-existent include path exits with an error');
+	like($out, qr/Missing include path.*$fake_dir/, ' after printing a message showing the bad path');
+}
+
+
+{
 	my $tempdir = Path::Tiny->tempdir(CLEANUP => 1);
 	$ENV{DUCKPAN_CONFIG_PATH} = "$tempdir";
 
