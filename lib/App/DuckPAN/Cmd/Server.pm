@@ -53,7 +53,7 @@ has page_info => (
 );
 sub _build_page_info {
     my $self       = shift;
-    my $cache_path = $self->app->cfg->cache_path;
+    my $cache_path = $self->asset_cache_path;
 
     return +{
         js        => [],
@@ -94,6 +94,21 @@ has hostname => (
 sub _build_hostname {
     my ( $self ) = @_;
     return $self->app->server_hostname;
+}
+
+has asset_cache_path => (
+    is      => 'ro',
+    builder => 1,
+    lazy    => 1,
+);
+
+sub _build_asset_cache_path {
+    my $self       = shift;
+
+    my $asset_path = $self->app->cfg->cache_path->child($self->hostname);
+    $asset_path->mkpath unless $asset_path->exists;
+
+    return $asset_path;
 }
 
 sub run {
@@ -160,7 +175,7 @@ sub run {
 
 sub slurp_or_empty {
     my ($self, $which) = @_;
-    my $cache_path = path($self->app->cfg->cache_path);
+    my $cache_path = $self->asset_cache_path;
 
     my $contents = '';
     foreach my $which_file (grep { $_->{internal} } (@$which)) {
@@ -257,12 +272,12 @@ sub change_html {
     for (@script) {
         if (my $src = $_->attr('src')) {
             next if ($src =~ m/^\/\?duckduckhack_/); # Already updated, no need to do again
-            if ($src =~ m/^\/(dpan\d+|duckpan_dev)\.js/) {
+            if ($src =~ m/^\/(dpan\d+|duckpan_dev|base)\.js/) {
                 $_->attr('src','/?duckduckhack_js=1');
                 $has_dpanjs = 1;
-            } elsif ($src =~ m/^\/(g\d+|duckgo_dev)\.js/) {
+            } elsif ($src =~ m/^\/(g\d+|duckgo_dev|serp)\.js/) {
                 $_->attr('src','/?duckduckhack_templates=1');
-            } elsif ($src =~ m/^\/(d\d+|duckduck)\.js/) {
+            } elsif ($src =~ m/^\/(d\d+|duckduck|duckpan)\.js/) {
 
                 # If dpan.js is not present (ie. homepage)
                 # make sure we serve the js rather than blocking
@@ -317,19 +332,19 @@ sub get_sub_assets {
         "_tag", "link"
     );
 
-    my $cache_path = $self->app->cfg->cache_path;
+    my $cache_path = $self->asset_cache_path;
 
     # Find version no. for d.js and g.js
     for (@script) {
         if (my $src = $_->attr('src')) {
-            if ($src =~ m/^\/((?:dpan\d+|duckpan_dev)\.js)/) {
+            if ($src =~ m/^\/((?:dpan\d+|duckpan_dev|base)\.js)/) {
                 unshift @{$self->page_info->{js}},
                   {
                     name     => 'Main JS',
                     internal => $cache_path->child($1),
                     external => $1
                   };
-            } elsif ($src =~ m/^\/((?:g\d+|duckgo_dev)\.js)/) {
+            } elsif ($src =~ m/^\/((?:g\d+|duckgo_dev|serp)\.js)/) {
                 unshift @{$self->page_info->{templates}},
                   {
                     name     => 'Templating JS',
