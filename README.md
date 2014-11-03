@@ -2,9 +2,11 @@
 
 **The DuckDuckHack Developer Tool**
 
-DuckPAN is an application built to aid DuckDuckHack developers. It is mainly used to generate the required files for a new Instant Answers (the devloper must implement functionality) and also test both the triggering and visual display of an Instant Answer.
+DuckPAN is an application built to aid DuckDuckHack developers. It is mainly used to generate the required files for new Instant Answers (the devloper must implement functionality) and also test both the triggering and visual display of Instant Answers.
 
-**Currently DuckPAN only support Goodie and Spice Instant Answers.**
+**Currently DuckPAN only supports Goodie and Spice Instant Answers.**
+
+------
 
 
 ## Disclaimer
@@ -79,6 +81,7 @@ Try typing in queries like "define hello," and see if it works for you. You migh
 
 The purpose of our DuckDuckHack VM is to provide a sandbox for DuckDuckGo Instant Answer development that is quick to set up and start working with.
 
+
 #### DDH VM Breakdown
 
 - Ubuntu 12.04 LTS
@@ -91,17 +94,20 @@ The purpose of our DuckDuckHack VM is to provide a sandbox for DuckDuckGo Instan
 - Firefox (Configured via fixtracking.com)
 - Platform specific virtualization guest tools (optimizes hardware emulation)
 
+
 #### For VirtualBox hosts
 
 ddh-vbox.rar
 MD5: 1734373cbecc5820bb7d18406eb42854
 https://ddg-community.s3.amazonaws.com/ddh-vbox.rar
 
+
 #### For VMWare hosts
 
 ddh-vmw.rar:
 MD5: 95ad9acfacadb4b0cb0cf23ffaa3516e
 https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
+
 
 #### Roadmap
 
@@ -112,33 +118,33 @@ https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
 
 To use the Virtual Machine, you will need to download and install **VirtualBox**, **VMWare Workstation** or **VMWare Player**, depending on your current OS.
 
+
 #### VirtualBox (free)
 
 Website: https://www.virtualbox.org/
 Supports: Windows, OS X, Linux
 
+
 ##### Setup Instructions
 
 1. Download the rar and verify the checksum--decompress: This archive contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
-
 2. Open VirtualBox, click "File" and then click "Import Appliance"
-
 3. Click "Open appliance..." and select the DuckDuckHack virtual appliance -- click "Next"
-
 4. Click "Import"
+
 
 #### VMWare Player (free)
 
 Website: https://www.vmware.com/products/player/
 Supports: Windows, Linux
 
+
 ##### Setup Instructions
 
 1.Download the rar and verify the checksum--decompress: This contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
-
 2.Open VMWare Player, and click "Open a Virtual Machine"
-
 3.Choose a storage path for the Virtual Machine -- click "Import"
+
 
 #### Happy Hacking!
 
@@ -156,6 +162,7 @@ Once you have installed the virtual machine you should be able to start up the V
 The Vagrant-based DuckDuckHack virtual environment provides a similar sandbox to the DuckDuckHack VM, but rather than downloading a prebuilt VM, Vagrant creates an environment for you based on the defined configuration.  Vagrant is an awesome tool for building development environments.  One command - `vagrant up` - gets you a complete working environment in minutes.  Something go wrong with the environment?  No messing around with snapshots.  Tear the VM down and build a fresh environment.  The DuckDuckHack Vagrant environment uses Chef cookbooks and the DuckPAN installer script, so configuration is transparent and easily shared.
 
 Through the Vagrant configuration, you can easily switch back and forth between a headless-mode and the traditional VirtualBox interface.  The configuration defaults to headless.
+
 
 ### Setup Instructions
 
@@ -176,6 +183,7 @@ The box takes some time to stand up as the duckpan-install script runs.  Refer t
 Once the environment has been built, **the DuckPAN client is installed and ready to go.** You can now clone the Instant Answer repos and start developing/testing.
 
 If you run into any issues, please file an issue in the [duckpan-vagrant issue page](https://github.com/shedd/duckpan-vagrant/issues).
+
 
 ##### Quick Overview of key Vagrant CLI commands
 
@@ -231,19 +239,23 @@ cpanm App::DuckPAN
 App::DuckPAN is up to date.
 ```
 
+
 ### Adding Shell Completion
 
 Some of our awesome community members have written shell completion scripts for DuckPAN, which should save you tons of time. Feel free to improve these, or contribute new ones!
+
 
 #### Bash
 
 - Submitted by: [mattr555](https://github.com/mattr555)
 - link: https://github.com/mattr555/dotfiles/blob/master/bin/duckpancomp.sh
 
+
 #### Z Shell
 
 - Submitted by: [elebow](https://github.com/elebow)
 - link: https://github.com/elebow/duckpan-completion
+
 
 ### Dealing With Installation Issues
 
