@@ -219,9 +219,9 @@ To install DuckPAN, open your terminal and run:
 curl http://duckpan.org/install.pl | perl
 ```
 
-[This script](https://github.com/duckduckgo/p5-duckpan-installer) will setup [local::lib](https://metacpan.org/module/local::lib), which is a way to install Perl modules without changing your base Perl installation. If you already use local::lib or [perlbrew](https://metacpan.org/module/perlbrew), don't worry, this script will intelligently use what you already have.
+[This script](https://github.com/duckduckgo/p5-duckpan-installer) will setup [local::lib](https://metacpan.org/module/local::lib), which is a way to install Perl modules without changing your base Perl installation. If you already use `local::lib` or [perlbrew](https://metacpan.org/module/perlbrew), don't worry, this script will intelligently use what you already have.
 
-If you didn't have a local::lib before running the install script, you will need to run the script twice. It should tell you when like this:
+If you didn't have a `local::lib` before running the install script, you will need to run the script twice. It should tell you when like this:
 
 ```
 please now re-login to your user account and run it again!
@@ -324,14 +324,14 @@ duckpan new MyFirst::Spice
 ---
 
 ```
-duckpan query [instant_answer_name ...]
+duckpan query [package_name ...]
 ```
 
 Test Goodie and Spice triggers interactively on the command line.
 
 Arguments:
 
-- `[instant_answer_name ...]` to load only the specified Spice or Goodie Instant Answers.
+- `[package_name ...]` to load only the specified Spice or Goodie Instant Answers.
 
 Example:
 
@@ -343,7 +343,7 @@ duckpan query Twitter IsItUp
 ---
 
 ```
-duckpan server [--verbose] [--force] [--port <number>] [instant_answer_name ...]
+duckpan server [--verbose] [--force] [--port <number>] [package_name ...]
 ```
 
 Test Goodie and Spice Instant Answers on a local web server, which replicates the DuckDuckGo production environment. This should be used to ensure Spice and Goodies are displayed properly. For Spice Instant Answers, you should use the DuckPAN Server to also test your JavaScript code and Handlebars templates.
@@ -356,7 +356,7 @@ Options:
 
 Arguments:
 
-- `[instant_answer_name ...]` to load only the specified Spice or Goodie Instant Answers.
+- `[package_name ...]` to load only the specified Spice or Goodie Instant Answers.
 
 Example:
 
@@ -457,7 +457,7 @@ Upload a `.po` file to the Community Platform
 duckpan env
 ```
 
-View env commands and also shows the env variables currently stored in ~/.duckpan/env.ini
+View `env` commands and also shows the env variables currently stored in `~/.duckpan/env.ini`.
 
 ---
 
@@ -466,7 +466,7 @@ duckpan env <name> <value>
 ```
 
 Add an environment variable that duckpan will remember. Useful for
-spice API keys. Variables are stored in ~/.duckpan/env.ini
+spice API keys. Variables are stored in `~/.duckpan/env.ini`.
 
 ---
 
