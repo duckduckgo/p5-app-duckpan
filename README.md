@@ -337,6 +337,9 @@ Example:
 
 ```
 duckpan query Npm
+```
+
+```
 duckpan query Twitter IsItUp
 ```
 
@@ -350,9 +353,9 @@ Test Goodie and Spice Instant Answers on a local web server, which replicates th
 
 Options:
 
-- `--verbose`, `-v` to provide more details
-- `--force`, `-f` to prevent DuckPAN's cache from being used (this forces the requested files to be pushed into the cache)
-- `--port`, `-p` to specify which port DuckPAN's server should run on (defaults to 5000)
+- `--verbose`, `-v` to provide more details.
+- `--force`, `-f` to prevent DuckPAN's cache from being used (this forces the requested files to be pushed into the cache).
+- `--port`, `-p` to specify which port DuckPAN's server should run on (defaults to 5000).
 
 Arguments:
 
@@ -362,6 +365,9 @@ Example:
 
 ```
 duckpan server Movie
+```
+
+```
 duckpan server IDN Sort Morse
 ```
 
@@ -373,7 +379,7 @@ duckpan installdeps
 
 Install all requirements of the specific DuckDuckHack project (if
 possible), like zeroclickinfo-spice, zeroclickinfo-goodie, duckduckgo
-or community-platform
+or community-platform.
 
 ---
 
@@ -391,7 +397,7 @@ environment.
 duckpan empty
 ```
 
-Deletes all files in the DuckPAN cache (located in `~/.duckpan/cache/`)
+Deletes all files in the DuckPAN cache (located in `~/.duckpan/cache/`).
 
 ---
 
@@ -442,13 +448,13 @@ Same as `installdeps`, but avoids testing anything. Useful for speed, but
 not recommended unless you know what you are doing.
 
 
-### For Translation Managers Developers
+### For Translation Managers
 
 ```
 duckpan poupload [--domain] filepath
 ```
 
-Upload a `.po` file to the Community Platform
+Upload a `.po` file to the Community Platform.
 
 
 ### Environment Variables
@@ -482,4 +488,4 @@ Retrieve the matching key for a given env variable.
 duckpan env rm <name>
 ```
 
-Remove an environment variable from duckpan
+Remove an environment variable from duckpan.
