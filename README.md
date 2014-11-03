@@ -1,8 +1,11 @@
 # DuckPAN [![Build Status](https://travis-ci.org/duckduckgo/p5-app-duckpan.png?branch=master)](https://travis-ci.org/duckduckgo/p5-app-duckpan)
 
-**The DuckDuckHack Testing Tool**
+**The DuckDuckHack Developer Tool**
 
-DuckPAN is an application built to provide developers a testing environment for DuckDuckHack Instant Answers. It allows you to test instant answer triggers and preview their visual design and output.
+DuckPAN is an application built to aid DuckDuckHack developers. It is mainly used to generate the required files for a new Instant Answers (the devloper must implement functionality) and also test both the triggering and visual display of an Instant Answer.
+
+**Currently DuckPAN only support Goodie and Spice Instant Answers.**
+
 
 ## Disclaimer
 
@@ -24,6 +27,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
 
 ------
 
+
 ## Index
 
 - [Getting Started](#getting-started)
@@ -38,6 +42,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
 
 ------
 
+
 ## Getting Started
 
 Getting started with DuckPAN is easy! Here's a list of ways you can get DuckPAN up & running:
@@ -51,22 +56,24 @@ After installing DuckPAN, be sure to checkout the [Using DuckPAN](#using-duckpan
 
 ------
 
+
 ## Using the Codio Project Template
 
 1. Create an account on [Codio](https://codio.com/).
 2. Go to https://codio.com/duckduckgo/duckduckhack and fork the project. Make sure to fork the project and the box.
 ![Codio Fork](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_fork.png)
 ![Codio Fork Both](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_fork_both.png)
-3. Visit one of our instant answer repositories (such as https://github.com/duckduckgo/zeroclickinfo-spice), and follow GitHub's instructions to first [fork](https://help.github.com/articles/fork-a-repo) the repository. You can then clone the repo into your Codio machine (You need to open the Terminal for this).
+3. Visit one of our Instant Answer repositories (such as https://github.com/duckduckgo/zeroclickinfo-spice), and follow GitHub's instructions to first [fork](https://help.github.com/articles/fork-a-repo) the repository. You can then clone the repo into your Codio machine (You need to open the Terminal for this).
 ![Codio Terminal](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_terminal.png)
 4. Go into the directory (by typing in `cd zeroclickinfo-spice`) and run `duckpan server`. Click on "DuckPAN Server" to view the webpage.
 ![Codio Server](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_server.png)
 5. You're all set!
 ![Codio Success](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_success.png)
 
-Try typing in queries like "define hello," and see if it works for you. You might be wondering why there are no search results in the page. It's because DuckPAN isn't configured to work with search results—it's only for testing instant answers.
+Try typing in queries like "define hello," and see if it works for you. You might be wondering why there are no search results in the page. It's because DuckPAN isn't configured to work with search results—it's only for testing Instant Answers.
 
 ------
+
 
 ## DuckDuckHack Development Virtual Machine
 
@@ -139,9 +146,10 @@ Once you have installed the virtual machine you should be able to start up the V
 - **username** : `dax`
 - **password** : `duckduckhack`
 
-**The DuckPAN client has already been installed for you.** You can now clone the instant answer repos and start developing/testing.
+**The DuckPAN client has already been installed for you.** You can now clone the Instant Answer repos and start developing/testing.
 
 ------
+
 
 ## Vagrant Virtual Environment
 
@@ -165,7 +173,7 @@ Through the Vagrant configuration, you can easily switch back and forth between 
 
 The box takes some time to stand up as the duckpan-install script runs.  Refer to [the duckpan-vagrant readme](https://github.com/shedd/duckpan-vagrant#installation) for more info.
 
-Once the environment has been built, **the DuckPAN client is installed and ready to go.** You can now clone the instant answer repos and start developing/testing.
+Once the environment has been built, **the DuckPAN client is installed and ready to go.** You can now clone the Instant Answer repos and start developing/testing.
 
 If you run into any issues, please file an issue in the [duckpan-vagrant issue page](https://github.com/shedd/duckpan-vagrant/issues).
 
@@ -173,7 +181,7 @@ If you run into any issues, please file an issue in the [duckpan-vagrant issue p
 
 There are a couple of key Vagrant commands that you'll use to manage your environment.
 
-```shell
+```
 $ vagrant
 
 up       - Build environment from Vagrantfile or resume a previously halted environment.
@@ -191,13 +199,14 @@ For more information, please see the (excellent) [Vagrant docs](http://docs.vagr
 
 ------
 
+
 ## Installing DuckPAN Locally
 
-**\*\*Note**: You don't need to install DuckPAN locally if you're using our DuckDuckHack virtual machine or the Vagrant virtual environment. It's already installed for you!
+**Note**: You don't need to install DuckPAN locally if you're using our DuckDuckHack virtual machine or the Vagrant virtual environment. It's already installed for you!
 
 To install DuckPAN, open your terminal and run:
 
-```shell
+```
 curl http://duckpan.org/install.pl | perl
 ```
 
@@ -205,19 +214,19 @@ curl http://duckpan.org/install.pl | perl
 
 If you didn't have a local::lib before running the install script, you will need to run the script twice. It should tell you when like this:
 
-```shell
+```
 please now re-login to your user account and run it again!
 ```
 
 If everything works, you should see this at the end:
 
-```shell
+```
 EVERYTHING OK! You can now go hacking! :)
 ```
 
-Note that with local::lib now installed, you can easily install [Perl modules](http://search.cpan.org/) with [cpanm](https://metacpan.org/module/cpanm).
+Note that with `local::lib` now installed, you can easily install [Perl modules](http://search.cpan.org/) with [cpanm](https://metacpan.org/module/cpanm).
 
-```shell
+```
 cpanm App::DuckPAN
 App::DuckPAN is up to date.
 ```
@@ -246,13 +255,13 @@ If that doesn't work, you should investigate the build.log and see what's wrong.
 
 If it still won't install with `cpanm` try adding `--notest` to the cpanm command:
 
-```shell
+```
 cpanm Test::More --notest
 ```
 
 If that still doesn't work, you can also try using `--force`:
 
-```shell
+```
 cpanm Test::More --force
 ```
 
@@ -260,31 +269,92 @@ If this ***still*** doesn't work, please create a GitHub Issue in the DuckPAN Re
 
 ------
 
+
 ## Using DuckPAN
+
 
 ### Help
 
-```shell
+```
 duckpan
 ```
 
-or
-
-```shell
+```
 duckpan help
 ```
 
-or
-
-```shell
+```
 man duckpan
 ```
 
-Prints out the DuckPAN man page
+Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
 
-### Install Commands
 
-```shell
+### For DuckDuckHack Developers
+
+```
+duckpan new [instant_answer_name]
+```
+
+Generates all necessary files for a new Spice or Goodie Instant Answer (depending on the current repo). DuckPAN will prompt you for a package name and generate the required files. If the name is already in use, DuckPAN will let you know and no files will be created.
+
+Example:
+
+```
+duckpan new
+```
+
+```
+duckpan new MyFirst::Spice
+```
+
+---
+
+```
+duckpan query [instant_answer_name ...]
+```
+
+Test Goodie and Spice triggers interactively on the command line.
+
+Arguments:
+
+- `[instant_answer_name ...]` to load only the specified Spice or Goodie Instant Answers.
+
+Example:
+
+```
+duckpan query Npm
+duckpan query Twitter IsItUp
+```
+
+---
+
+```
+duckpan server [--verbose] [--force] [--port <number>] [instant_answer_name ...]
+```
+
+Test Goodie and Spice Instant Answers on a local web server, which replicates the DuckDuckGo production environment. This should be used to ensure Spice and Goodies are displayed properly. For Spice Instant Answers, you should use the DuckPAN Server to also test your JavaScript code and Handlebars templates.
+
+Options:
+
+- `--verbose`, `-v` to provide more details
+- `--force`, `-f` to prevent DuckPAN's cache from being used (this forces the requested files to be pushed into the cache)
+- `--port`, `-p` to specify which port DuckPAN's server should run on (defaults to 5000)
+
+Arguments:
+
+- `[instant_answer_name ...]` to load only the specified Spice or Goodie Instant Answers.
+
+Example:
+
+```
+duckpan server Movie
+duckpan server IDN Sort Morse
+```
+
+---
+
+```
 duckpan installdeps
 ```
 
@@ -294,67 +364,83 @@ or community-platform
 
 ---
 
-```shell
+```
+duckpan check
+```
+
+Check if you fulfill all requirements for the development
+environment.
+
+
+### For DuckPAN Developers
+
+```
+duckpan empty
+```
+
+Deletes all files in the DuckPAN cache (located in `~/.duckpan/cache/`)
+
+---
+
+```
+duckpan reinstall
+```
+
+Force installation of the latest released versions of DuckPAN and DDG.
+
+---
+
+```
+duckpan -I [filepath ...]
+```
+
+Loads the specified external libraries. This should be used to test changes made to `App::DuckPAN` and `DDG`.
+
+Example:
+
+```
+duckpan -I../p5-app-duckpan/lib server
+```
+
+
+### For DuckDuckHack Admins
+
+```
+duckpan release
+```
+
+Release the distribution of the current directory. Used to issue new releases for the following repos: zeroclickinfo-spice, zeroclickinfo-goodies, p5-app-duckpan, duckduckgo-publisher.
+
+---
+
+```
+duckpan setup
+```
+
+Helps configure your environment so you can use `Dist::Zilla::Plugin::UploadToDuckPAN`, which is used by `duckpan release`.
+
+---
+
+```
 duckpan roadrunner
 ```
 
 Same as `installdeps`, but avoids testing anything. Useful for speed, but
 not recommended unless you know what you are doing.
 
----
 
-```shell
-duckpan check
+### For Translation Managers Developers
+
+```
+duckpan poupload [--domain] filepath
 ```
 
-Check if you fulfill all requirements for the development
-environment (this is run automatically during setup)
+Upload a `.po` file to the Community Platform
 
----
 
-```shell
-duckpan reinstall
+### Environment Variables
+
 ```
-
-Force installation of the latest released versions of DuckPAN and DDG
-
-### Instant Answer Testing
-
-```shell
-duckpan query [spice_package|goodie_package] ...
-```
-
-Test Goodie and Spice triggers interactively on the command line
-
-```shell
-duckpan server [--verbose] [--no-cache] [--port <number>] [spice_package|goodie_package] ...
-```
-
-Test Goodie and Spice instant answers on a local web server (for design/layout purposes)
-
-Options:
-
-- `--verbose` to provide more details
-- `--no-cache` to prevent DuckPAN's cache from being used (this forces the requested files to be pushed into the cache)
-- `--port` to specify which port DuckPAN's server should run on (defaults to 5000)
-
-Arguments:
-
-- `[spice_package|goodie_package]` to load a specific spice or goodie instant answer only. You can pass multiple instant answers.
-
-```shell
-duckpan query Npm
-duckpan query Twitter IsItUp
-```
-
-```shell
-duckpan server Movie
-duckpan server IDN Sort Morse
-```
-
-### Advanced Features 
-
-```shell
 duckpan env
 ```
 
@@ -362,7 +448,7 @@ View env commands and also shows the env variables currently stored in ~/.duckpa
 
 ---
 
-```shell
+```
 duckpan env <name> <value>
 ```
 
@@ -371,7 +457,7 @@ spice API keys. Variables are stored in ~/.duckpan/env.ini
 
 ---
 
-```shell
+```
 duckpan env <name>
 ```
 
@@ -379,16 +465,8 @@ Retrieve the matching key for a given env variable.
 
 ---
 
-```shell
+```
 duckpan env rm <name>
 ```
 
 Remove an environment variable from duckpan
-
----
-
-```shell
-duckpan release
-```
-
-Release the project of the current directory to DuckPAN

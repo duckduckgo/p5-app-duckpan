@@ -21,7 +21,6 @@ use Term::ReadLine;
 use Carp;
 use Encode;
 use Perl::Version;
-use File::Path;
 use Path::Tiny;
 
 our $VERSION ||= '9.999';
@@ -233,13 +232,7 @@ sub execute {
 				$_ =~ /^app/i) {
 				push @modules, $_;
 			} elsif ($_ =~ m/^(duckpan|upgrade|update|reinstall)$/i) {
-				# Clear cache so share files are written into cache
-				my $cache = $self->cfg->cache_path;
-				if (-d $cache){
-					print "Clearing DuckPAN cache...";
-					rmtree($cache, {keep_root => 1});
-					print "Done\n";
-				}
+				$self->empty_cache();
 				push @modules, 'App::DuckPAN';
 				push @modules, 'DDG' if $_ =~ /^(?:upgrade|reinstall)$/i;
 				unshift @modules, 'force' if lc($_) eq 'reinstall';
@@ -460,6 +453,20 @@ sub get_ia_type {
 	$self->exit_with_msg(-1, "Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!") if $ia_type->{supported} == 0;
 
 	return $ia_type;
+}
+
+sub empty_cache {
+	my ($self) = @_;
+	# Clear cache so share files are written into cache
+	my $cache = $self->cfg->cache_path;
+	if ($cache->exists){
+		print "Emptying DuckPAN cache...";
+		$cache->remove_tree({keep_root => 1});
+		print "Done\n";
+	} else {
+		print "Cache does not exist. Nothing to delete.\n";
+
+	}
 }
 
 sub BUILD {
