@@ -45,7 +45,7 @@ B<man duckpan>
     Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
 
 
-=head3 FOR DUCKDUCKHACK DEVELOPERS
+=head3 FOR INSTANT ANSWER DEVELOPERS
 
 B<duckpan check>
     Checks if you fulfill all requirements for the development environment. This will run automatically during a B<duckpan release>.

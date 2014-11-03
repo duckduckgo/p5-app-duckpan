@@ -42,7 +42,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
     + [Adding Shell Completion](#adding-shell-completion)
 - [Using DuckPAN](#using-duckpan)
     + [Help](#help)
-    + [For DuckDuckHack Developers](#for-duckduckhack-developers)
+    + [For Instant Answer Developers](#for-instant-answer-developers)
     + [For DuckPAN Developers](#for-duckpan-developers)
     + [For DuckDuckHack Admins](#for-duckduckhack-admins)
     + [For Translation Managers Developers](#for-translation-managers-developers)
@@ -303,7 +303,7 @@ man duckpan
 Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
 
 
-### For DuckDuckHack Developers
+### For Instant Answer Developers
 
 ```
 duckpan new [instant_answer_name]
