@@ -27,7 +27,7 @@ sub _path_for {
 	my $which = shift;
 
 	my $from_env = $ENV{'DUCKPAN_' . uc $which . '_PATH'};
-	my $path = ($from_env) ? path($from_env) : path(File::HomeDir->my_home, '.duckpan');
+	my $path = ($from_env) ? path($from_env) : path(File::HomeDir->my_home, '.duckpan', lc $which);
 	$path->mkpath unless $path->exists;
 	return $path;
 }

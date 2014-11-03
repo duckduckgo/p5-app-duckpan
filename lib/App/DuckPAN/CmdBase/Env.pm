@@ -11,7 +11,7 @@ has env_ini => (
   builder => 1,
 );
 
-sub _build_env_ini { path(shift->app->cfg->config_path, 'env.ini') }
+sub _build_env_ini { shift->app->cfg->config_path->child('env.ini') }
 
 sub load_env_ini {
   my ( $self ) = @_;

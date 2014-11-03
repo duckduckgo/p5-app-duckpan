@@ -19,7 +19,7 @@ my $app = App::DuckPAN->new(
 );
 
 isa_ok($app,'App::DuckPAN');
-is(path($app->cfg->config_path)->absolute,$tempdir,"Checking temp config path of App::DuckPAN");
+is($app->cfg->config_path->absolute,$tempdir,"Checking temp config path of App::DuckPAN");
 isa_ok($app->http,'LWP::UserAgent');
 is($app->server_hostname, 'duckduckgo.com','Checking for default server duckduckgo.com');
 

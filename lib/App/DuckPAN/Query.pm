@@ -21,7 +21,7 @@ sub run {
 	require DDG::Test::Language;
 	DDG::Test::Language->import;
 
-	$history_path = $app->cfg->cache_path."/query_history";
+	$history_path = $app->cfg->cache_path->child("query_history");
 
 	print "\n(Empty query for ending test)\n";
 	while (1) {
