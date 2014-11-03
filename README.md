@@ -147,9 +147,9 @@ Supports: Windows, Linux
 
 ##### Setup Instructions
 
-1.Download the rar and verify the checksum--decompress: This contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
-2.Open VMWare Player, and click "Open a Virtual Machine"
-3.Choose a storage path for the Virtual Machine -- click "Import"
+1. Download the rar and verify the checksum--decompress: This contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
+2. Open VMWare Player, and click "Open a Virtual Machine"
+3. Choose a storage path for the Virtual Machine -- click "Import"
 
 
 #### Happy Hacking!
@@ -173,15 +173,10 @@ Through the Vagrant configuration, you can easily switch back and forth between 
 ### Setup Instructions
 
 1. Install: [Vagrant](http://docs.vagrantup.com/v2/installation/index.html) and [Bundler](http://bundler.io/#getting-started)
-
 2. Clone the [duckpan-vagrant](https://github.com/shedd/duckpan-vagrant) repo, which contains the `Vagrantfile` and Chef cookbooks you'll need
-
 3. Run `bundle install` to install Berkshelf, a Chef cookbook manager.
-
 4. Run `vagrant plugin install vagrant-berkshelf` to hook Berkshelf into Vagrant.
-
 5. Review the CUSTOM_CONFIG settings at the top of `Vagrantfile`.  You will want to customize the value of the synced directory to point to your local directory containing the DuckDuckGo code you wish to test.  By default, Vagrant will load a [VirtualBox Precise64](http://files.vagrantup.com/precise64.box) machine image.  If you change this, [Ubuntu is recommended](https://github.com/duckduckgo/p5-app-duckpan#disclaimer).
-
 6. Run `vagrant up`
 
 The box takes some time to stand up as the duckpan-install script runs.  Refer to [the duckpan-vagrant readme](https://github.com/shedd/duckpan-vagrant#installation) for more info.
