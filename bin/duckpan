@@ -65,6 +65,9 @@ B<duckpan server> [--verbose] [--no-cache] [--port <number>] [spice_package|good
 B<duckpan help>:
     Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
 
+B<duckpan new>:
+    Generates all necessary files for a new Spice or Goodie Instant Answer (depending on the current repo). DuckPAN will prompt you for a package name and generate the required files.
+
 B<duckpan test>:
     Tests your release, by running the tests in the B<t/> directory using Dzil (if a dist.ini exists) or prove. This will run automatically during a B<duckpan release>.
 
