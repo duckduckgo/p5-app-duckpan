@@ -20,97 +20,133 @@ __END__
 
 =pod
 
+
 =head1 DuckPAN
 
 The DuckDuckHack Testing Tool
+
 
 =head2 SYNPOSIS
 
 DuckPAN is an application built to provide developers a testing environment for DuckDuckHack Instant Answers. It allows you to test instant answer triggers and preview their visual design and output.
 
+
 =head2 INSTALLATION
 
 Please see L<https://github.com/duckduckgo/p5-app-duckpan#installing-duckpan> for all information regarding the installation of DuckPAN.
 
+
 =head2 COMMANDS
 
-B<duckpan check>:
+=head3 Help
+B<duckpan>
+B<duckpan help>
+B<man duckpan>
+    Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
+
+
+=head3 FOR INSTANT ANSWER DEVELOPERS
+
+B<duckpan check>
     Checks if you fulfill all requirements for the development environment. This will run automatically during a B<duckpan release>.
 
-B<duckpan query> [spice_package|goodie_package] ...
+B<duckpan query> [package_name ...]
     Test Goodie and Spice triggers interactively on the command line. For each query, the instant answers triggered will be displayed. This tool should be used to ensure your instant answer triggers correctly.
 
-    [spice_package|goodie_package]:
-        Loads the specified spice or goodie instant answer only, you can pass multiple instant answers.
+    [package_name ...]
+        Loads only the specified Spice or Goodie Instant Answers.
         duckpan query Npm
         duckpan query Twitter IsItUp
 
-B<duckpan server> [--verbose] [--no-cache] [--port <number>] [spice_package|goodie_package] ...
+B<duckpan server> [--verbose] [--force] [--cachesec <seconds>] [--port <number>] [package_name ...]
     Starts a local web server, which emulates the DuckDuckGo production environment. Allows for live testing of Goodie and Spice instant answers.  This tool should be used to ensure your instant answer displays correctly. For Spice instant answers, this is especially important to verify API calls are successful and no JavaScript errors exist.
 
     -v, --verbose:
         Provides more output from server
 
-    --no-cache:
+    -f, --force:
         Forces the cache to be repopulated each time the server starts (defaults to using cached copies of assets unless newer versions exist)
 
-    -p, --port <number>:
+    -c, --cachesec:
+        Sets the maximum number seconds for which the asset cache is valid (defaults to 14400 [4 hours])
+
+    -p, --port <number>
         Forces DuckPAN server to run on the specified port (default port is 5000)
 
-    [spice_package|goodie_package]:
-        Loads the specified spice or goodie instant answer only, you can pass multiple instant answers.
+    [package_name ...]
+        Loads only the specified Spice or Goodie Instant Answers.
+
         duckpan server Movie
         duckpan server IDN Sort Morse
 
-B<duckpan help>:
-    Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
+B<duckpan new> [package name]
+    Generates all necessary files for a new Spice or Goodie Instant Answer (depending on the current repo). DuckPAN will prompt you for a package name and generate the required files. If the name is already in use, DuckPAN will let you know and no files will be created.
 
-B<duckpan test>:
+B<duckpan test>
     Tests your release, by running the tests in the B<t/> directory using Dzil (if a dist.ini exists) or prove. This will run automatically during a B<duckpan release>.
 
-B<duckpan installdeps>:
+B<duckpan installdeps>
   Attempt to install dependencies for the distribution in your current directory using cpanm.
 
-B<duckpan roadrunner>:
-  Same as installdeps, but without testing them. Meep meep!
-
-B<duckpan poupload>:
-    Upload a po file to the Community Platform. This is for Translation Managers only.
-
-B<duckpan publisher>:
+B<duckpan publisher>
     Starts a local web server which displays static websites created with L<DuckDuckGo-Publisher|https://github.com/duckduckgo/duckduckgo-publisher>.
 
-B<duckpan release>:
-    Pushes a new release of the current project (ie. Spice, Goodie or Publisher) to L<DuckPAN.org|http://duckpan.org>
+B<duckpan update>
+    Update DuckPAN to the latest version.
 
-B<duckpan setup>:
-  Helps configure your environment so you can use L<Dist::Zilla::Plugin::UploadToDuckPAN>, which is used by B<duckpan release>.
+B<duckpan upgrade>
+    Upgrade DuckPAN and DDG to the latest versions.
 
-B<duckpan update>:
-   Update DuckPAN to the latest version.
 
-B<duckpan upgrade>:
-   Upgrade DuckPAN and DDG to the latest versions.
+=head3 FOR DUCKPAN DEVELOPERS
 
-B<duckpan reinstall>:
+B<duckpan reinstall>
    Force installation of the latest released versions of DuckPAN and DDG.
 
+B<duckpan empty>
+   Empties the DuckPAN Cache folder in ~/.duckpan/cache (mostly for DuckPAN)
+
+B<duckpan -I [filepath ...]>
+    Loads the specified external library. This should be used to test changes made to L<App::DuckPAN> and L<DDG>. Example: loading modified DuckPAN modules C<duckpan -I../p5-app-duckpan/lib server>.
+
+
+=head3 FOR DUCKDUCKHACK ADMINS
+
+B<duckpan setup>
+   Helps configure your environment so you can use L<Dist::Zilla::Plugin::UploadToDuckPAN>, which is used by B<duckpan release>.
+
+B<duckpan release>
+    Pushes a new release of the current project (ie. Spice, Goodie or Publisher) to L<DuckPAN.org|http://duckpan.org>
+
+B<duckpan roadrunner>
+  Same as installdeps, but without testing them. Meep meep!
+
+
+=head3 FOR TRANSLATION MANAGERS
+
+B<duckpan poupload> [--domain] filepath
+    Upload a po file to the Community Platform.
+
+
 =head2 ENVIRONMENT VARIABLES
+
+B<duckpan env>
+    View env commands and also shows the env variables currently stored in ~/.duckpan/env.ini
 
 B<duckpan env name value>
     Add an environment variable that DuckPAN will remember. This is specifically useful for Spice API keys. Variables are stored in ~/.duckpan/env.ini
 
-B<duckpan env rm name>
-    Remove an environment variable from DuckPAN. 
+B<duckpan env name>
+    Retrieve the matching key for a given env variable.
 
-=head2 PARAMETERS
-  
-B<duckpan -Ilib>:
-    Loads the specified external library. This should be used to test changes made to L<App::DuckPAN> and L<DDG>. Example: loading modified DuckPAN modules C<duckpan -I../p5-app-duckpan/lib server>.
+B<duckpan env rm name>
+    Remove an environment variable from DuckPAN.
+
 
 =head1 DESCRIPTION
 
 See L<App::DuckPAN> for more information.
+
 
 =head1 SEE ALSO
 
@@ -128,22 +164,24 @@ See L<App::DuckPAN> for more information.
 
 =back
 
+
 =head1 CONTRIBUTION
 
 To contribute to DuckPAN, please visit L<https://github.com/duckduckgo/p5-app-duckpan>. We also welcome and encourage contributions from our community. Please visit L<http://duckduckhack.com/> to contribute new instant answers, or visit L<https://duck.co/ideas> to share your ideas and instant answer source suggestions.
 
+
 =head2 SUPPORT
 
-B<IRC>:
+B<IRC>
 
     We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
 
-B<Repository>:
-    
+B<Repository>
+
     L<https://github.com/duckduckgo/p5-app-duckpan>
 
-B<Issue Tracker>:
-    
+B<Issue Tracker>
+
     https://github.com/duckduckgo/p5-app-duckpan/issues
 
 =cut
