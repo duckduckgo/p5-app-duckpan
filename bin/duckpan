@@ -58,7 +58,7 @@ B<duckpan query> [package_name ...]
         duckpan query Npm
         duckpan query Twitter IsItUp
 
-B<duckpan server> [--verbose] [--force] [--port <number>] [package_name ...]
+B<duckpan server> [--verbose] [--force] [--cachesec <seconds>] [--port <number>] [package_name ...]
     Starts a local web server, which emulates the DuckDuckGo production environment. Allows for live testing of Goodie and Spice instant answers.  This tool should be used to ensure your instant answer displays correctly. For Spice instant answers, this is especially important to verify API calls are successful and no JavaScript errors exist.
 
     -v, --verbose:
@@ -66,6 +66,9 @@ B<duckpan server> [--verbose] [--force] [--port <number>] [package_name ...]
 
     -f, --force:
         Forces the cache to be repopulated each time the server starts (defaults to using cached copies of assets unless newer versions exist)
+
+    -c, --cachesec:
+        Sets the maximum number seconds for which the asset cache is valid (defaults to 14400 [4 hours])
 
     -p, --port <number>
         Forces DuckPAN server to run on the specified port (default port is 5000)
@@ -121,7 +124,7 @@ B<duckpan roadrunner>
 
 =head3 FOR TRANSLATION MANAGERS
 
-B<duckpan poupload> [--domain] filepath:
+B<duckpan poupload> [--domain] filepath
     Upload a po file to the Community Platform.
 
 
