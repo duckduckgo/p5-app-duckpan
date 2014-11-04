@@ -6,12 +6,14 @@ my @libs;
 
 BEGIN {
     use Getopt::Long qw/:config bundling pass_through/;
+    use Path::Tiny;
+    use Try::Tiny;
     GetOptions 'include|I=s' => \@libs;
     @libs = split ',', join ',', @libs;
-    use Path::Tiny;
     if (my @missing = grep { !$_->exists } map { path($_) } @libs) {
         my $plural = (scalar @missing == 1) ? '' : 's';
-        print '[FATAL ERROR] Missing include path' . $plural . ': ' . join(', ', map { $_->realpath } @missing) . "\n";
+        print '[FATAL ERROR] Missing include path' . $plural . ': ' . join(', ',
+            map { try { $_->realpath } || $_->absolute } @missing) . "\n";
         exit 1;
     }
 }
