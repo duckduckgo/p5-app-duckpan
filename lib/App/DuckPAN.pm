@@ -249,7 +249,7 @@ sub execute {
 				$self->empty_cache();
 				push @modules, 'App::DuckPAN';
 				push @modules, 'DDG' if $_ =~ /^(?:upgrade|reinstall)$/i;
-				unshift @modules, 'force' if lc($_) eq 'reinstall';
+				unshift @modules, 'reinstall' if lc($_) eq 'reinstall';
 			} else {
 				push @left_args, $_;
 			}

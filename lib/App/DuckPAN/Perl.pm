@@ -73,10 +73,10 @@ sub cpanminus_install_error {
 sub duckpan_install {
 	my ($self, @modules) = @_;
 	my $mirror = $self->app->duckpan;
-	my $force_install;
-	if ($modules[0] eq 'force') {
-		# We sent in a signal to force installation
-		$force_install = 1;
+	my $reinstall;
+	if ($modules[0] eq 'reinstall') {
+		# We sent in a signal to force reinstallation
+		$reinstall = 1;
 		shift @modules;
 	}
 	my $modules_string = join(' ', @modules);
@@ -98,7 +98,7 @@ sub duckpan_install {
 			my $duckpan_module_url     = $self->app->duckpan . 'authors/id/' . $module->distribution->pathname;
 
 			my $install_it;
-			if ($force_install) {
+			if ($reinstall) {
 				$install_it = 1;
 			} elsif ($pin_version && $localver) {
 				print "$_: $localver installed, $pin_version pin, $duckpan_module_version latest\n";
@@ -119,7 +119,7 @@ sub duckpan_install {
 		}
 	}
 	return 0 unless @to_install;
-	unshift @to_install, '-f' if ($force_install);    # cpanm will do the actual forcing.
+	unshift @to_install, '--reinstall' if ($reinstall);    # cpanm will do the actual forcing.
 	return system("cpanm " . join(" ", @to_install));
 }
 
