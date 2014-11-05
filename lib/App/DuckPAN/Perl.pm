@@ -99,6 +99,8 @@ sub duckpan_install {
 		my $duckpan_module_version = version->parse($module->version);
 		my $duckpan_module_url     = $self->app->duckpan . 'authors/id/' . $module->distribution->pathname;
 
+		$localver ||= 1e-6 if ($pin_version); # a silly, but true, value if missing and we need to compare with pinned.
+
 		my ($install_it, $message);
 		if ($reinstall || !$localver) {    # Note the ignored pinning.
 			$install_it = 1;
