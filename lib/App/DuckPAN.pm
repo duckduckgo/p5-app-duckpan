@@ -261,21 +261,22 @@ sub execute {
 
 sub print_text {
 	shift;
-	return unless @_;
-	for (@_) {
+	my @lines = grep { defined } @_;
+	return unless @lines;
+	for (@lines) {
 		print "\n";
-		my @words = split(/\s+/,$_);
+		my @words = split(/\s+/, $_);
 		my $current_line = "";
 		for (@words) {
 			if ((length $current_line) + (length $_) < 79) {
 				$current_line .= " " if length $current_line;
 				$current_line .= $_;
 			} else {
-				print $current_line."\n";
+				print $current_line. "\n";
 				$current_line = $_;
 			}
 		}
-		print $current_line."\n" if length $current_line;
+		print $current_line. "\n" if length $current_line;
 	}
 	print "\n";
 }

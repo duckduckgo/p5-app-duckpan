@@ -41,18 +41,19 @@ sub setup {
 }
 
 sub get_local_version {
-	my ( $self, $module ) = @_;
+	my ($self, $module) = @_;
 	require Module::Data;
 	my $v;
 	{
 		local $@;
 		eval {
-			my $m = Module::Data->new( $module );
+			my $m = Module::Data->new($module);
 			$m->require;
 			$v = $m->version;
-			1
+			1;
 		} or return;
 	};
+
 	return unless defined $v;
 	return version->parse($v) unless ref $v;
 	return $v;
@@ -79,45 +80,43 @@ sub duckpan_install {
 		$reinstall = 1;
 		shift @modules;
 	}
-	my $modules_string = join(' ', @modules);
 	my $packages = $self->app->duckpan_packages;
 	my @to_install;
 	for (@modules) {
 		my $module = $packages->package($_);
-		if ($module) {
-			local $@;
+		$self->app->exit_with_msg(1, "Can't find package " . $_ . " on " . $self->app->duckpan) unless $module;
 
-			# see if we have an env variable for this module
-			my $sp = $_;
-			$sp =~ s/\:\:/_/g;
+		my $package = $module->package;    # Probably $_, but maybe they'll normalize or something someday.
 
-			# special case: check for a pinned verison number
-			my $pin_version            = $ENV{$sp};
-			my $localver               = $self->get_local_version($_);
-			my $duckpan_module_version = version->parse($module->version);
-			my $duckpan_module_url     = $self->app->duckpan . 'authors/id/' . $module->distribution->pathname;
+		# see if we have an env variable for this module
+		my $sp = $package;
+		$sp =~ s/\:\:/_/g;
 
-			my $install_it;
-			if ($reinstall) {
-				$install_it = 1;
-			} elsif ($pin_version && $localver) {
-				print "$_: $localver installed, $pin_version pin, $duckpan_module_version latest\n";
-				if ($pin_version > $localver && $duckpan_module_version > $localver && $duckpan_module_version <= $pin_version) {
-					$install_it = 1;
-				}
-			} elsif ($localver && $localver == $duckpan_module_version) {
-				$self->app->print_text("You already have latest version of " . $_ . " with " . $localver . "\n");
-			} elsif ($localver && $localver > $duckpan_module_version) {
-				$self->app->print_text(
-					"You have a newer version of " . $_ . " with " . $localver . " (duckpan has " . $duckpan_module_version . ")\n");
-			} else {
+		# special case: check for a pinned verison number
+		my $pin_version            = $ENV{$sp};
+		my $localver               = $self->get_local_version($package);
+		my $duckpan_module_version = version->parse($module->version);
+		my $duckpan_module_url     = $self->app->duckpan . 'authors/id/' . $module->distribution->pathname;
+
+		my ($install_it, $message);
+		if ($reinstall || !$localver) {    # Note the ignored pinning.
+			$install_it = 1;
+		} elsif ($pin_version) {
+			$message = "$package: $localver installed, $pin_version pin, $duckpan_module_version latest";
+			if ($pin_version > $localver && $duckpan_module_version > $localver && $duckpan_module_version <= $pin_version) {
 				$install_it = 1;
 			}
-			push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
+		} elsif ($localver == $duckpan_module_version) {
+			$message = "You already have latest ($localver) version of $package";
+		} elsif ($localver > $duckpan_module_version) {
+			$message = "You have a newer ($localver) version of $package than duckpan ($duckpan_module_version)";
 		} else {
-			$self->app->exit_with_msg(1, "Can't find package " . $_ . " on " . $self->app->duckpan);
+			$install_it = 1;
 		}
+		$self->app->print_text($message);
+		push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
 	}
+
 	return 0 unless @to_install;
 	unshift @to_install, '--reinstall' if ($reinstall);    # cpanm will do the actual forcing.
 	return system("cpanm " . join(" ", @to_install));
