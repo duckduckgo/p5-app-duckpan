@@ -242,8 +242,7 @@ sub execute {
 		}
 		exit $self->perl->duckpan_install(@modules) unless @left_args;
 	}
-	print $self->help->help;
-	exit 0;
+	$self->exit_with_msg(-1, "Unknown command. Use `duckpan help` to see the list of available DuckPAN commands.");
 }
 
 sub print_text {
