@@ -10,7 +10,8 @@ use Path::Tiny;
 use Config::INI::Reader;
 use Config::INI::Writer;
 use Data::Dumper;
-use LWP::Simple;
+use LWP::UserAgent;
+use List::MoreUtils qw/ uniq /;
 use List::Util qw/ first /;
 use File::Temp qw/ :POSIX /;
 use version;
@@ -102,9 +103,17 @@ sub duckpan_install {
 		if ($reinstall || !$localver) {    # Note the ignored pinning.
 			$install_it = 1;
 		} elsif ($pin_version) {
-			$message = "$package: $localver installed, $pin_version pin, $duckpan_module_version latest";
-			if ($pin_version > $localver && $duckpan_module_version > $localver && $duckpan_module_version <= $pin_version) {
-				$install_it = 1;
+			$self->app->print_text("$package: $localver installed, $pin_version pin, $duckpan_module_version latest");
+			if ($pin_version != $localver) {
+				#  We continue here, even if the version is larger than latest released,
+				#  on the premise that there might exist unreleased development versions.
+				if ($pin_version == $duckpan_module_version || ($duckpan_module_url = $self->find_previous_url($module, $pin_version))) {
+					$reinstall  = 1;       # Let us roll back, if necessary. Multiple packages may confuse this, but little harm.
+					$install_it = 1;
+				} else {
+					$message    = 'Could not locate version ' . $pin_version . ' of  ' . $package;
+					$install_it = 0;
+				}
 			}
 		} elsif ($localver == $duckpan_module_version) {
 			$message = "You already have latest ($localver) version of $package";
@@ -120,6 +129,30 @@ sub duckpan_install {
 	return 0 unless @to_install;
 	unshift @to_install, '--reinstall' if ($reinstall);    # cpanm will do the actual forcing.
 	return system("cpanm " . join(" ", @to_install));
+}
+
+sub find_previous_url {
+	my ($self, $module, $desired_version) = @_;
+
+	# Shaky premise #1: the author of our previous version is a current author.
+	# Shaky premise #2: the directory structure is always like this.
+	my @cpan_dirs = map { join('/', substr($_, 0, 1), substr($_, 0, 2), $_) } uniq map { $_->cpanid } ($self->app->duckpan_packages->distributions);
+	# Shaky premise #3: things never change distributions.
+	my $dist     = $module->distribution;
+	my $filename = $dist->filename;
+	# Shaky premise #4: the distribution version will match package version.
+	my $version = $dist->version;
+	# Shaky premise #5: the version for which they are asking is well-formed.
+	$filename =~ s/$version/$desired_version/;
+	my @urls = map { $self->app->duckpan . 'authors/id/' . $_ . '/' . $filename } @cpan_dirs;
+	$self->app->print_text("Checking up to " . scalar @urls . " distributions for pinned version...");
+
+	# Shaky premise #6: our network works well enough to make this a definitive test
+	my $ua = LWP::UserAgent->new(
+		agent                 => 'DPPF/0.001a',
+		requests_redirectable => []);
+
+	return first { $ua->head($_)->is_success } @urls;
 }
 
 sub set_dzil_config {
