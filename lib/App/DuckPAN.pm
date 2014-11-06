@@ -18,6 +18,7 @@ use Parse::CPAN::Packages::Fast;
 use File::Temp qw/ :POSIX /;
 use Term::UI;
 use Term::ReadLine;
+use Term::ReadKey;    # For GetTerminalSize
 use Carp;
 use Encode;
 use Perl::Version;
@@ -233,6 +234,18 @@ sub _build_ddg {
 	App::DuckPAN::DDG->new( app => shift );
 }
 
+has term_width => (
+	is      => 'ro',
+	lazy    => 1,
+	builder => 1,
+);    # Could add a clearer and SIGWINCH handler, if you felt saucy.
+
+sub _build_term_width {
+	my ($width) = GetTerminalSize(\*STDOUT);
+
+	return $width || 79;    # Old value is new default!
+}
+
 sub execute {
 	my ( $self, $args, $chain ) = @_;
 	my @arr_args = @{$args};
@@ -260,15 +273,16 @@ sub execute {
 }
 
 sub print_text {
-	shift;
+	my $self = shift;
 	my @lines = grep { defined } @_;
 	return unless @lines;
+	my $width = $self->term_width;    # We'll keep it for all these lines, at least.
 	for (@lines) {
 		print "\n";
 		my @words = split(/\s+/, $_);
 		my $current_line = "";
 		for (@words) {
-			if ((length $current_line) + (length $_) < 79) {
+			if ((length $current_line) + (length $_) < $width) {
 				$current_line .= " " if length $current_line;
 				$current_line .= $_;
 			} else {
