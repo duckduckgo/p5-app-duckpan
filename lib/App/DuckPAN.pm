@@ -1,6 +1,8 @@
 package App::DuckPAN;
 # ABSTRACT: The DuckDuckGo DuckPAN client
 
+use feature 'state';
+
 use Moo;
 use MooX::Cmd;
 use MooX::Options;
@@ -15,6 +17,7 @@ use LWP::UserAgent;
 use LWP::Simple;
 use Parse::CPAN::Packages::Fast;
 use File::Temp qw/ :POSIX /;
+use Term::ANSIColor;
 use Term::UI;
 use Term::ReadLine;
 use Carp;
@@ -265,7 +268,13 @@ sub execute {
 	$self->exit_with_msg(0, "Unknown command. Use `duckpan help` to see the list of available DuckPAN commands.");
 }
 
-sub show_msg { shift->_print_msg(*STDOUT, @_); }
+sub show_msg {
+	my ($self, @msg) = @_;
+
+	state $prefix = colored('[INFO]', 'green');
+
+	$self->_print_msg(*STDOUT, map { $prefix . ' ' . $_ } grep { $_ } @msg);
+}
 
 sub _print_msg {
 	my ($self, $fh, @lines) = @_;
@@ -278,17 +287,20 @@ sub _print_msg {
 sub error_msg {
 	my ($self, @msg) = @_;
 
-	$self->_print_msg(*STDERR, map { '[ERROR] ' . $_ } grep { $_ } @msg);
+	state $prefix = colored('[ERROR]', 'red');
+
+	$self->_print_msg(*STDERR, map { $prefix . ' ' . $_ } grep { $_ } @msg);
 }
 
 sub exit_with_msg {
 	my ($self, $exit_code, @msg) = @_;
 
+	state $prefix = colored('[FATAL ERROR]', 'bright_red bold');
 	my $which_way = *STDOUT;    # By default, print to STDOUT before exit;
 
 	if ($exit_code != 0) {      # But if it's an unhappy exit
 		$which_way = *STDERR;                                     # Print to STDERR
-		@msg = map { '[FATAL ERROR] ' . $_ } grep { $_ } @msg;    # And append error warning
+		@msg = map { $prefix. ' ' . $_ } grep { $_ } @msg;    # And append error warning
 	}
 
 	$self->_print_msg($which_way, @msg);
@@ -307,7 +319,9 @@ sub verbose_msg {
 sub warning_msg {
 	my ($self, @msg) = @_;
 
-	$self->_print_msg(*STDOUT, map { '[NOTICE] ' . $_ } grep { $_ } @msg);
+	state $prefix = colored('[NOTICE]', 'yellow');
+
+	$self->_print_msg(*STDOUT, map { $prefix. ' ' . $_ } grep { $_ } @msg);
 }
 
 sub camel_to_underscore {
