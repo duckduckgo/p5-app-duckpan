@@ -262,7 +262,7 @@ sub execute {
 		}
 		exit $self->perl->duckpan_install(@modules) unless @left_args;
 	}
-	$self->exit_with_msg(-1, "Unknown command. Use `duckpan help` to see the list of available DuckPAN commands.");
+	$self->exit_with_msg(0, "Unknown command. Use `duckpan help` to see the list of available DuckPAN commands.");
 }
 
 sub show_msg { shift->_print_msg(*STDOUT, @_); }
@@ -291,7 +291,7 @@ sub exit_with_msg {
 		@msg = map { '[FATAL ERROR] ' . $_ } grep { $_ } @msg;    # And append error warning
 	}
 
-	$self->show_msg(@msg);
+	$self->_print_msg($which_way, @msg);
 	exit $exit_code;
 }
 
@@ -301,13 +301,13 @@ sub verbose_msg {
 	return unless $self->verbose && @lines;    # only show actual messages in verbose mode.
 
 	# Someday we may wish to do something more with these, but for now it's just show_msg.
-	return $self->show_msg(@lines);
+	return $self->_print_msg(*STDOUT, @lines);
 }
 
 sub warning_msg {
 	my ($self, @msg) = @_;
 
-	$self->show_msg(map { '[NOTICE] ' . $_ } grep { $_ } @msg);
+	$self->_print_msg(*STDOUT, map { '[NOTICE] ' . $_ } grep { $_ } @msg);
 }
 
 sub camel_to_underscore {
