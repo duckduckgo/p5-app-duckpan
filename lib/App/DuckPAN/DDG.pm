@@ -23,9 +23,9 @@ sub show_failed_modules {
     my ($self, $failed_to_load) = @_;
 
     if (%$failed_to_load) {
-        $self->app->show_msg("These instant answers were not loaded:");
+        $self->app->warning_msg("These instant answers were not loaded:");
         p($failed_to_load);
-        $self->app->show_msg(
+        $self->app->warning_msg(
             "To learn more about installing Perl dependencies, please read https://duck.co/duckduckhack/faq#how-do-i-install-a-missing-perl-dependency.",
             "Note: You can ignore these errors if you're not working on these instant answers."
         ) if first { /dependencies/ } values %$failed_to_load;
@@ -56,7 +56,7 @@ sub get_blocks_from_current_dir {
     }
     require lib;
     lib->import('lib');
-    $self->app->show_msg("Using the following DDG instant answers:");
+    $self->app->show_msg("Loading Instant Answers...");
 
     # This list contains all of the classes that loaded successfully.
     my @successfully_loaded = ();
@@ -79,7 +79,7 @@ sub get_blocks_from_current_dir {
             push @successfully_loaded, $class;
 
             # Display to the user when a class has been successfully loaded.
-            $self->app->show_msg(" - $class (" . $class->triggers_block_type . ")");
+            $self->app->verbose_msg(" - $class (" . $class->triggers_block_type . ")");
         } else {
             # Get the module name that needs to be installed by the user.
             if ($load_error_message =~ /Can't locate ([^\.]+).pm in \@INC/) {
