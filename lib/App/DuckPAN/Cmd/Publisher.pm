@@ -20,14 +20,12 @@ for (qw( duckduckgo dontbubbleus donttrackus whatisdnt fixtracking duckduckhack 
 sub run {
 	my ( $self, @args ) = @_;
 
-	print "\n\nChecking for Publisher...\n";
+	$self->app->show_msg("Checking for Publisher...");
 
-	my $publisher_pm = path('lib','DDG','Publisher.pm')->absolute;
-	die "You must be in the root of the duckduckgo-publisher repository" unless -f $publisher_pm;
+	my $publisher_pm = path('lib','DDG','Publisher.pm');
+	$self->add->exit_with_msg(1, "You must be in the root of the duckduckgo-publisher repository") unless $publisher_pm->exists;
 
-	print "\n\nStarting up publisher webserver...";
-	print "\n\nYou can stop the webserver with Ctrl-C";
-	print "\n\n";
+	$self->app->show_msg("Starting up publisher webserver...", "You can stop the webserver with Ctrl-C");
 
 	my %sites = (
 		duckduckgo => {
@@ -41,7 +39,7 @@ sub run {
 		donttrackus => {
 			port => 5002,
 			url => $self->has_donttrackus ? $self->donttrackus : "http://donttrack.us/",
-		},	
+		},
 		whatisdnt => {
 			port => 5003,
 			url => $self->has_whatisdnt ? $self->whatisdnt : "http://whatisdnt.com/",
@@ -57,17 +55,15 @@ sub run {
 	);
 
 	for (sort { $sites{$a}->{port} <=> $sites{$b}->{port} } keys %sites) {
-		print "Serving on port ".$sites{$_}->{port}.": ".$sites{$_}->{url}."\n";
+		$self->app->show_msg("Serving on port ".$sites{$_}->{port}.": ".$sites{$_}->{url});
 	}
-
-	print "\n\n";
 
 	require App::DuckPAN::WebPublisher;
 	my $web = App::DuckPAN::WebPublisher->new(
 		app => $self->app,
 		sites => \%sites,
 	);
-	my @ports = map { $sites{$_}->{port} } keys %sites; 
+	my @ports = map { $sites{$_}->{port} } keys %sites;
 	exit Plack::Handler::Starman->new(listen => [ map { ":$_" } @ports ])->run(sub { $web->run_psgi(@_) });
 }
 

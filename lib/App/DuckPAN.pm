@@ -337,7 +337,7 @@ sub phrase_to_camel {
 sub check_requirements {
 	my ( $self ) = @_;
 	my $fail = 0;
-	print "\nChecking your environment for the DuckPAN requirements\n\n";
+	$self->show_msg("Checking your environment for the DuckPAN requirements");
 	#$fail = 1 unless $self->check_locallib;
 	$fail = 1 unless $self->check_ddg;
 	$fail = 1 unless $self->check_git;
@@ -350,36 +350,36 @@ sub check_requirements {
 
 sub check_git {
 	my ( $self ) = @_;
-	my $ok = 1;
-	print "Checking for git... ";
+	my $ok = 0;
+	$self->show_msg("Checking for git... ");
 	if (my $git = which('git')) {
 		my $version_string = `$git --version`;
 		if ($version_string =~ m/git version (\d+)\.(\d+)/) {
 			if ($1 <= 1 && $2 < 7) {
-				print "require minimum 1.7"; $ok = 0;
+				$self->show_msg("require minimum 1.7");
 			} else {
-				print $git;
+				$self->show_msg($git);
+				$ok = 1;
 			}
 		} else {
-			print "Unknown version!"; $ok = 0;
+			$self->show_msg("Unknown version!");
 		}
 	} else {
-		print "No!"; $ok = 0;
+		$self->show_msg("No!");
 	}
-	print "\n";
 	return $ok;
 }
 
 sub check_ssh {
 	my ( $self ) = @_;
-	my $ok = 1;
-	print "Checking for ssh... ";
+	my $ok = 0;
+	$self->show_msg("Checking for ssh... ");
 	if (my $ssh = which('ssh')) {
-		print $ssh;
+		$self->show_msg($ssh);
+		$ok = 1;
 	} else {
-		print "No!"; $ok = 0;
+		$self->show_msg("No!");
 	}
-	print "\n";
 	return $ok;
 }
 
@@ -403,15 +403,13 @@ sub verify_versions {
 
 	my $installed_version = Perl::Version->new($]);
 
-	if ($installed_version->vcmp($perl_versions{required}) < 0) {
-		print '[ERROR] perl ' . $perl_versions{required}->normal . ' or higher is required. ' . $installed_version->normal . " is installed.\n";
-		exit 1;
-	} elsif ($installed_version->vcmp($perl_versions{recommended}) < 0) {
-		print '[NOTICE] perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ' . $installed_version->normal . " is installed.\n";
-	}
-
-	exit 1 unless $self->check_app_duckpan;
-	exit 1 unless $self->check_ddg;
+	$self->exit_with_msg(1, 'perl ' . $perl_versions{required}->normal . ' or higher is required. ', $installed_version->normal . ' is installed.')
+	  if ($installed_version->vcmp($perl_versions{required}) < 0);
+	$self->show_msg(
+		'[NOTICE] perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ' . $installed_version->normal . " is installed.")
+	  if ($installed_version->vcmp($perl_versions{recommended}) < 0);
+	$self->exit_with_msg(1, 'App::DuckPAN check failed') unless $self->check_app_duckpan;
+	$self->exit_with_msg(1, 'DDG check failed')          unless $self->check_ddg;
 
 	return;
 }
@@ -422,21 +420,20 @@ sub check_app_duckpan {
 	my $ok                = 1;
 	my $installed_version = $self->get_local_app_duckpan_version;
 	return $ok if $installed_version && $installed_version == '9.999';
-	print "Checking for latest App::DuckPAN ... ";
+	$self->show_msg("Checking for latest App::DuckPAN... ");
 	my $packages = $self->duckpan_packages;
 	my $module   = $packages->package('App::DuckPAN');
 	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
 	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-		print $installed_version;
-		print " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+		my $msg = $installed_version;
+		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+		$self->show_msg($msg);
 	} else {
-		if ($installed_version) {
-			print "You have version " . $installed_version . ", latest is " . $module->version . "!\n";
-		}
-		print "[ERROR] Please install the latest App::DuckPAN package with: duckpan upgrade\n";
+		my @msg = ("Please install the latest App::DuckPAN package with: duckpan upgrade");
+		unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!" if ($installed_version);
+		$self->show_msg(@msg);
 		$ok = 0;
 	}
-	print "\n";
 	return $ok;
 }
 
@@ -446,23 +443,24 @@ sub check_ddg {
 	my $ok                = 1;
 	my $installed_version = $self->get_local_ddg_version;
 	return $ok if $installed_version && $installed_version == '9.999';
-	print "Checking for latest DDG Perl package... ";
+	$self->show_msg("Checking for latest DDG Perl package...");
 	my $packages = $self->duckpan_packages;
 	my $module   = $packages->package('DDG');
 	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
 	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-		print $installed_version;
-		print " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+		my $msg = $installed_version;
+		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+		$self->show_msg($msg);
 	} else {
+		my @msg = ("Please install the latest DDG package with: duckpan DDG");
 		if ($installed_version) {
-			print "You have version " . $installed_version . ", latest is " . $module->version . "!\n";
+			unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!";
 		} else {
-			print "You don't have DDG installed! Latest is " . $module->version . "!\n";
+			unshift @msg, "You don't have DDG installed! Latest is " . $module->version . "!";
 		}
-		print "[ERROR] Please install the latest DDG package with: duckpan DDG\n";
+		$self->show_msg(@msg);
 		$ok = 0;
 	}
-	print "\n";
 	return $ok;
 }
 
@@ -490,27 +488,20 @@ sub empty_cache {
 	my ($self) = @_;
 	# Clear cache so share files are written into cache
 	my $cache = $self->cfg->cache_path;
-	if ($cache->exists){
-		print "Emptying DuckPAN cache...";
-		$cache->remove_tree({keep_root => 1});
-		print "Done\n";
-	} else {
-		print "Cache does not exist. Nothing to delete.\n";
-
-	}
+	$self->show_msg("Emptying DuckPAN cache...");
+	$cache->remove_tree({keep_root => 1});
+	$self->show_msg("DuckPAN cache emptied");
 }
 
 sub BUILD {
-	my ( $self ) = @_;
-	if ($^O eq 'MSWin32') {
-		print "\n[ERROR] We dont support Win32\n\n";
-		exit 1;
+	my ($self) = @_;
+
+	$self->exit_with_msg(1, 'We dont support Win32') if ($^O eq 'MSWin32');
+	my $env_config = $self->cfg->config_path->child('env.ini');
+	if ($env_config->exists) {
+		my $env = Config::INI::Reader->read_file($env_config);
+		map { $ENV{$_} = $env->{'_'}{$_}; } keys %{$env->{'_'}} if $env->{'_'};
 	}
-    my $env_config = $self->cfg->config_path->child('env.ini');
-    if ($env_config->exists) {
-        my $env = Config::INI::Reader->read_file($env_config);
-        map { $ENV{$_} = $env->{'_'}{$_}; } keys %{$env->{'_'}} if $env->{'_'};
-    }
 }
 
 1;

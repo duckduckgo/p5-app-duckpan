@@ -121,14 +121,12 @@ sub run {
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-    print "\n\n";
     $self->app->verbose_msg("Hostname is: http://" . $self->hostname);
     if ($self->force) {
-        print "[CACHE DISABLED] Forcing request for all assets...\n";
+        $self->app->show_msg("[CACHE DISABLED] Forcing request for all assets...");
     } else {
-        print "Checking asset cache validity...\n";
+        $self->app->show_msg("Checking asset cache validity...");
     }
-    print "\n";
 
     foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice templates))) {
         if (defined $asset->{external}) {
@@ -150,8 +148,7 @@ sub run {
         $web_args{'page_' . $page} = $self->slurp_or_empty($self->page_info->{$page});
     }
 
-    print "\nStarting up webserver...\n";
-    print "You can stop the webserver with Ctrl-C\n\n";
+    $self->app->show_msg("Starting up webserver...", "You can stop the webserver with Ctrl-C");
 
     require App::DuckPAN::Web;
 

@@ -51,10 +51,10 @@ sub run {
 sub upload {
 	my ( $self, $file ) = @_;
 	die "File not found" unless -f $file;
-	print "Uploading ".$file."... ";
+	$self->app->show_msg("Uploading $file... ");
 	my $response = $self->app->http->request($self->get_request($file));
-	die "Error: ".$response->code if $response->is_error || $response->is_redirect;
-	print "success!\n";
+	$self->app->exit_with_msg(1, "Error: ".$response->code) if $response->is_error || $response->is_redirect;
+	$self->app->show_msg("success!");
 }
 
 1;

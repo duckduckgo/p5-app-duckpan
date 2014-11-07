@@ -27,7 +27,7 @@ sub run {
 			if (system("cpanm --quiet --notest --skip-satisfied --installdeps ."));
 	}
 
-	print "\a"; usleep 225000; print "\a";
+	$self->app->show_msg("\a"); usleep 225000; $self->app->show_msg("\a");
 
 }
 

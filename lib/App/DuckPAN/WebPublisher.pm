@@ -71,7 +71,7 @@ sub request {
 	my $file = $uri.'/'.$self->current_language.'.html';
 
 	if (defined $site->fullpath_files->{$file}) {
-		print 'Request '.$request->path_info.' uses '.$file.' from DDG::Publisher...'."\n";
+		$self->app->show_msg('Request '.$request->path_info.' uses '.$file.' from DDG::Publisher...');
 		$body = $site->fullpath_files->{$file}->uncached_content;
 		$response->code("200");
 		$response->content_type('text/html');

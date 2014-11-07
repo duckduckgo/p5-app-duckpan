@@ -22,12 +22,12 @@ subtest 'bad include paths' => sub {
 	my ($return, $out, $err) = run_script('duckpan', ['-I' . $fake_dir]);
 
 	ok($return, 'DuckPAN with non-existent include path exits with an error');
-	like($out, qr/Missing include path.*$fake_dir/, ' after printing a message showing the bad path');
+	like($out, qr/Missing include path.*$fake_dir/, ' after showing the bad path message');
 
 	$fake_dir = '../fake-directory/even-faker';
 	($return, $out, $err) = run_script('duckpan', ['-I' . $fake_dir]);
 	ok($return, 'DuckPAN with non-existent multi-way include path exits with an error');
-	like($out, qr/Missing include path.*$fake_dir/, ' after printing a message showing the bad path');
+	like($out, qr/Missing include path.*$fake_dir/, ' after showing the bad path message');
 };
 
 subtest 'env' => sub {
