@@ -24,7 +24,7 @@ sub show_failed_modules {
 
     if (%$failed_to_load) {
         $self->app->warning_msg("These instant answers were not loaded:");
-        p($failed_to_load);
+        $self->app->warning_msg(p($failed_to_load, colored => 1));
         $self->app->warning_msg(
             "To learn more about installing Perl dependencies, please read https://duck.co/duckduckhack/faq#how-do-i-install-a-missing-perl-dependency.",
             "Note: You can ignore these errors if you're not working on these instant answers."

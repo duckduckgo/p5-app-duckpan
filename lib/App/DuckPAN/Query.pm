@@ -47,9 +47,7 @@ sub run {
 			for my $b (@blocks) {
 				for ($b->request($request)) {
 					$hit = 1;
-					$app->show_msg("---");
-					p($_);
-					$app->show_msg("---");
+					$app->show_msg('---', p($_, colored => 1), '---');
 				}
 			}
 			unless ($hit) {
