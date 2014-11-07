@@ -409,13 +409,13 @@ sub check_app_duckpan {
 	my $module   = $packages->package('App::DuckPAN');
 	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
 	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-		my $msg = $installed_version;
+		my $msg = "App::DuckPAN version: $installed_version";
 		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
-		$self->show_msg($msg);
+		$self->verbose_msg($msg);
 	} else {
 		my @msg = ("Please install the latest App::DuckPAN package with: duckpan upgrade");
 		unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!" if ($installed_version);
-		$self->show_msg(@msg);
+		$self->warning_msg(@msg);
 		$ok = 0;
 	}
 	return $ok;
@@ -432,9 +432,9 @@ sub check_ddg {
 	my $module   = $packages->package('DDG');
 	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
 	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-		my $msg = $installed_version;
+		my $msg = "DDG version: $installed_version";
 		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
-		$self->show_msg($msg);
+		$self->verbose_msg($msg);
 	} else {
 		my @msg = ("Please install the latest DDG package with: duckpan DDG");
 		if ($installed_version) {
@@ -442,7 +442,7 @@ sub check_ddg {
 		} else {
 			unshift @msg, "You don't have DDG installed! Latest is " . $module->version . "!";
 		}
-		$self->show_msg(@msg);
+		$self->warning_msg(@msg);
 		$ok = 0;
 	}
 	return $ok;
