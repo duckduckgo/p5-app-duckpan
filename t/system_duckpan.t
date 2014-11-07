@@ -13,7 +13,7 @@ my $version = $App::DuckPAN::VERSION;
 subtest 'no arguments' => sub {
 	my ($return, $out, $err) = run_script('duckpan', []);
 
-	like($out, qr/DuckPAN/, 'DuckPAN without arguments gives out usage');
+	like($out, qr/`duckpan help`/, 'DuckPAN without arguments recommends mentions `duckpan help`');
 	is($return, 1, 'DuckPAN gives back exit code 1');
 };
 

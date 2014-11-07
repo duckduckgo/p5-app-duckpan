@@ -278,33 +278,38 @@ sub execute {
 	$self->exit_with_msg(-1, "Unknown command. Use `duckpan help` to see the list of available DuckPAN commands.");
 }
 
-sub show_msg {
-	my $self = shift;
-	my @lines = grep { defined } @_;
+sub show_msg { shift->_print_msg(*STDOUT, @_); }
+
+sub _print_msg {
+	my ($self, $fh, @lines) = @_;
+	@lines = grep { defined } @lines;
 	return unless @lines;
 	my $width = $self->term_width;    # We'll keep it for all these lines, at least.
 	for (@lines) {
-		print "\n";
-		my @words = split(/\s+/, $_);
-		my $current_line = "";
-		for (@words) {
-			if ((length $current_line) + (length $_) < $width) {
-				$current_line .= " " if length $current_line;
-				$current_line .= $_;
+		my ($current_line, @words) = split(/\s+/, $_);
+		foreach my $word (@words) {
+			if ((length $current_line) + (length $word) < $width) {
+				$current_line .= ' ' . $word;
 			} else {
-				print $current_line. "\n";
-				$current_line = $_;
+				print $fh $current_line . "\n";
+				$current_line = $word;
 			}
 		}
-		print $current_line. "\n" if length $current_line;
+		print $fh $current_line . "\n" if $current_line;
 	}
-	print "\n";
+}
+
+sub error_msg {
+	my ($self, @msg) = @_;
+
+	$msg[0] = '[ERROR] ' . $msg[0] if (@msg);
+	$self->_print_msg(*STDERR, @msg);
 }
 
 sub exit_with_msg {
 	my ($self, $exit_code, @msg) = @_;
 
-	$msg[0] = '[ERROR] ' . $msg[0] if (@msg);
+	$msg[0] = '[FATAL ERROR] ' . $msg[0] if (@msg);
 	$self->show_msg(@msg);
 	exit $exit_code;
 }
@@ -316,6 +321,13 @@ sub verbose_msg {
 
 	# Someday we may wish to do something more with these, but for now it's just show_msg.
 	return $self->show_msg(@lines);
+}
+
+sub warning_msg {
+	my ($self, @msg) = @_;
+
+	$msg[0] = '[NOTICE] ' . $msg[0] if (@msg);
+	$self->show_msg(@msg);
 }
 
 sub camel_to_underscore {
@@ -405,8 +417,7 @@ sub verify_versions {
 
 	$self->exit_with_msg(1, 'perl ' . $perl_versions{required}->normal . ' or higher is required. ', $installed_version->normal . ' is installed.')
 	  if ($installed_version->vcmp($perl_versions{required}) < 0);
-	$self->show_msg(
-		'[NOTICE] perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ' . $installed_version->normal . " is installed.")
+	$self->warning_msg('perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ', $installed_version->normal . " is installed.")
 	  if ($installed_version->vcmp($perl_versions{recommended}) < 0);
 	$self->exit_with_msg(1, 'App::DuckPAN check failed') unless $self->check_app_duckpan;
 	$self->exit_with_msg(1, 'DDG check failed')          unless $self->check_ddg;

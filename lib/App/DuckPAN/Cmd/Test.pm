@@ -12,10 +12,9 @@ sub run {
 
     if (-e 'dist.ini') {
       $ret = system('dzil test');
-      print STDERR '[ERROR] Could not begin testing. Is Dist::Zilla installed?'
-        if $ret == -1;
+      $self->app->error_msg('Could not begin testing. Is Dist::Zilla installed?') if $ret == -1;
     } else {
-      print STDERR "[WARNING] Could not find dist.ini.\n";
+      $self->app->warning_msg("Could not find dist.ini.");
       $ret = system('prove -Ilib');
     }
 
