@@ -115,14 +115,14 @@ sub run {
     if ($self->force || (time - $last_checked_perl) > $self->cachesec) {
         $self->app->verify_versions;
         $signal_file->touch;
-    } elsif ($self->verbose) {
-        print "\nPerl module versions recently checked, skipping...\n";
+    } else {
+        $self->app->verbose_msg("Perl module versions recently checked, skipping...");
     }
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
     print "\n\n";
-    print "Hostname is: http://" . $self->hostname . "\n" if ($self->verbose);
+    $self->app->verbose_msg("Hostname is: http://" . $self->hostname);
     if ($self->force) {
         print "[CACHE DISABLED] Forcing request for all assets...\n";
     } else {
@@ -391,9 +391,9 @@ sub retrieve_and_cache {
     my $prefix     = ($sub_of) ? '  [via ' . $sub_of->{name} . '] ' : '';
     $prefix .= '[' . $asset->{name} . '] ';
     if (!$self->force && $to_file->exists && (time - $to_file->stat->ctime) < $self->cachesec) {
-        print $prefix . $to_file->basename . " recently cached -- no request made.\n" if $self->verbose;
+        $self->app->verbose_msg($prefix . $to_file->basename . " recently cached -- no request made.");
     } else {
-        print $prefix . "requesting from: $url...\n" if $self->verbose;
+        $self->app->verbose_msg($prefix . 'requesting from: ' . $url . '...');
         $to_file->remove;
         $to_file->touchpath;
         my ($expected_length, $bytes_received, $progress);
@@ -405,7 +405,7 @@ sub retrieve_and_cache {
                 $bytes_received += length($chunk);
                 $to_file->append($chunk);
                 $expected_length //= $res->content_length || 0;
-                return unless $self->verbose;    # Progress bar is just for verbose mode;
+                return unless $self->app->verbose;    # Progress bar is just for verbose mode;
                 if ($expected_length && !defined($progress)) {
                     $progress = Term::ProgressBar->new({
                         name   => $prefix,
@@ -426,14 +426,14 @@ sub retrieve_and_cache {
             $self->app->exit_with_msg(-1, qq~only $bytes_received of $expected_length bytes received~);
         } else {
             $progress->update($expected_length) if ($progress && $expected_length);
-            print $prefix. "written to cache: $to_file\n" if $self->verbose;
+            $self->app->verbose_msg($prefix . 'written to cache: ' . $to_file);
         }
     }
     # We need to load the assets on the SERPs for reuse.
     if ($asset->{load_sub_assets}) {
-        print $prefix. "parsing for additional assets\n" if $self->verbose;
+        $self->app->verbose_msg($prefix . 'parsing for additional assets');
         $self->get_sub_assets($asset);
-        print $prefix. "assets loaded\n" if $self->verbose;
+        $self->app->verbose_msg($prefix . 'assets loaded');
     }
 
     return;

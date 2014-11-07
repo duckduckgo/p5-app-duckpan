@@ -1,7 +1,6 @@
 package App::DuckPAN;
 # ABSTRACT: The DuckDuckGo DuckPAN client
 
-
 use Moo;
 use MooX::Cmd;
 use MooX::Options;
@@ -308,6 +307,15 @@ sub exit_with_msg {
 	$msg[0] = '[ERROR] ' . $msg[0] if (@msg);
 	$self->print_text(@msg);
 	exit $exit_code;
+}
+
+sub verbose_msg {
+	my ($self, @lines) = @_;
+
+	return unless $self->verbose && @lines;    # only show actual messages in verbose mode.
+
+	# Someday we may wish to do something more with these, but for now it's just print_text.
+	return $self->print_text(@lines);
 }
 
 sub camel_to_underscore {
