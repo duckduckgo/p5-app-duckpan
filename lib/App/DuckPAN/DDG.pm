@@ -12,7 +12,7 @@ use List::Util qw (first);
 sub get_dukgo_user_pass {
     my ($self) = @_;
     my $config = $self->app->perl->get_dzil_config;
-    $self->app->exit_with_msg(1, "No configuration found for your https://duck.co/ username and password, please use: 'dzil setup' first!")
+    $self->app->exit_with_msg(1, "No configuration found for your https://duck.co/ username and password", "Please use 'dzil setup' first!")
       unless (defined $config->{'%DUKGO'});
 
     return $config->{'%DUKGO'}->{username}, $config->{'%DUKGO'}->{password};

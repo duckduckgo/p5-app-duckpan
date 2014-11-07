@@ -123,7 +123,7 @@ sub run {
 
     $self->app->verbose_msg("Hostname is: http://" . $self->hostname);
     if ($self->force) {
-        $self->app->show_msg("[CACHE DISABLED] Forcing request for all assets...");
+        $self->app->warning_msg("Cache disabled forcing request for all assets...");
     } else {
         $self->app->show_msg("Checking asset cache validity...");
     }
