@@ -284,7 +284,14 @@ sub error_msg {
 sub exit_with_msg {
 	my ($self, $exit_code, @msg) = @_;
 
-	$self->show_msg(map { '[FATAL ERROR] ' . $_ } grep { $_ } @msg);
+	my $which_way = *STDOUT;    # By default, print to STDOUT before exit;
+
+	if ($exit_code != 0) {      # But if it's an unhappy exit
+		$which_way = *STDERR;                                     # Print to STDERR
+		@msg = map { '[FATAL ERROR] ' . $_ } grep { $_ } @msg;    # And append error warning
+	}
+
+	$self->show_msg(@msg);
 	exit $exit_code;
 }
 

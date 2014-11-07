@@ -12,7 +12,7 @@ BEGIN {
     @libs = split ',', join ',', @libs;
     if (my @missing = grep { !$_->exists } map { path($_) } @libs) {
         my $plural = (scalar @missing == 1) ? '' : 's';
-        print '[FATAL ERROR] Missing include path' . $plural . ': ' . join(', ',
+        print STDERR '[FATAL ERROR] Missing include path' . $plural . ': ' . join(', ',
             map { try { $_->realpath } || $_->absolute } @missing) . "\n";
         exit 1;
     }
