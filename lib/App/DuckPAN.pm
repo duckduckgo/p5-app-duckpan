@@ -278,15 +278,13 @@ sub _print_msg {
 sub error_msg {
 	my ($self, @msg) = @_;
 
-	$msg[0] = '[ERROR] ' . $msg[0] if (@msg);
-	$self->_print_msg(*STDERR, @msg);
+	$self->_print_msg(*STDERR, map { '[ERROR] ' . $_ } grep { $_ } @msg);
 }
 
 sub exit_with_msg {
 	my ($self, $exit_code, @msg) = @_;
 
-	$msg[0] = '[FATAL ERROR] ' . $msg[0] if (@msg);
-	$self->show_msg(@msg);
+	$self->show_msg(map { '[FATAL ERROR] ' . $_ } grep { $_ } @msg);
 	exit $exit_code;
 }
 
@@ -302,8 +300,7 @@ sub verbose_msg {
 sub warning_msg {
 	my ($self, @msg) = @_;
 
-	$msg[0] = '[NOTICE] ' . $msg[0] if (@msg);
-	$self->show_msg(@msg);
+	$self->show_msg(map { '[NOTICE] ' . $_ } grep { $_ } @msg);
 }
 
 sub camel_to_underscore {
