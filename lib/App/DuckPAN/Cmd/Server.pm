@@ -23,13 +23,6 @@ option force => (
     default => sub { 0 }
 );
 
-option verbose => (
-    is => 'ro',
-    lazy => 1,
-    short => 'v',
-    default => sub { 0 }
-);
-
 option port => (
     is => 'ro',
     format => 'i',

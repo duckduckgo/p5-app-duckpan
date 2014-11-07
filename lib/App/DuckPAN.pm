@@ -38,6 +38,13 @@ option no_check => (
 	default => sub { 0 }
 );
 
+option verbose => (
+	is      => 'ro',
+	lazy    => 1,
+	short   => 'v',
+	default => sub { 0 },
+);
+
 has duckpan_packages => (
 	is => 'ro',
 	lazy => 1,
