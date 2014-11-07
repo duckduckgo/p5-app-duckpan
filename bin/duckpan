@@ -47,7 +47,7 @@ Please see L<https://github.com/duckduckgo/p5-app-duckpan#installing-duckpan> fo
 =head2 COMMANDS
 
 =head3 Help
-B<duckpan> [--verbose]
+B<duckpan> [--verbose|-v]
 B<duckpan help>
 B<man duckpan>
     Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
