@@ -73,9 +73,9 @@ sub run {
 		$self->app->exit_with_msg(-1, 'File already exists: "' . $dest->basename . '" in ' . $dest->parent) if ($dest->exists);
 		my $content = $tx->render("$source", \%vars);
 		$dest->touchpath->append_utf8($content);    #create file path and append to file
-		$self->app->print_text("Created file: $dest");
+		$self->app->show_msg("Created file: $dest");
 	}
-	$self->app->print_text("Successfully created " . $type->{name} . ": $package_name");
+	$self->app->show_msg("Successfully created " . $type->{name} . ": $package_name");
 }
 
 1;

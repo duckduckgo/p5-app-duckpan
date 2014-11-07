@@ -105,7 +105,7 @@ sub duckpan_install {
 		if ($reinstall || !$localver) {    # Note the ignored pinning.
 			$install_it = 1;
 		} elsif ($pin_version) {
-			$self->app->print_text("$package: $localver installed, $pin_version pin, $duckpan_module_version latest");
+			$self->app->show_msg("$package: $localver installed, $pin_version pin, $duckpan_module_version latest");
 			if ($pin_version != $localver) {
 				#  We continue here, even if the version is larger than latest released,
 				#  on the premise that there might exist unreleased development versions.
@@ -124,7 +124,7 @@ sub duckpan_install {
 		} else {
 			$install_it = 1;
 		}
-		$self->app->print_text($message);
+		$self->app->show_msg($message);
 		push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
 	}
 
@@ -147,7 +147,7 @@ sub find_previous_url {
 	# Shaky premise #5: the version for which they are asking is well-formed.
 	$filename =~ s/$version/$desired_version/;
 	my @urls = map { $self->app->duckpan . 'authors/id/' . $_ . '/' . $filename } @cpan_dirs;
-	$self->app->print_text("Checking up to " . scalar @urls . " distributions for pinned version...");
+	$self->app->verbose_msg("Checking up to " . scalar @urls . " distributions for pinned version...");
 
 	# Shaky premise #6: our network works well enough to make this a definitive test
 	my $ua = LWP::UserAgent->new(

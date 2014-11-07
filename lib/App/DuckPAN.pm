@@ -278,7 +278,7 @@ sub execute {
 	$self->exit_with_msg(-1, "Unknown command. Use `duckpan help` to see the list of available DuckPAN commands.");
 }
 
-sub print_text {
+sub show_msg {
 	my $self = shift;
 	my @lines = grep { defined } @_;
 	return unless @lines;
@@ -305,7 +305,7 @@ sub exit_with_msg {
 	my ($self, $exit_code, @msg) = @_;
 
 	$msg[0] = '[ERROR] ' . $msg[0] if (@msg);
-	$self->print_text(@msg);
+	$self->show_msg(@msg);
 	exit $exit_code;
 }
 
@@ -314,8 +314,8 @@ sub verbose_msg {
 
 	return unless $self->verbose && @lines;    # only show actual messages in verbose mode.
 
-	# Someday we may wish to do something more with these, but for now it's just print_text.
-	return $self->print_text(@lines);
+	# Someday we may wish to do something more with these, but for now it's just show_msg.
+	return $self->show_msg(@lines);
 }
 
 sub camel_to_underscore {
