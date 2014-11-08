@@ -61,7 +61,7 @@ sub get_local_version {
 }
 
 sub cpanminus_install_error {
-	shift->app->exit_with_msg(1,
+	shift->app->emit_and_exit(1,
 		"Failure on installation of modules!",
         "There are several possible explanations and fixes for this error:",
         "1. The download from CPAN was unsuccessful - Please restart this installer.",
@@ -85,7 +85,7 @@ sub duckpan_install {
 	my @to_install;
 	for (@modules) {
 		my $module = $packages->package($_);
-		$self->app->exit_with_msg(1, "Can't find package " . $_ . " on " . $self->app->duckpan) unless $module;
+		$self->app->emit_and_exit(1, "Can't find package " . $_ . " on " . $self->app->duckpan) unless $module;
 
 		my $package = $module->package;    # Probably $_, but maybe they'll normalize or something someday.
 
@@ -105,7 +105,7 @@ sub duckpan_install {
 		if ($reinstall || !$localver) {    # Note the ignored pinning.
 			$install_it = 1;
 		} elsif ($pin_version) {
-			$self->app->show_msg("$package: $localver installed, $pin_version pin, $duckpan_module_version latest");
+			$self->app->emit_info("$package: $localver installed, $pin_version pin, $duckpan_module_version latest");
 			if ($pin_version != $localver) {
 				#  We continue here, even if the version is larger than latest released,
 				#  on the premise that there might exist unreleased development versions.
@@ -124,7 +124,7 @@ sub duckpan_install {
 		} else {
 			$install_it = 1;
 		}
-		$self->app->show_msg($message);
+		$self->app->emit_info($message);
 		push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
 	}
 
@@ -147,7 +147,7 @@ sub find_previous_url {
 	# Shaky premise #5: the version for which they are asking is well-formed.
 	$filename =~ s/$version/$desired_version/;
 	my @urls = map { $self->app->duckpan . 'authors/id/' . $_ . '/' . $filename } @cpan_dirs;
-	$self->app->verbose_msg("Checking up to " . scalar @urls . " distributions for pinned version...");
+	$self->app->emit_debug("Checking up to " . scalar @urls . " distributions for pinned version...");
 
 	# Shaky premise #6: our network works well enough to make this a definitive test
 	my $ua = LWP::UserAgent->new(

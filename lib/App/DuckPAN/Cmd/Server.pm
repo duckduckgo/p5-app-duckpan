@@ -116,16 +116,16 @@ sub run {
         $self->app->verify_versions;
         $signal_file->touch;
     } else {
-        $self->app->verbose_msg("Perl module versions recently checked, skipping...");
+        $self->app->emit_debug("Perl module versions recently checked, skipping...");
     }
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-    $self->app->verbose_msg("Hostname is: http://" . $self->hostname);
+    $self->app->emit_debug("Hostname is: http://" . $self->hostname);
     if ($self->force) {
-        $self->app->warning_msg("Cache disabled forcing request for all assets...");
+        $self->app->emit_notice("Cache disabled forcing request for all assets...");
     } else {
-        $self->app->show_msg("Checking asset cache validity...");
+        $self->app->emit_info("Checking asset cache validity...");
     }
 
     foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice templates))) {
@@ -148,7 +148,7 @@ sub run {
         $web_args{'page_' . $page} = $self->slurp_or_empty($self->page_info->{$page});
     }
 
-    $self->app->show_msg("Starting up webserver...", "You can stop the webserver with Ctrl-C");
+    $self->app->emit_info("Starting up webserver...", "You can stop the webserver with Ctrl-C");
 
     require App::DuckPAN::Web;
 
@@ -385,12 +385,12 @@ sub retrieve_and_cache {
     my $to_file    = $asset->{internal};
     my $path_start = (substr($asset->{external}, 0, 1) eq '/') ? '' : '/';
     my $url        = 'http://' . $self->hostname . $path_start . $asset->{external};
-    my $prefix     = ($sub_of) ? '  [via ' . $sub_of->{name} . '] ' : '';
+    my $prefix     = ($sub_of) ? '[via ' . $sub_of->{name} . '] ' : '';
     $prefix .= '[' . $asset->{name} . '] ';
     if (!$self->force && $to_file->exists && (time - $to_file->stat->ctime) < $self->cachesec) {
-        $self->app->verbose_msg($prefix . $to_file->basename . " recently cached -- no request made.");
+        $self->app->emit_debug($prefix . $to_file->basename . " recently cached -- no request made.");
     } else {
-        $self->app->verbose_msg($prefix . 'requesting from: ' . $url . '...');
+        $self->app->emit_debug($prefix . 'requesting from: ' . $url . '...');
         $to_file->remove;
         $to_file->touchpath;
         my ($expected_length, $bytes_received, $progress);
@@ -405,7 +405,7 @@ sub retrieve_and_cache {
                 return unless $self->app->verbose;    # Progress bar is just for verbose mode;
                 if ($expected_length && !defined($progress)) {
                     $progress = Term::ProgressBar->new({
-                        name   => $prefix,
+                        name   => (' ' x $self->app->standard_prefix_width) . $prefix,
                         count  => $expected_length,
                         remove => 1,
                         ETA    => 'linear',
@@ -417,20 +417,20 @@ sub retrieve_and_cache {
                 }
             });
         if (!$res->is_success) {
-            $self->app->exit_with_msg(-1, qq~request failed with response: ~ . $res->status_line . "\n");
+            $self->app->emit_and_exit(-1, qq~request failed with response: ~ . $res->status_line . "\n");
         } elsif ($expected_length && $bytes_received < $expected_length) {
             $to_file->remove;
-            $self->app->exit_with_msg(-1, qq~only $bytes_received of $expected_length bytes received~);
+            $self->app->emit_and_exit(-1, qq~only $bytes_received of $expected_length bytes received~);
         } else {
             $progress->update($expected_length) if ($progress && $expected_length);
-            $self->app->verbose_msg($prefix . 'written to cache: ' . $to_file);
+            $self->app->emit_debug($prefix . 'written to cache: ' . $to_file);
         }
     }
     # We need to load the assets on the SERPs for reuse.
     if ($asset->{load_sub_assets}) {
-        $self->app->verbose_msg($prefix . 'parsing for additional assets');
+        $self->app->emit_debug($prefix . 'parsing for additional assets');
         $self->get_sub_assets($asset);
-        $self->app->verbose_msg($prefix . 'assets loaded');
+        $self->app->emit_debug($prefix . 'assets loaded');
     }
 
     return;

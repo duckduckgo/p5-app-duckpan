@@ -20,12 +20,12 @@ for (qw( duckduckgo dontbubbleus donttrackus whatisdnt fixtracking duckduckhack 
 sub run {
 	my ( $self, @args ) = @_;
 
-	$self->app->show_msg("Checking for Publisher...");
+	$self->app->emit_info("Checking for Publisher...");
 
 	my $publisher_pm = path('lib','DDG','Publisher.pm');
-	$self->add->exit_with_msg(1, "You must be in the root of the duckduckgo-publisher repository") unless $publisher_pm->exists;
+	$self->add->emit_and_exit(1, "You must be in the root of the duckduckgo-publisher repository") unless $publisher_pm->exists;
 
-	$self->app->show_msg("Starting up publisher webserver...", "You can stop the webserver with Ctrl-C");
+	$self->app->emit_info("Starting up publisher webserver...", "You can stop the webserver with Ctrl-C");
 
 	my %sites = (
 		duckduckgo => {
@@ -55,7 +55,7 @@ sub run {
 	);
 
 	for (sort { $sites{$a}->{port} <=> $sites{$b}->{port} } keys %sites) {
-		$self->app->show_msg("Serving on port ".$sites{$_}->{port}.": ".$sites{$_}->{url});
+		$self->app->emit_info("Serving on port ".$sites{$_}->{port}.": ".$sites{$_}->{url});
 	}
 
 	require App::DuckPAN::WebPublisher;

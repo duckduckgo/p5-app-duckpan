@@ -23,7 +23,7 @@ sub run {
 
 	$history_path = $app->cfg->cache_path->child("query_history");
 
-	$app->show_msg('(Empty query for ending test)');
+	$app->emit_info('(Empty query for ending test)');
 	while (1) {
 
 		POE::Session->create(
@@ -47,24 +47,24 @@ sub run {
 			for my $b (@blocks) {
 				for ($b->request($request)) {
 					$hit = 1;
-					$app->show_msg('---', p($_, colored => 1), '---');
+					$app->emit_info('---', p($_, colored => 1), '---');
 				}
 			}
 			unless ($hit) {
-				$app->show_msg("Sorry, no hit on your instant answer")
+				$app->emit_info("Sorry, no hit on your instant answer")
 			}
 		};
 		if ($@) {
 			my $error = $@;
 			if ($error =~ m/Malformed UTF-8 character/) {
-				$app->show_msg(
+				$app->emit_info(
 					"You got a malformed utf8 error message, which normally means that you try to entered a special character on the query prompt, but your interface is not properly configured for utf8. Please check out the documentation of your terminal, ssh client or whatever client you use to access the shell of this system"
 				);
 			}
-			$app->show_msg("Caught error:", $error);
+			$app->emit_info("Caught error:", $error);
 		}
 	}
-	$app->show_msg("\\_o< Thanks for testing!");
+	$app->emit_info("\\_o< Thanks for testing!");
 	return 0;
 }
 

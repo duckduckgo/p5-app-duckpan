@@ -10,9 +10,9 @@ sub run {
 	my ( $self ) = @_;
 	$self->app->verify_versions;
 	if ($self->app->check_requirements) {
-		 $self->app->exit_with_msg(1, "Check for the requirements failed!! See instructions or reports above");
+		 $self->app->emit_and_exit(1, "Check for the requirements failed!! See instructions or reports above");
 	} else {
-		$self->app->show_msg("EVERYTHING OK! You can now go hacking! :)");
+		$self->app->emit_info("EVERYTHING OK! You can now go hacking! :)");
 	}
 }
 

@@ -12,7 +12,7 @@ use List::Util qw (first);
 sub get_dukgo_user_pass {
     my ($self) = @_;
     my $config = $self->app->perl->get_dzil_config;
-    $self->app->exit_with_msg(1, "No configuration found for your https://duck.co/ username and password", "Please use 'dzil setup' first!")
+    $self->app->emit_and_exit(1, "No configuration found for your https://duck.co/ username and password", "Please use 'dzil setup' first!")
       unless (defined $config->{'%DUKGO'});
 
     return $config->{'%DUKGO'}->{username}, $config->{'%DUKGO'}->{password};
@@ -23,9 +23,9 @@ sub show_failed_modules {
     my ($self, $failed_to_load) = @_;
 
     if (%$failed_to_load) {
-        $self->app->warning_msg("These instant answers were not loaded:");
-        $self->app->warning_msg(p($failed_to_load, colored => 1));
-        $self->app->warning_msg(
+        $self->app->emit_notice("These instant answers were not loaded:");
+        $self->app->emit_notice(p($failed_to_load, colored => 1));
+        $self->app->emit_notice(
             "To learn more about installing Perl dependencies, please read https://duck.co/duckduckhack/faq#how-do-i-install-a-missing-perl-dependency.",
             "Note: You can ignore these errors if you're not working on these instant answers."
         ) if first { /dependencies/ } values %$failed_to_load;
@@ -35,7 +35,7 @@ sub show_failed_modules {
 sub get_blocks_from_current_dir {
     my ($self, @args) = @_;
 
-    $self->exit_with_msg(1, 'You need to have the DDG distribution installed', 'To get the installation command, please run: duckpan check')
+    $self->emit_and_exit(1, 'You need to have the DDG distribution installed', 'To get the installation command, please run: duckpan check')
       unless ($self->app->get_local_ddg_version);
 
     my $type   = $self->app->get_ia_type();
@@ -56,7 +56,7 @@ sub get_blocks_from_current_dir {
     }
     require lib;
     lib->import('lib');
-    $self->app->show_msg("Loading Instant Answers...");
+    $self->app->emit_info("Loading Instant Answers...");
 
     # This list contains all of the classes that loaded successfully.
     my @successfully_loaded = ();
@@ -79,7 +79,7 @@ sub get_blocks_from_current_dir {
             push @successfully_loaded, $class;
 
             # Display to the user when a class has been successfully loaded.
-            $self->app->verbose_msg(" - $class (" . $class->triggers_block_type . ")");
+            $self->app->emit_debug(" - $class (" . $class->triggers_block_type . ")");
         } else {
             # Get the module name that needs to be installed by the user.
             if ($load_error_message =~ /Can't locate ([^\.]+).pm in \@INC/) {
