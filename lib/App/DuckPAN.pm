@@ -18,6 +18,7 @@ use Parse::CPAN::Packages::Fast;
 use File::Temp qw/ :POSIX /;
 use Term::UI;
 use Term::ReadLine;
+use Term::ReadKey;    # For GetTerminalSize
 use Carp;
 use Encode;
 use Perl::Version;
@@ -37,11 +38,25 @@ option no_check => (
 	default => sub { 0 }
 );
 
-option duckpan_packages => (
+has duckpan_packages => (
 	is => 'ro',
 	lazy => 1,
-	default => sub { shift->duckpan.'/modules/02packages.details.txt.gz' }
+	builder => 1,
 );
+
+sub _build_duckpan_packages {
+	my $self = shift;
+
+	my $gz         = '02packages.details.txt.gz';
+	my $package_url = join('/', $self->duckpan, 'modules', $gz);
+	my $mirror_to   = $self->cfg->cache_path->child($gz);
+
+	if (is_error(mirror($package_url, $mirror_to))) {
+		$self->exit_with_msg(-1, "Cannot download $package_url");
+	}
+
+	return Parse::CPAN::Packages::Fast->new($mirror_to->openr);
+}
 
 option duckpan => (
 	is => 'ro',
@@ -219,6 +234,18 @@ sub _build_ddg {
 	App::DuckPAN::DDG->new( app => shift );
 }
 
+has term_width => (
+	is      => 'ro',
+	lazy    => 1,
+	builder => 1,
+);    # Could add a clearer and SIGWINCH handler, if you felt saucy.
+
+sub _build_term_width {
+	my ($width) = GetTerminalSize(\*STDOUT);
+
+	return $width || 79;    # Old value is new default!
+}
+
 sub execute {
 	my ( $self, $args, $chain ) = @_;
 	my @arr_args = @{$args};
@@ -235,7 +262,7 @@ sub execute {
 				$self->empty_cache();
 				push @modules, 'App::DuckPAN';
 				push @modules, 'DDG' if $_ =~ /^(?:upgrade|reinstall)$/i;
-				unshift @modules, 'force' if lc($_) eq 'reinstall';
+				unshift @modules, 'reinstall' if lc($_) eq 'reinstall';
 			} else {
 				push @left_args, $_;
 			}
@@ -246,22 +273,24 @@ sub execute {
 }
 
 sub print_text {
-	shift;
-	return unless @_;
-	for (@_) {
+	my $self = shift;
+	my @lines = grep { defined } @_;
+	return unless @lines;
+	my $width = $self->term_width;    # We'll keep it for all these lines, at least.
+	for (@lines) {
 		print "\n";
-		my @words = split(/\s+/,$_);
+		my @words = split(/\s+/, $_);
 		my $current_line = "";
 		for (@words) {
-			if ((length $current_line) + (length $_) < 79) {
+			if ((length $current_line) + (length $_) < $width) {
 				$current_line .= " " if length $current_line;
 				$current_line .= $_;
 			} else {
-				print $current_line."\n";
+				print $current_line. "\n";
 				$current_line = $_;
 			}
 		}
-		print $current_line."\n" if length $current_line;
+		print $current_line. "\n" if length $current_line;
 	}
 	print "\n";
 }
@@ -373,29 +402,23 @@ sub verify_versions {
 }
 
 sub check_app_duckpan {
-	my ( $self ) = @_;
-        return 1 if $self->no_check;
-	my $ok = 1;
+	my ($self) = @_;
+	return 1 if $self->no_check;
+	my $ok                = 1;
 	my $installed_version = $self->get_local_app_duckpan_version;
 	return $ok if $installed_version && $installed_version == '9.999';
 	print "Checking for latest App::DuckPAN ... ";
-	my $tempfile = tmpnam;
-	if (is_success(getstore($self->duckpan_packages,$tempfile))) {
-		my $packages = Parse::CPAN::Packages::Fast->new($tempfile);
-		my $module = $packages->package('App::DuckPAN');
-		my $latest = $self->duckpan.'authors/id/'.$module->distribution->pathname;
-		if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-			print $installed_version;
-			print " (duckpan has ".$module->version.")" if $installed_version ne $module->version;
-		} else {
-			if ($installed_version) {
-				print "You have version ".$installed_version.", latest is ".$module->version."!\n";
-			}
-			print "[ERROR] Please install the latest App::DuckPAN package with: duckpan upgrade\n";
-			$ok = 0;
-		}
+	my $packages = $self->duckpan_packages;
+	my $module   = $packages->package('App::DuckPAN');
+	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
+	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
+		print $installed_version;
+		print " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
 	} else {
-		print "[ERROR] Can't download ".$self->duckpan_packages;
+		if ($installed_version) {
+			print "You have version " . $installed_version . ", latest is " . $module->version . "!\n";
+		}
+		print "[ERROR] Please install the latest App::DuckPAN package with: duckpan upgrade\n";
 		$ok = 0;
 	}
 	print "\n";
@@ -403,31 +426,25 @@ sub check_app_duckpan {
 }
 
 sub check_ddg {
-	my ( $self ) = @_;
-        return 1 if $self->no_check;
-	my $ok = 1;
+	my ($self) = @_;
+	return 1 if $self->no_check;
+	my $ok                = 1;
 	my $installed_version = $self->get_local_ddg_version;
 	return $ok if $installed_version && $installed_version == '9.999';
 	print "Checking for latest DDG Perl package... ";
-	my $tempfile = tmpnam;
-	if (is_success(getstore($self->duckpan_packages,$tempfile))) {
-		my $packages = Parse::CPAN::Packages::Fast->new($tempfile);
-		my $module = $packages->package('DDG');
-		my $latest = $self->duckpan.'authors/id/'.$module->distribution->pathname;
-		if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-			print $installed_version;
-			print " (duckpan has ".$module->version.")" if $installed_version ne $module->version;
-		} else {
-			if ($installed_version) {
-				print "You have version ".$installed_version.", latest is ".$module->version."!\n";
-			} else {
-				print "You don't have DDG installed! Latest is ".$module->version."!\n";
-			}
-			print "[ERROR] Please install the latest DDG package with: duckpan DDG\n";
-			$ok = 0;
-		}
+	my $packages = $self->duckpan_packages;
+	my $module   = $packages->package('DDG');
+	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
+	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
+		print $installed_version;
+		print " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
 	} else {
-		print "[ERROR] Can't download ".$self->duckpan_packages;
+		if ($installed_version) {
+			print "You have version " . $installed_version . ", latest is " . $module->version . "!\n";
+		} else {
+			print "You don't have DDG installed! Latest is " . $module->version . "!\n";
+		}
+		print "[ERROR] Please install the latest DDG package with: duckpan DDG\n";
 		$ok = 0;
 	}
 	print "\n";

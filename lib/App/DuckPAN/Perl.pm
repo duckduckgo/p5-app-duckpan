@@ -10,7 +10,8 @@ use Path::Tiny;
 use Config::INI::Reader;
 use Config::INI::Writer;
 use Data::Dumper;
-use LWP::Simple;
+use LWP::UserAgent;
+use List::MoreUtils qw/ uniq /;
 use List::Util qw/ first /;
 use File::Temp qw/ :POSIX /;
 use version;
@@ -41,18 +42,19 @@ sub setup {
 }
 
 sub get_local_version {
-	my ( $self, $module ) = @_;
+	my ($self, $module) = @_;
 	require Module::Data;
 	my $v;
 	{
 		local $@;
 		eval {
-			my $m = Module::Data->new( $module );
+			my $m = Module::Data->new($module);
 			$m->require;
 			$v = $m->version;
-			1
+			1;
 		} or return;
 	};
+
 	return unless defined $v;
 	return version->parse($v) unless ref $v;
 	return $v;
@@ -71,60 +73,88 @@ sub cpanminus_install_error {
 }
 
 sub duckpan_install {
-	my ( $self, @modules ) = @_;
+	my ($self, @modules) = @_;
 	my $mirror = $self->app->duckpan;
-	my $force_install;
-	if ($modules[0] eq 'force') {
-		# We sent in a signal to force installation
-		$force_install = 1;
+	my $reinstall;
+	if ($modules[0] eq 'reinstall') {
+		# We sent in a signal to force reinstallation
+		$reinstall = 1;
 		shift @modules;
 	}
-	my $modules_string = join(' ',@modules);
-	my $tempfile = tmpnam;
-	if (is_success(getstore($self->app->duckpan_packages,$tempfile))) {
-		my $packages = Parse::CPAN::Packages::Fast->new($tempfile);
-		my @to_install;
-		for (@modules) {
-			my $module = $packages->package($_);
-			if ($module) {
-				local $@;
+	my $packages = $self->app->duckpan_packages;
+	my @to_install;
+	for (@modules) {
+		my $module = $packages->package($_);
+		$self->app->exit_with_msg(1, "Can't find package " . $_ . " on " . $self->app->duckpan) unless $module;
 
-				# see if we have an env variable for this module
-				my $sp = $_;
-				$sp =~ s/\:\:/_/g;
+		my $package = $module->package;    # Probably $_, but maybe they'll normalize or something someday.
 
-				# special case: check for a pinned verison number
-				my $pin_version = $ENV{$sp};
-				my $localver = $self->get_local_version($_);
-				my $duckpan_module_version = version->parse($module->version);
-				my $duckpan_module_url = $self->app->duckpan.'authors/id/'.$module->distribution->pathname;
+		# see if we have an env variable for this module
+		my $sp = $package;
+		$sp =~ s/\:\:/_/g;
 
-				my $install_it;
-				if ($force_install) {
+		# special case: check for a pinned verison number
+		my $pin_version            = $ENV{$sp};
+		my $localver               = $self->get_local_version($package);
+		my $duckpan_module_version = version->parse($module->version);
+		my $duckpan_module_url     = $self->app->duckpan . 'authors/id/' . $module->distribution->pathname;
+
+		$localver ||= 1e-6 if ($pin_version); # a silly, but true, value if missing and we need to compare with pinned.
+
+		my ($install_it, $message);
+		if ($reinstall || !$localver) {    # Note the ignored pinning.
+			$install_it = 1;
+		} elsif ($pin_version) {
+			$self->app->print_text("$package: $localver installed, $pin_version pin, $duckpan_module_version latest");
+			if ($pin_version != $localver) {
+				#  We continue here, even if the version is larger than latest released,
+				#  on the premise that there might exist unreleased development versions.
+				if ($pin_version == $duckpan_module_version || ($duckpan_module_url = $self->find_previous_url($module, $pin_version))) {
+					$reinstall  = 1;       # Let us roll back, if necessary. Multiple packages may confuse this, but little harm.
 					$install_it = 1;
-				} elsif ($pin_version && $localver) {
-					print "$_: $localver installed, $pin_version pin, $duckpan_module_version latest\n";
-					if ($pin_version > $localver && $duckpan_module_version > $localver && $duckpan_module_version <= $pin_version) {
-						$install_it = 1;
-					}
-				} elsif ($localver && $localver == $duckpan_module_version) {
-					$self->app->print_text("You already have latest version of ".$_." with ".$localver."\n");
-				} elsif ($localver && $localver > $duckpan_module_version) {
-					$self->app->print_text("You have a newer version of ".$_." with ".$localver." (duckpan has ".$duckpan_module_version.")\n");
 				} else {
-					$install_it = 1;
+					$message    = 'Could not locate version ' . $pin_version . ' of  ' . $package;
+					$install_it = 0;
 				}
-				push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
-			} else {
-				$self->app->exit_with_msg(1, "Can't find package ".$_." on ".$self->app->duckpan);
 			}
+		} elsif ($localver == $duckpan_module_version) {
+			$message = "You already have latest ($localver) version of $package";
+		} elsif ($localver > $duckpan_module_version) {
+			$message = "You have a newer ($localver) version of $package than duckpan ($duckpan_module_version)";
+		} else {
+			$install_it = 1;
 		}
-		return 0 unless @to_install;
-		unshift @to_install,'-f'  if ($force_install); # cpanm will do the actual forcing.
-		return system("cpanm ".join(" ",@to_install));
-	} else {
-		$self->app->exit_with_msg(1, "Can't reach duckpan at ".$self->app->duckpan."!");
+		$self->app->print_text($message);
+		push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
 	}
+
+	return 0 unless @to_install;
+	unshift @to_install, '--reinstall' if ($reinstall);    # cpanm will do the actual forcing.
+	return system("cpanm " . join(" ", @to_install));
+}
+
+sub find_previous_url {
+	my ($self, $module, $desired_version) = @_;
+
+	# Shaky premise #1: the author of our previous version is a current author.
+	# Shaky premise #2: the directory structure is always like this.
+	my @cpan_dirs = map { join('/', substr($_, 0, 1), substr($_, 0, 2), $_) } uniq map { $_->cpanid } ($self->app->duckpan_packages->distributions);
+	# Shaky premise #3: things never change distributions.
+	my $dist     = $module->distribution;
+	my $filename = $dist->filename;
+	# Shaky premise #4: the distribution version will match package version.
+	my $version = $dist->version;
+	# Shaky premise #5: the version for which they are asking is well-formed.
+	$filename =~ s/$version/$desired_version/;
+	my @urls = map { $self->app->duckpan . 'authors/id/' . $_ . '/' . $filename } @cpan_dirs;
+	$self->app->print_text("Checking up to " . scalar @urls . " distributions for pinned version...");
+
+	# Shaky premise #6: our network works well enough to make this a definitive test
+	my $ua = LWP::UserAgent->new(
+		agent                 => 'DPPF/0.001a',
+		requests_redirectable => []);
+
+	return first { $ua->head($_)->is_success } @urls;
 }
 
 sub set_dzil_config {
