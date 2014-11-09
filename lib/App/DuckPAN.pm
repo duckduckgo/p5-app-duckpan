@@ -286,9 +286,7 @@ sub _colored_prefix {
 sub emit_info {
 	my ($self, @msg) = @_;
 
-	state $prefix = $self->_colored_prefix('INFO', 'green');
-
-	$self->_print_msg(*STDOUT, map { $prefix . $_ } grep { $_ } @msg);
+	$self->_print_msg(*STDOUT, map { $_ } grep { $_ } @msg);
 }
 
 sub emit_error {
@@ -319,10 +317,8 @@ sub emit_debug {
 
 	return unless $self->verbose;    # only show messages in verbose mode.
 
-	state $prefix = $self->_colored_prefix('DEBUG', 'blue');
-
 	# Someday we may wish to do something more with these, but for now it's just emit_info.
-	return $self->_print_msg(*STDOUT, map { $prefix . $_ } grep { $_ } @msg);
+	return $self->_print_msg(*STDOUT, map { $_ } grep { $_ } @msg);
 }
 
 sub emit_notice {
