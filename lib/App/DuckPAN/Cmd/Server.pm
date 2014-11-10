@@ -105,7 +105,7 @@ sub _build_asset_cache_path {
 }
 
 sub run {
-    my ( $self, @args ) = @_;
+    my ($self, @args) = @_;
 
     my $cache_path = $self->app->cfg->cache_path;
 
@@ -113,10 +113,10 @@ sub run {
     my $signal_file = $cache_path->child('perl_checked');
     my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
     if ($self->force || (time - $last_checked_perl) > $self->cachesec) {
-        $self->app->verify_versions;
+        $self->app->check_requirements;    # Exits on missing requirements.
         $signal_file->touch;
     } else {
-        $self->app->emit_debug("Perl module versions recently checked, skipping...");
+        $self->app->emit_debug("Perl module versions recently checked, skipping requirements check...");
     }
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
@@ -152,11 +152,11 @@ sub run {
 
     require App::DuckPAN::Web;
 
-    my $web = App::DuckPAN::Web->new(%web_args);
+    my $web    = App::DuckPAN::Web->new(%web_args);
     my $runner = Plack::Runner->new(
         #loader => 'Restarter',
         includes => ['lib'],
-        app => sub { $web->run_psgi(@_) },
+        app      => sub { $web->run_psgi(@_) },
     );
     #$runner->loader->watch("./lib");
     $runner->parse_options("--port", $self->port);

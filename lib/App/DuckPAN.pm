@@ -352,52 +352,14 @@ sub phrase_to_camel {
 }
 
 sub check_requirements {
-	my ( $self ) = @_;
-	my $fail = 0;
-	$self->emit_info("Checking your environment for the DuckPAN requirements");
-	#$fail = 1 unless $self->check_locallib;
-	$fail = 1 unless $self->check_ddg;
-	$fail = 1 unless $self->check_git;
-	$fail = 1 unless $self->check_ssh;
-	if ($fail) {
-		return 1;
-	}
-	return 0;
-}
+	my ($self) = @_;
 
-sub check_git {
-	my ( $self ) = @_;
-	my $ok = 0;
-	$self->emit_info("Checking for git... ");
-	if (my $git = which('git')) {
-		my $version_string = `$git --version`;
-		if ($version_string =~ m/git version (\d+)\.(\d+)/) {
-			if ($1 <= 1 && $2 < 7) {
-				$self->emit_info("require minimum 1.7");
-			} else {
-				$self->emit_info($git);
-				$ok = 1;
-			}
-		} else {
-			$self->emit_info("Unknown version!");
-		}
-	} else {
-		$self->emit_info("No!");
-	}
-	return $ok;
-}
+	$self->emit_info("Checking for DuckPAN requirements...");
 
-sub check_ssh {
-	my ( $self ) = @_;
-	my $ok = 0;
-	$self->emit_info("Checking for ssh... ");
-	if (my $ssh = which('ssh')) {
-		$self->emit_info($ssh);
-		$ok = 1;
-	} else {
-		$self->emit_info("No!");
-	}
-	return $ok;
+	$self->emit_and_exit(1, 'Requirements check failed')
+	  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ddg && $self->check_ssh && $self->check_git);
+
+	return 1;
 }
 
 sub get_local_ddg_version {
@@ -410,24 +372,65 @@ sub get_local_app_duckpan_version {
 	return $self->perl->get_local_version('App::DuckPAN');
 }
 
+
+sub check_git {
+	my ( $self ) = @_;
+	my $ok = 0;
+	$self->emit_info("Checking for git...");
+	if (my $git = which('git')) {
+		my $version_string = `$git --version`;
+		if ($version_string =~ m/git version (\d+)\.(\d+)/) {
+			if ($1 <= 1 && $2 < 7) {
+				$self->emit_error("require minimum git 1.7");
+			} else {
+				$self->emit_debug($git);
+				$ok = 1;
+			}
+		} else {
+			$self->emit_error("Unknown git version!");
+		}
+	} else {
+		$self->emit_error("git not found");
+	}
+	return $ok;
+}
+
+sub check_ssh {
+	my ( $self ) = @_;
+	my $ok = 0;
+	$self->emit_info("Checking for ssh...");
+	if (my $ssh = which('ssh')) {
+		$self->emit_debug($ssh);
+		$ok = 1;
+	} else {
+		$self->emit_error('ssh not found');
+	}
+	return $ok;
+}
+
 my %perl_versions = (
     required    => Perl::Version->new('v5.14'),
     recommended => Perl::Version->new('v5.16'),
 );
 
-sub verify_versions {
+sub check_perl {
 	my ($self) = @_;
 
+	$self->emit_info("Checking perl version... ");
 	my $installed_version = Perl::Version->new($]);
 
-	$self->emit_and_exit(1, 'perl ' . $perl_versions{required}->normal . ' or higher is required. ', $installed_version->normal . ' is installed.')
-	  if ($installed_version->vcmp($perl_versions{required}) < 0);
-	$self->emit_notice('perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ', $installed_version->normal . " is installed.")
-	  if ($installed_version->vcmp($perl_versions{recommended}) < 0);
-	$self->emit_and_exit(1, 'App::DuckPAN check failed') unless $self->check_app_duckpan;
-	$self->emit_and_exit(1, 'DDG check failed')          unless $self->check_ddg;
+	my $ok = 1;
+	if ($installed_version->vcmp($perl_versions{required}) < 0) {
+		$self->emit_error('perl ' . $perl_versions{required}->normal . ' or higher is required. ', $installed_version->normal . ' is installed.');
+		$ok = 0;
+	} elsif ($installed_version->vcmp($perl_versions{recommended}) < 0) {
+		$self->emit_notice('perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ',
+			$installed_version->normal . " is installed.");
+	} else {
+		$self->emit_debug($installed_version->normal);
+	}
 
-	return;
+	return $ok;
 }
 
 sub check_app_duckpan {
@@ -447,7 +450,7 @@ sub check_app_duckpan {
 	} else {
 		my @msg = ("Please install the latest App::DuckPAN package with: duckpan upgrade");
 		unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!" if ($installed_version);
-		$self->emit_notice(@msg);
+		$self->emit_error(@msg);
 		$ok = 0;
 	}
 	return $ok;
@@ -474,7 +477,7 @@ sub check_ddg {
 		} else {
 			unshift @msg, "You don't have DDG installed! Latest is " . $module->version . "!";
 		}
-		$self->emit_notice(@msg);
+		$self->emit_error(@msg);
 		$ok = 0;
 	}
 	return $ok;
