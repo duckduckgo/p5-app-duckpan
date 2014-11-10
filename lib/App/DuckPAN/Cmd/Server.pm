@@ -405,7 +405,7 @@ sub retrieve_and_cache {
                 return unless $self->app->verbose;    # Progress bar is just for verbose mode;
                 if ($expected_length && !defined($progress)) {
                     $progress = Term::ProgressBar->new({
-                        name   => (' ' x $self->app->standard_prefix_width) . $prefix,
+                        name   => $prefix,
                         count  => $expected_length,
                         remove => 1,
                         ETA    => 'linear',
