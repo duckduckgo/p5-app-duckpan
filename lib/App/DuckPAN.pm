@@ -286,7 +286,7 @@ sub _colored_prefix {
 sub emit_info {
 	my ($self, @msg) = @_;
 
-	$self->_print_msg(*STDOUT, map { $_ } grep { $_ } @msg);
+	$self->_print_msg(*STDOUT, '', @msg);
 }
 
 sub emit_error {
@@ -294,7 +294,7 @@ sub emit_error {
 
 	state $prefix = $self->_colored_prefix('ERROR', 'red');
 
-	$self->_print_msg(*STDERR, map { $prefix . $_ } grep { $_ } @msg);
+	$self->_print_msg(*STDERR, $prefix, @msg);
 }
 
 sub emit_and_exit {
@@ -305,8 +305,7 @@ sub emit_and_exit {
 	if ($exit_code == 0) {      # This is just an info message.
 		$self->emit_info(@msg);
 	} else {                    # But if it's an unhappy exit
-		@msg = map { $prefix . $_ } grep { $_ } @msg;
-		$self->_print_msg(*STDERR, @msg);
+		$self->_print_msg(*STDERR, $prefix, @msg);
 	}
 
 	exit $exit_code;
@@ -317,8 +316,7 @@ sub emit_debug {
 
 	return unless $self->verbose;    # only show messages in verbose mode.
 
-	# Someday we may wish to do something more with these, but for now it's just emit_info.
-	return $self->_print_msg(*STDOUT, map { $_ } grep { $_ } @msg);
+	return $self->_print_msg(*STDOUT, '', @msg);
 }
 
 sub emit_notice {
@@ -326,13 +324,13 @@ sub emit_notice {
 
 	state $prefix = $self->_colored_prefix('NOTE', 'yellow');
 
-	$self->_print_msg(*STDOUT, map { $prefix . $_ } grep { $_ } @msg);
+	$self->_print_msg(*STDOUT, $prefix, @msg);
 }
 
 sub _print_msg {
-	my ($self, $fh, @lines) = @_;
+	my ($self, $fh, $prefix, @lines) = @_;
 
-	foreach my $line (grep { $_ } @lines) {
+	foreach my $line (map { $prefix . $_ } grep { $_ } @lines) {
 		print $fh $line . "\n";
 	}
 }
