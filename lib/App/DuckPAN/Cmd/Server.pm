@@ -417,10 +417,10 @@ sub retrieve_and_cache {
                 }
             });
         if (!$res->is_success) {
-            $self->app->emit_and_exit(-1, qq~request failed with response: ~ . $res->status_line . "\n");
+            $self->app->emit_and_exit(-1, qq~$prefix request failed with response: ~ . $res->status_line . "\n");
         } elsif ($expected_length && $bytes_received < $expected_length) {
             $to_file->remove;
-            $self->app->emit_and_exit(-1, qq~only $bytes_received of $expected_length bytes received~);
+            $self->app->emit_and_exit(-1, qq~$prefix only $bytes_received of $expected_length bytes received~);
         } else {
             $progress->update($expected_length) if ($progress && $expected_length);
             $self->app->emit_debug($prefix . 'written to cache: ' . $to_file);
