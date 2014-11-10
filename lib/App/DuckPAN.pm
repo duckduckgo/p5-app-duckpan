@@ -270,7 +270,7 @@ sub execute {
 
 has standard_prefix_width => (
 	is      => 'ro',
-	default => sub { 8 },
+	default => sub { 9 },
 );
 
 sub _colored_prefix {
@@ -292,7 +292,7 @@ sub emit_info {
 sub emit_error {
 	my ($self, @msg) = @_;
 
-	state $prefix = $self->_colored_prefix('ERROR', 'red');
+	state $prefix = $self->_colored_prefix('ERROR', 'red bold');
 
 	$self->_print_msg(*STDERR, $prefix, @msg);
 }
@@ -322,7 +322,7 @@ sub emit_debug {
 sub emit_notice {
 	my ($self, @msg) = @_;
 
-	state $prefix = $self->_colored_prefix('NOTE', 'yellow');
+	state $prefix = $self->_colored_prefix('NOTiCE', 'yellow bold');
 
 	$self->_print_msg(*STDOUT, $prefix, @msg);
 }
