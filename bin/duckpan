@@ -139,10 +139,10 @@ B<duckpan poupload> [--domain] filepath
 =head2 ENVIRONMENT VARIABLES
 
 B<duckpan env>
-    View env commands and also shows the env variables currently stored in ~/.duckpan/env.ini
+    View env commands and also shows the env variables currently stored in ~/.duckpan/config/env.ini
 
 B<duckpan env name value>
-    Add an environment variable that DuckPAN will remember. This is specifically useful for Spice API keys. Variables are stored in ~/.duckpan/env.ini
+    Add an environment variable that DuckPAN will remember. This is specifically useful for Spice API keys. Variables are stored in ~/.duckpan/config/env.ini
 
 B<duckpan env name>
     Retrieve the matching key for a given env variable.
