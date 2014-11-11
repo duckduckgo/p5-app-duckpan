@@ -510,7 +510,7 @@ The DuckDuckHack Testing Tool
 
 DuckPAN is an application built to provide developers a testing environment for DuckDuckHack Instant Answers. It allows you to test instant answer triggers and preview their visual design and output.
 
-C<duckpan help> provides more detailed information.
+C<duckpan --help> provides more detailed information.
 
 =head1 SEE ALSO
 
