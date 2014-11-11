@@ -22,6 +22,7 @@ use Carp;
 use Encode;
 use Perl::Version;
 use Path::Tiny;
+use App::DuckPAN::Cmd::Help
 
 our $VERSION ||= '9.999';
 
@@ -240,6 +241,7 @@ sub _build_term_width {
 sub execute {
 	my ( $self, $args, $chain ) = @_;
 	my @arr_args = @{$args};
+	App::DuckPAN::Cmd::Help->run() if scalar @arr_args == 0;
 	if (@arr_args) {
 		my @modules;
 		my @left_args;
