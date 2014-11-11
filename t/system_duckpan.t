@@ -13,7 +13,8 @@ my $version = $App::DuckPAN::VERSION;
 subtest 'no arguments' => sub {
 	my ($return, $out, $err) = run_script('duckpan', []);
 
-	like($out, qr/`duckpan help`/, 'DuckPAN without arguments recommends `duckpan help`');
+	like($out, qr/The DuckDuckHack Testing Tool/, 'DuckPAN without arguments shows Help text');
+	is($return, 1, 'DuckPAN gives back exit code 1');
 };
 
 subtest 'bad include paths' => sub {
@@ -50,6 +51,12 @@ subtest 'env' => sub {
 
 	like($getenvout, qr/TEST is not set/, 'getting test env from DuckPAN after removing it');
 	is($getenverr, '', 'no error output on test env from DuckPAN after removing it');
+};
+
+subtest 'duckpan help' => sub {
+	my ($return, $out, $err) = run_script('duckpan', ['help']);
+
+	like($out, qr/The DuckDuckHack Testing Tool/, '`duckpan help` shows Help text');
 };
 
 done_testing;
