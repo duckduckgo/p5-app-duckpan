@@ -6,7 +6,6 @@ use Moo;
 use MooX::Cmd;
 use MooX::Options;
 use App::DuckPAN::Config;
-use App::DuckPAN::Help;
 use File::Which;
 use Class::Load ':all';
 use HTTP::Request::Common qw( GET POST );
@@ -203,14 +202,6 @@ sub _build_cfg {
 		$self->has_cache ? ( cache_path => $self->cache ) : (),
 	);
 }
-
-has help => (
-	is => 'ro',
-	builder => '_build_help',
-	lazy => 1,
-);
-
-sub _build_help { App::DuckPAN::Help->new( ) }
 
 has perl => (
 	is => 'ro',

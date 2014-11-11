@@ -28,9 +28,6 @@ isa_ok($app->perl,'App::DuckPAN::Perl');
 is($app->perl->get_local_version('App::DuckPAN'),$version,'Checking get_local_version of perl submodule');
 
 ###############################################################
-isa_ok($app->help,'App::DuckPAN::Help');
-
-###############################################################
 isa_ok($app->cfg,'App::DuckPAN::Config');
 
 SKIP: {
