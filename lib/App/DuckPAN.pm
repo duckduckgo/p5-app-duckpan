@@ -237,7 +237,7 @@ sub _build_ddg {
 sub execute {
 	my ( $self, $args, $chain ) = @_;
 	my @arr_args = @{$args};
-	App::DuckPAN::Cmd::Help->run() if scalar @arr_args == 0;
+	App::DuckPAN::Cmd::Help->run("short") if scalar @arr_args == 0;
 	if (@arr_args) {
 		my @modules;
 		my @left_args;
