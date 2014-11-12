@@ -13,7 +13,7 @@ my $version = $App::DuckPAN::VERSION;
 subtest 'no arguments' => sub {
 	my ($return, $out, $err) = run_script('duckpan', []);
 
-	like($out, qr/The DuckDuckHack Testing Tool/, 'DuckPAN without arguments shows Help text');
+	like($out, qr/The DuckDuckHack Developer Tool/, 'DuckPAN without arguments shows Help text');
 	is($return, 1, 'DuckPAN gives back exit code 1');
 };
 
@@ -56,7 +56,7 @@ subtest 'env' => sub {
 subtest 'duckpan help' => sub {
 	my ($return, $out, $err) = run_script('duckpan', ['help']);
 
-	like($out, qr/The DuckDuckHack Testing Tool/, '`duckpan help` shows Help text');
+	like($out, qr/The DuckDuckHack Developer Tool/, '`duckpan help` shows Help text');
 };
 
 done_testing;
