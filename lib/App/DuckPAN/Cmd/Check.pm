@@ -7,14 +7,11 @@ with qw( App::DuckPAN::Cmd );
 use MooX::Options protect_argv => 0;
 
 sub run {
-	my ( $self ) = @_;
-	$self->app->verify_versions;
-	if ($self->app->check_requirements) {
-		print "\n[ERROR] Check for the requirements failed!! See instructions or reports above\n\n";
-		exit 1;
-	} else {
-		print "\nEVERYTHING OK! You can now go hacking! :)\n\n";
-	}
+	my ($self) = @_;
+
+	$self->app->check_requirements; # Exits on missing requirements.
+	$self->app->emit_info("EVERYTHING OK! You can now go hacking! :)");
+	exit 0;
 }
 
 1;

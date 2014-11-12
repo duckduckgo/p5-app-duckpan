@@ -23,13 +23,6 @@ option force => (
     default => sub { 0 }
 );
 
-option verbose => (
-    is => 'ro',
-    lazy => 1,
-    short => 'v',
-    default => sub { 0 }
-);
-
 option port => (
     is => 'ro',
     format => 'i',
@@ -112,7 +105,7 @@ sub _build_asset_cache_path {
 }
 
 sub run {
-    my ( $self, @args ) = @_;
+    my ($self, @args) = @_;
 
     my $cache_path = $self->app->cfg->cache_path;
 
@@ -120,22 +113,20 @@ sub run {
     my $signal_file = $cache_path->child('perl_checked');
     my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
     if ($self->force || (time - $last_checked_perl) > $self->cachesec) {
-        $self->app->verify_versions;
+        $self->app->check_requirements;    # Exits on missing requirements.
         $signal_file->touch;
-    } elsif ($self->verbose) {
-        print "\nPerl module versions recently checked, skipping...\n";
+    } else {
+        $self->app->emit_debug("Perl module versions recently checked, skipping requirements check...");
     }
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
-    print "\n\n";
-    print "Hostname is: http://" . $self->hostname . "\n" if ($self->verbose);
+    $self->app->emit_debug("Hostname is: http://" . $self->hostname);
     if ($self->force) {
-        print "[CACHE DISABLED] Forcing request for all assets...\n";
+        $self->app->emit_notice("Cache disabled forcing request for all assets...");
     } else {
-        print "Checking asset cache validity...\n";
+        $self->app->emit_info("Checking asset cache validity...");
     }
-    print "\n";
 
     foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice templates))) {
         if (defined $asset->{external}) {
@@ -157,16 +148,15 @@ sub run {
         $web_args{'page_' . $page} = $self->slurp_or_empty($self->page_info->{$page});
     }
 
-    print "\nStarting up webserver...\n";
-    print "You can stop the webserver with Ctrl-C\n\n";
+    $self->app->emit_info("Starting up webserver...", "You can stop the webserver with Ctrl-C");
 
     require App::DuckPAN::Web;
 
-    my $web = App::DuckPAN::Web->new(%web_args);
+    my $web    = App::DuckPAN::Web->new(%web_args);
     my $runner = Plack::Runner->new(
         #loader => 'Restarter',
         includes => ['lib'],
-        app => sub { $web->run_psgi(@_) },
+        app      => sub { $web->run_psgi(@_) },
     );
     #$runner->loader->watch("./lib");
     $runner->parse_options("--port", $self->port);
@@ -395,12 +385,12 @@ sub retrieve_and_cache {
     my $to_file    = $asset->{internal};
     my $path_start = (substr($asset->{external}, 0, 1) eq '/') ? '' : '/';
     my $url        = 'http://' . $self->hostname . $path_start . $asset->{external};
-    my $prefix     = ($sub_of) ? '  [via ' . $sub_of->{name} . '] ' : '';
+    my $prefix     = ($sub_of) ? '[via ' . $sub_of->{name} . '] ' : '';
     $prefix .= '[' . $asset->{name} . '] ';
     if (!$self->force && $to_file->exists && (time - $to_file->stat->ctime) < $self->cachesec) {
-        print $prefix . $to_file->basename . " recently cached -- no request made.\n" if $self->verbose;
+        $self->app->emit_debug($prefix . $to_file->basename . " recently cached -- no request made.");
     } else {
-        print $prefix . "requesting from: $url...\n" if $self->verbose;
+        $self->app->emit_debug($prefix . 'requesting from: ' . $url . '...');
         $to_file->remove;
         $to_file->touchpath;
         my ($expected_length, $bytes_received, $progress);
@@ -412,7 +402,7 @@ sub retrieve_and_cache {
                 $bytes_received += length($chunk);
                 $to_file->append($chunk);
                 $expected_length //= $res->content_length || 0;
-                return unless $self->verbose;    # Progress bar is just for verbose mode;
+                return unless $self->app->verbose;    # Progress bar is just for verbose mode;
                 if ($expected_length && !defined($progress)) {
                     $progress = Term::ProgressBar->new({
                         name   => $prefix,
@@ -427,20 +417,20 @@ sub retrieve_and_cache {
                 }
             });
         if (!$res->is_success) {
-            $self->app->exit_with_msg(-1, qq~request failed with response: ~ . $res->status_line . "\n");
+            $self->app->emit_and_exit(-1, qq~$prefix request failed with response: ~ . $res->status_line . "\n");
         } elsif ($expected_length && $bytes_received < $expected_length) {
             $to_file->remove;
-            $self->app->exit_with_msg(-1, qq~only $bytes_received of $expected_length bytes received~);
+            $self->app->emit_and_exit(-1, qq~$prefix only $bytes_received of $expected_length bytes received~);
         } else {
             $progress->update($expected_length) if ($progress && $expected_length);
-            print $prefix. "written to cache: $to_file\n" if $self->verbose;
+            $self->app->emit_debug($prefix . 'written to cache: ' . $to_file);
         }
     }
     # We need to load the assets on the SERPs for reuse.
     if ($asset->{load_sub_assets}) {
-        print $prefix. "parsing for additional assets\n" if $self->verbose;
+        $self->app->emit_debug($prefix . 'parsing for additional assets');
         $self->get_sub_assets($asset);
-        print $prefix. "assets loaded\n" if $self->verbose;
+        $self->app->emit_debug($prefix . 'assets loaded');
     }
 
     return;

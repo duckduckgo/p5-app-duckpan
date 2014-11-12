@@ -6,14 +6,13 @@ use MooX::Options protect_argv => 0;
 with qw( App::DuckPAN::Cmd );
 
 sub run {
-	my ( $self, @args ) = @_;
+	my ($self, @args) = @_;
 
-	$self->app->verify_versions;
+	$self->app->check_requirements;    # Will exit if missing
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
 	require App::DuckPAN::Query;
 	exit App::DuckPAN::Query->run($self->app, @blocks);
-
 }
 
 1;

@@ -1,6 +1,7 @@
 package App::DuckPAN;
 # ABSTRACT: The DuckDuckGo DuckPAN client
 
+use feature 'state';
 
 use Moo;
 use MooX::Cmd;
@@ -10,14 +11,14 @@ use File::Which;
 use Class::Load ':all';
 use HTTP::Request::Common qw( GET POST );
 use HTTP::Status;
-use List::Util qw( first );
+use List::Util qw( first max );
 use LWP::UserAgent;
 use LWP::Simple;
 use Parse::CPAN::Packages::Fast;
 use File::Temp qw/ :POSIX /;
+use Term::ANSIColor;
 use Term::UI;
 use Term::ReadLine;
-use Term::ReadKey;    # For GetTerminalSize
 use Carp;
 use Encode;
 use Perl::Version;
@@ -37,6 +38,13 @@ option no_check => (
 	default => sub { 0 }
 );
 
+option verbose => (
+	is      => 'ro',
+	lazy    => 1,
+	short   => 'v',
+	default => sub { 0 },
+);
+
 has duckpan_packages => (
 	is => 'ro',
 	lazy => 1,
@@ -51,7 +59,7 @@ sub _build_duckpan_packages {
 	my $mirror_to   = $self->cfg->cache_path->child($gz);
 
 	if (is_error(mirror($package_url, $mirror_to))) {
-		$self->exit_with_msg(-1, "Cannot download $package_url");
+		$self->emit_and_exit(-1, "Cannot download $package_url");
 	}
 
 	return Parse::CPAN::Packages::Fast->new($mirror_to->openr);
@@ -225,18 +233,6 @@ sub _build_ddg {
 	App::DuckPAN::DDG->new( app => shift );
 }
 
-has term_width => (
-	is      => 'ro',
-	lazy    => 1,
-	builder => 1,
-);    # Could add a clearer and SIGWINCH handler, if you felt saucy.
-
-sub _build_term_width {
-	my ($width) = GetTerminalSize(\*STDOUT);
-
-	return $width || 79;    # Old value is new default!
-}
-
 sub execute {
 	my ( $self, $args, $chain ) = @_;
 	my @arr_args = @{$args};
@@ -260,38 +256,74 @@ sub execute {
 		}
 		exit $self->perl->duckpan_install(@modules) unless @left_args;
 	}
-	$self->exit_with_msg(-1, "Unknown command. Use `duckpan help` to see the list of available DuckPAN commands.");
+	$self->emit_and_exit(0, "Unknown command. Use `duckpan help` to see the list of available DuckPAN commands.");
 }
 
-sub print_text {
-	my $self = shift;
-	my @lines = grep { defined } @_;
-	return unless @lines;
-	my $width = $self->term_width;    # We'll keep it for all these lines, at least.
-	for (@lines) {
-		print "\n";
-		my @words = split(/\s+/, $_);
-		my $current_line = "";
-		for (@words) {
-			if ((length $current_line) + (length $_) < $width) {
-				$current_line .= " " if length $current_line;
-				$current_line .= $_;
-			} else {
-				print $current_line. "\n";
-				$current_line = $_;
-			}
-		}
-		print $current_line. "\n" if length $current_line;
-	}
-	print "\n";
+has standard_prefix_width => (
+	is      => 'ro',
+	default => sub { 9 },
+);
+
+sub _colored_prefix {
+	my ($self, $word, $color) = @_;
+
+	my $extra_spaces = max(0, $self->standard_prefix_width - length($word) - 2 ); # 2 []s to be added.
+
+	my $full_prefix = '[' . uc $word . ']' . (' ' x $extra_spaces);
+
+	return colored($full_prefix, $color);
 }
 
-sub exit_with_msg {
+sub emit_info {
+	my ($self, @msg) = @_;
+
+	$self->_print_msg(*STDOUT, '', @msg);
+}
+
+sub emit_error {
+	my ($self, @msg) = @_;
+
+	state $prefix = $self->_colored_prefix('ERROR', 'red bold');
+
+	$self->_print_msg(*STDERR, $prefix, @msg);
+}
+
+sub emit_and_exit {
 	my ($self, $exit_code, @msg) = @_;
 
-	$msg[0] = '[ERROR] ' . $msg[0] if (@msg);
-	$self->print_text(@msg);
+	state $prefix = $self->_colored_prefix('FATAL', 'bright_red bold');
+
+	if ($exit_code == 0) {      # This is just an info message.
+		$self->emit_info(@msg);
+	} else {                    # But if it's an unhappy exit
+		$self->_print_msg(*STDERR, $prefix, @msg);
+	}
+
 	exit $exit_code;
+}
+
+sub emit_debug {
+	my ($self, @msg) = @_;
+
+	return unless $self->verbose;    # only show messages in verbose mode.
+
+	return $self->_print_msg(*STDOUT, '', @msg);
+}
+
+sub emit_notice {
+	my ($self, @msg) = @_;
+
+	state $prefix = $self->_colored_prefix('NOTiCE', 'yellow bold');
+
+	$self->_print_msg(*STDOUT, $prefix, @msg);
+}
+
+sub _print_msg {
+	my ($self, $fh, $prefix, @lines) = @_;
+
+	foreach my $line (map { $prefix . $_ } grep { $_ } @lines) {
+		print $fh $line . "\n";
+	}
 }
 
 sub camel_to_underscore {
@@ -311,52 +343,14 @@ sub phrase_to_camel {
 }
 
 sub check_requirements {
-	my ( $self ) = @_;
-	my $fail = 0;
-	print "\nChecking your environment for the DuckPAN requirements\n\n";
-	#$fail = 1 unless $self->check_locallib;
-	$fail = 1 unless $self->check_ddg;
-	$fail = 1 unless $self->check_git;
-	$fail = 1 unless $self->check_ssh;
-	if ($fail) {
-		return 1;
-	}
-	return 0;
-}
+	my ($self) = @_;
 
-sub check_git {
-	my ( $self ) = @_;
-	my $ok = 1;
-	print "Checking for git... ";
-	if (my $git = which('git')) {
-		my $version_string = `$git --version`;
-		if ($version_string =~ m/git version (\d+)\.(\d+)/) {
-			if ($1 <= 1 && $2 < 7) {
-				print "require minimum 1.7"; $ok = 0;
-			} else {
-				print $git;
-			}
-		} else {
-			print "Unknown version!"; $ok = 0;
-		}
-	} else {
-		print "No!"; $ok = 0;
-	}
-	print "\n";
-	return $ok;
-}
+	$self->emit_info("Checking for DuckPAN requirements...");
 
-sub check_ssh {
-	my ( $self ) = @_;
-	my $ok = 1;
-	print "Checking for ssh... ";
-	if (my $ssh = which('ssh')) {
-		print $ssh;
-	} else {
-		print "No!"; $ok = 0;
-	}
-	print "\n";
-	return $ok;
+	$self->emit_and_exit(1, 'Requirements check failed')
+	  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ddg && $self->check_ssh && $self->check_git);
+
+	return 1;
 }
 
 sub get_local_ddg_version {
@@ -369,27 +363,65 @@ sub get_local_app_duckpan_version {
 	return $self->perl->get_local_version('App::DuckPAN');
 }
 
+
+sub check_git {
+	my ( $self ) = @_;
+	my $ok = 0;
+	$self->emit_info("Checking for git...");
+	if (my $git = which('git')) {
+		my $version_string = `$git --version`;
+		if ($version_string =~ m/git version (\d+)\.(\d+)/) {
+			if ($1 <= 1 && $2 < 7) {
+				$self->emit_error("require minimum git 1.7");
+			} else {
+				$self->emit_debug($git);
+				$ok = 1;
+			}
+		} else {
+			$self->emit_error("Unknown git version!");
+		}
+	} else {
+		$self->emit_error("git not found");
+	}
+	return $ok;
+}
+
+sub check_ssh {
+	my ( $self ) = @_;
+	my $ok = 0;
+	$self->emit_info("Checking for ssh...");
+	if (my $ssh = which('ssh')) {
+		$self->emit_debug($ssh);
+		$ok = 1;
+	} else {
+		$self->emit_error('ssh not found');
+	}
+	return $ok;
+}
+
 my %perl_versions = (
     required    => Perl::Version->new('v5.14'),
     recommended => Perl::Version->new('v5.16'),
 );
 
-sub verify_versions {
+sub check_perl {
 	my ($self) = @_;
 
+	$self->emit_info("Checking perl version... ");
 	my $installed_version = Perl::Version->new($]);
 
+	my $ok = 1;
 	if ($installed_version->vcmp($perl_versions{required}) < 0) {
-		print '[ERROR] perl ' . $perl_versions{required}->normal . ' or higher is required. ' . $installed_version->normal . " is installed.\n";
-		exit 1;
+		$self->emit_error('perl ' . $perl_versions{required}->normal . ' or higher is required. ', $installed_version->normal . ' is installed.');
+		$ok = 0;
 	} elsif ($installed_version->vcmp($perl_versions{recommended}) < 0) {
-		print '[NOTICE] perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ' . $installed_version->normal . " is installed.\n";
+		$self->emit_notice('perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ',
+			$installed_version->normal . " is installed.");
+	} else {
+		$self->emit_debug($installed_version->normal);
 	}
 
-	exit 1 unless $self->check_app_duckpan;
-	exit 1 unless $self->check_ddg;
-
-	return;
+	return $ok;
 }
 
 sub check_app_duckpan {
@@ -398,21 +430,20 @@ sub check_app_duckpan {
 	my $ok                = 1;
 	my $installed_version = $self->get_local_app_duckpan_version;
 	return $ok if $installed_version && $installed_version == '9.999';
-	print "Checking for latest App::DuckPAN ... ";
+	$self->emit_info("Checking for latest App::DuckPAN... ");
 	my $packages = $self->duckpan_packages;
 	my $module   = $packages->package('App::DuckPAN');
 	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
 	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-		print $installed_version;
-		print " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+		my $msg = "App::DuckPAN version: $installed_version";
+		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+		$self->emit_debug($msg);
 	} else {
-		if ($installed_version) {
-			print "You have version " . $installed_version . ", latest is " . $module->version . "!\n";
-		}
-		print "[ERROR] Please install the latest App::DuckPAN package with: duckpan upgrade\n";
+		my @msg = ("Please install the latest App::DuckPAN package with: duckpan upgrade");
+		unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!" if ($installed_version);
+		$self->emit_error(@msg);
 		$ok = 0;
 	}
-	print "\n";
 	return $ok;
 }
 
@@ -422,23 +453,24 @@ sub check_ddg {
 	my $ok                = 1;
 	my $installed_version = $self->get_local_ddg_version;
 	return $ok if $installed_version && $installed_version == '9.999';
-	print "Checking for latest DDG Perl package... ";
+	$self->emit_info("Checking for latest DDG Perl package...");
 	my $packages = $self->duckpan_packages;
 	my $module   = $packages->package('DDG');
 	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
 	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-		print $installed_version;
-		print " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+		my $msg = "DDG version: $installed_version";
+		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+		$self->emit_debug($msg);
 	} else {
+		my @msg = ("Please install the latest DDG package with: duckpan DDG");
 		if ($installed_version) {
-			print "You have version " . $installed_version . ", latest is " . $module->version . "!\n";
+			unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!";
 		} else {
-			print "You don't have DDG installed! Latest is " . $module->version . "!\n";
+			unshift @msg, "You don't have DDG installed! Latest is " . $module->version . "!";
 		}
-		print "[ERROR] Please install the latest DDG package with: duckpan DDG\n";
+		$self->emit_error(@msg);
 		$ok = 0;
 	}
-	print "\n";
 	return $ok;
 }
 
@@ -456,8 +488,8 @@ sub get_ia_type {
 
 	my $ia_type = first { $_->{dir}->is_dir } @{$self->ia_types};
 
-	$self->exit_with_msg(-1, 'Must be run from the root of a checked-out Instant Answer repository.') unless ($ia_type);
-	$self->exit_with_msg(-1, "Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!") if $ia_type->{supported} == 0;
+	$self->emit_and_exit(-1, 'Must be run from the root of a checked-out Instant Answer repository.') unless ($ia_type);
+	$self->emit_and_exit(-1, "Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!") if $ia_type->{supported} == 0;
 
 	return $ia_type;
 }
@@ -466,27 +498,20 @@ sub empty_cache {
 	my ($self) = @_;
 	# Clear cache so share files are written into cache
 	my $cache = $self->cfg->cache_path;
-	if ($cache->exists){
-		print "Emptying DuckPAN cache...";
-		$cache->remove_tree({keep_root => 1});
-		print "Done\n";
-	} else {
-		print "Cache does not exist. Nothing to delete.\n";
-
-	}
+	$self->emit_info("Emptying DuckPAN cache...");
+	$cache->remove_tree({keep_root => 1});
+	$self->emit_info("DuckPAN cache emptied");
 }
 
 sub BUILD {
-	my ( $self ) = @_;
-	if ($^O eq 'MSWin32') {
-		print "\n[ERROR] We dont support Win32\n\n";
-		exit 1;
+	my ($self) = @_;
+
+	$self->emit_and_exit(1, 'We dont support Win32') if ($^O eq 'MSWin32');
+	my $env_config = $self->cfg->config_path->child('env.ini');
+	if ($env_config->exists) {
+		my $env = Config::INI::Reader->read_file($env_config);
+		map { $ENV{$_} = $env->{'_'}{$_}; } keys %{$env->{'_'}} if $env->{'_'};
 	}
-    my $env_config = $self->cfg->config_path->child('env.ini');
-    if ($env_config->exists) {
-        my $env = Config::INI::Reader->read_file($env_config);
-        map { $ENV{$_} = $env->{'_'}{$_}; } keys %{$env->{'_'}} if $env->{'_'};
-    }
 }
 
 1;

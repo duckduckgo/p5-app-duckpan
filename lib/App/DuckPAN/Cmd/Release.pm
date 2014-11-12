@@ -10,8 +10,7 @@ sub run {
 
     my $ret = system('dzil release');
 
-    print STDERR '[ERROR] Could not begin release. Is Dist::Zilla installed?'
-      if $ret == -1;
+    $self->app->error_msg('Could not begin release. Is Dist::Zilla installed?') if $ret == -1;
 
     return $ret;
 }

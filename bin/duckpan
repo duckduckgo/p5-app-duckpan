@@ -12,7 +12,7 @@ BEGIN {
     @libs = split ',', join ',', @libs;
     if (my @missing = grep { !$_->exists } map { path($_) } @libs) {
         my $plural = (scalar @missing == 1) ? '' : 's';
-        print '[FATAL ERROR] Missing include path' . $plural . ': ' . join(', ',
+        print STDERR '[FATAL ERROR] Missing include path' . $plural . ': ' . join(', ',
             map { try { $_->realpath } || $_->absolute } @missing) . "\n";
         exit 1;
     }
@@ -47,7 +47,7 @@ Please see L<https://github.com/duckduckgo/p5-app-duckpan#installing-duckpan> fo
 =head2 COMMANDS
 
 =head3 Help
-B<duckpan>
+B<duckpan> [--verbose|-v]
 B<duckpan help>
 B<man duckpan>
     Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
@@ -66,11 +66,8 @@ B<duckpan query> [package_name ...]
         duckpan query Npm
         duckpan query Twitter IsItUp
 
-B<duckpan server> [--verbose] [--force] [--cachesec <seconds>] [--port <number>] [package_name ...]
+B<duckpan server> [--force] [--cachesec <seconds>] [--port <number>] [package_name ...]
     Starts a local web server, which emulates the DuckDuckGo production environment. Allows for live testing of Goodie and Spice instant answers.  This tool should be used to ensure your instant answer displays correctly. For Spice instant answers, this is especially important to verify API calls are successful and no JavaScript errors exist.
-
-    -v, --verbose:
-        Provides more output from server
 
     -f, --force:
         Forces the cache to be repopulated each time the server starts (defaults to using cached copies of assets unless newer versions exist)

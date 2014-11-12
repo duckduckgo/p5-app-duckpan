@@ -49,28 +49,24 @@ sub get_email { shift->app->get_reply( 'What is your email (public in your relea
 
 sub run {
 	my ( $self ) = @_;
-	exit if $self->app->check_requirements != 0;
+	$self->app->check_requirements; # Exits on missing requirements.
 	if (my $dzil_config = $self->app->perl->get_dzil_config) {
-		print "\nFound existing Dist::Zilla config!\n\n";
+		$self->app->emit_info("Found existing Dist::Zilla config!");
 		my $name = $dzil_config->{'%User'}->{name};
 		my $email = $dzil_config->{'%User'}->{email};
 		my $user = $dzil_config->{'%DUKGO'}->{username};
 		my $pass = $dzil_config->{'%DUKGO'}->{password};
-		print "Name: ".$name."\n" if $name;
-		print "Email: ".$email."\n" if $email;
-		print "Username at https://duck.co/: ".$user."\n" if $user;
-		print "Password at https://duck.co/: ".$pass."\n" if $pass;
+		$self->app->emit_info("Name: ".$name) if $name;
+		$self->app->emit_info("Email: ".$email) if $email;
+		$self->app->emit_info("Username at https://duck.co/: ".$user) if $user;
+		$self->app->emit_info("Password at https://duck.co/: ".$pass) if $pass;
 		if ($name || $email || $user || $pass) {
-			print "\n";
 			if ($self->app->term->ask_yn( prompt => 'Do you wanna use those? ', default => 'y' )) {
 				if ($user && $pass) {
-					print "\nChecking your account on https://duck.co/... ";
+					$self->app->emit_info("Checking your account on https://duck.co/...");
 					if ($self->app->checking_dukgo_user($user,$pass)) {
-						print "success!\n";
 						$self->user($user);
 						$self->pass($pass);
-					} else {
-						print "failed!\n";
 					}
 				}
 				$self->name($name) if $name;
@@ -79,12 +75,12 @@ sub run {
 		}
 	}
 	unless ($self->has_name && $self->has_email) {
-		print "\nWe require some general information about you\n\n";
+		$self->app->emit_info("We require some general information about you");
 		$self->setup_name unless $self->has_name;
 		$self->setup_email unless $self->has_email;
 	}
 	unless ($self->has_user && $self->has_pass) {
-		print "\nGetting your https://duck.co/ user information\n\n";
+		$self->app->emit_info("Getting your https://duck.co/ user information");
 		$self->setup_dukgo;
 	}
 	my %vars = (
@@ -93,13 +89,13 @@ sub run {
 		name => $self->name,
 		email => $self->email,
 	);
-	print "\nInitalizing DuckPAN environment\n\n";
+	$self->app->emit_info("Initalizing DuckPAN environment");
 	$self->setup(%vars);
-	print "\nInitalizing Dist::Zilla for Perl5\n\n";
+	$self->app->emit_info("Initalizing Dist::Zilla");
 	$self->app->perl->setup(%vars);
-	print "Installing DDG base Perl modules from DuckPAN\n\n";
+	$self->app->emit_info("Installing DDG base Perl modules from DuckPAN");
 	$self->app->perl->duckpan_install('DDG');
-	print "\nSetup complete.\n\n";
+	$self->app->emit_info("Setup complete.");
 }
 
 sub setup_name {
@@ -108,12 +104,11 @@ sub setup_name {
 	if ($name) {
 		$self->name($name);
 	} else {
-		print "We need some kind of name!\n";
+		$self->app->emit_info("We need some kind of name!");
 		if ($self->app->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->setup_name;
 		} else {
-			print "[ERROR] A name is required to work with DuckPAN\n";
-			exit 1;
+			$self->app->emit_and_exit(1, "A name is required to work with DuckPAN");
 		}
 	}
 }
@@ -124,12 +119,11 @@ sub setup_email {
 	if (Email::Valid->address($email)) {
 		$self->email($email);
 	} else {
-		print "No valid email given!\n";
+		$self->app->emit_info("No valid email given!");
 		if ($self->app->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->setup_email;
 		} else {
-			print "[ERROR] An email is required to work with DuckPAN\n";
-			exit 1;
+			$self->app->emit_and_exit(1, "An email is required to work with DuckPAN");
 		}
 	}
 }
@@ -138,19 +132,17 @@ sub setup_dukgo {
 	my ( $self ) = @_;
 	my $user = $self->has_user ? $self->user : $self->get_user;
 	my $pass = $self->get_pass;
-	print "\nChecking your account on https://duck.co/... ";
+	$self->app->emit_info("Checking your account on https://duck.co/... ");
 	if ($self->app->checking_dukgo_user($user,$pass)) {
-		print "success!\n";
 		$self->user($user);
 		$self->pass($pass);
 	} else {
-		print "failed!\n";
+		$self->app->emit_info("Account lookup failed!");
 		if ($self->app->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->clear_user if $self->has_user;
 			$self->setup_dukgo;
 		} else {
-			print "[ERROR] A login to https://duck.co/ is required to work with DuckPAN\n";
-			exit 1;
+			$self->app->emit_and_exit(1, "A login to https://duck.co/ is required to work with DuckPAN");
 		}
 	}
 }

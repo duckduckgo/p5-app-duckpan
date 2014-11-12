@@ -13,8 +13,7 @@ my $version = $App::DuckPAN::VERSION;
 subtest 'no arguments' => sub {
 	my ($return, $out, $err) = run_script('duckpan', []);
 
-	like($out, qr/DuckPAN/, 'DuckPAN without arguments gives out usage');
-	is($return, 1, 'DuckPAN gives back exit code 1');
+	like($out, qr/`duckpan help`/, 'DuckPAN without arguments recommends `duckpan help`');
 };
 
 subtest 'bad include paths' => sub {
@@ -22,12 +21,12 @@ subtest 'bad include paths' => sub {
 	my ($return, $out, $err) = run_script('duckpan', ['-I' . $fake_dir]);
 
 	ok($return, 'DuckPAN with non-existent include path exits with an error');
-	like($out, qr/Missing include path.*$fake_dir/, ' after printing a message showing the bad path');
+	like($err, qr/Missing include path.*$fake_dir/, ' after showing the bad path message');
 
 	$fake_dir = '../fake-directory/even-faker';
 	($return, $out, $err) = run_script('duckpan', ['-I' . $fake_dir]);
 	ok($return, 'DuckPAN with non-existent multi-way include path exits with an error');
-	like($out, qr/Missing include path.*$fake_dir/, ' after printing a message showing the bad path');
+	like($err, qr/Missing include path.*$fake_dir/, ' after showing the bad path message');
 };
 
 subtest 'env' => sub {
