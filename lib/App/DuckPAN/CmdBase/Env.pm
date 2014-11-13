@@ -14,49 +14,49 @@ has env_ini => (
 sub _build_env_ini { shift->app->cfg->config_path->child('env.ini') }
 
 sub load_env_ini {
-  my ( $self ) = @_;
-  if (-f $self->env_ini) {
-    my $data = Config::INI::Reader->read_file(shift->env_ini)->{_};
-    defined $data ? $data : {}
-  } else {
-    {}
-  }
+    my ( $self ) = @_;
+    if (-f $self->env_ini) {
+        my $data = Config::INI::Reader->read_file(shift->env_ini)->{_};
+        defined $data ? $data : {}
+    } else {
+        {}
+    }
 }
 sub save_env_ini {
-  my ( $self, $data ) = @_;
-  Config::INI::Writer->write_file({ _ => $data },$self->env_ini);
+    my ( $self, $data ) = @_;
+    Config::INI::Writer->write_file({ _ => $data },$self->env_ini);
 }
 
 sub set_env {
-  my ( $self, $name, $value ) = @_;
-  $name = uc($name);
-  my %data = %{$self->load_env_ini};
-  $data{$name} = $value;
-  $self->save_env_ini(\%data);
+    my ( $self, $name, $value ) = @_;
+    $name = uc($name);
+    my %data = %{$self->load_env_ini};
+    $data{$name} = $value;
+    $self->save_env_ini(\%data);
 }
 
 sub get_env {
-  my ( $self, $name ) = @_;
-  $name = uc($name);
-  my %data = %{$self->load_env_ini};
-  $data{$name};
+    my ( $self, $name ) = @_;
+    $name = uc($name);
+    my %data = %{$self->load_env_ini};
+    $data{$name};
 }
 
 sub rm_env {
-  my ( $self, $name ) = @_;
-  $name = uc($name);
-  my %data = %{$self->load_env_ini};
-  delete $data{$name} if defined $data{$name};
-  $self->save_env_ini(\%data);
+    my ( $self, $name ) = @_;
+    $name = uc($name);
+    my %data = %{$self->load_env_ini};
+    delete $data{$name} if defined $data{$name};
+    $self->save_env_ini(\%data);
 }
 
 sub show_env {
-  my ( $self, $name ) = @_;
-  if ($self->get_env($name)) {
-    $self->app->emit_info('export '.$name.'=\''.$self->get_env($name).'\'');
-  } else {
-    $self->app->emit_info('# '.$name.' is not set');
-  }
+    my ( $self, $name ) = @_;
+    if ($self->get_env($name)) {
+        $self->app->emit_info('export '.$name.'=\''.$self->get_env($name).'\'');
+    } else {
+        $self->app->emit_info('# '.$name.' is not set');
+    }
 }
 
 sub show_usage {
