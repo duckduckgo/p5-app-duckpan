@@ -2,7 +2,6 @@ package App::DuckPAN::CmdBase::Env;
 # ABSTRACT: Base class for ENV related functionality of duckpan (duckpan env and duckpan rm)
 
 use MooX qw( Options );
-use Path::Tiny;
 use Config::INI;
 
 has env_ini => (
@@ -24,10 +23,10 @@ sub load_env_ini {
 }
 sub save_env_ini {
     my ( $self, $data ) = @_;
-    Config::INI::Writer->write_file({ _ => $data },$self->env_ini);
+    Config::INI::Writer->write_file({ _ => $data }, $self->env_ini);
 }
 
-sub set_env {
+sub set {
     my ( $self, $name, $value ) = @_;
     $name = uc($name);
     my %data = %{$self->load_env_ini};
@@ -35,14 +34,14 @@ sub set_env {
     $self->save_env_ini(\%data);
 }
 
-sub get_env {
+sub get {
     my ( $self, $name ) = @_;
     $name = uc($name);
     my %data = %{$self->load_env_ini};
     $data{$name};
 }
 
-sub rm_env {
+sub rm {
     my ( $self, $name ) = @_;
     $name = uc($name);
     my %data = %{$self->load_env_ini};
@@ -50,7 +49,7 @@ sub rm_env {
     $self->save_env_ini(\%data);
 }
 
-sub show_env {
+sub list {
     my ( $self, $name ) = @_;
     if ($self->get_env($name)) {
         $self->app->emit_info('export '.$name.'=\''.$self->get_env($name).'\'');
@@ -59,7 +58,7 @@ sub show_env {
     }
 }
 
-sub show_usage {
+sub help {
     my ($self) = @_;
     if (keys %{$self->load_env_ini}) {
         $self->app->emit_info("# ENV variables added so far:");
