@@ -3,8 +3,14 @@ package App::DuckPAN::Cmd::Help;
 
 use Moo;
 with qw( App::DuckPAN::Cmd );
-use Pod::Usage;
+use Pod::Usage qw(pod2usage);
 
-sub run { pod2usage(verbose => 2); }
+sub run {
+	my ($self, $short_output) = @_;
+
+
+	pod2usage(-verbose => 2) unless $short_output;
+	pod2usage(-verbose => 1);
+}
 
 1;
