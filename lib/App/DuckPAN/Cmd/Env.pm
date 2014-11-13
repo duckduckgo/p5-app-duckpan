@@ -8,8 +8,7 @@ with qw( App::DuckPAN::Cmd );
 
 sub run {
     my ( $self, $name, @value ) = @_;
-    my @commands = ('get','set','rm','list','help');
-    $self->help if (!defined $name || !(my ($command) = grep{$_ eq $name} @commands));
+    $self->help($name) if (!defined $name || !(my ($command) = grep{$_ eq $name} @{$self->commands}));
     $self->$command(@value);
     exit 0;
 }
