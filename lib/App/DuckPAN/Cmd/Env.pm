@@ -7,22 +7,11 @@ extends 'App::DuckPAN::CmdBase::Env';
 with qw( App::DuckPAN::Cmd );
 
 sub run {
-  my ( $self, $name, $value ) = @_;
-
-  if (!defined $name) {
-    $self->show_usage;
-  }
-  $name = uc($name);
-  if (defined $value) {
-    if ($name eq 'RM') {
-      $self->rm_env($value);
-    } else {
-      $self->set_env($name,$value);
-    }
-  } else {
-    $self->show_env($name);
-  }
-  exit 0;
+    my ( $self, $name, @value ) = @_;
+    my @commands = ('get','set','rm','list','help');
+    $self->help if (!defined $name || !(my ($command) = grep{$_ eq $name} @commands));
+    $self->$command(@value);
+    exit 0;
 }
 
 1;
