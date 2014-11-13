@@ -3,6 +3,7 @@ package App::DuckPAN::CmdBase::Env;
 
 use MooX qw( Options );
 use Config::INI;
+use Path::Class;
 
 has env_ini => (
     is => 'ro',
@@ -24,7 +25,7 @@ sub load_env_ini {
         my $data = Config::INI::Reader->read_file(shift->env_ini)->{_};
         defined $data ? $data : {}
     } else {
-        $self->app->emit_and_exit(1, "env.ini not a plain file! Please check env.ini under ~/.duckpan/config");
+        {}
     }
 }
 
