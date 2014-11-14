@@ -3,7 +3,6 @@ package App::DuckPAN::CmdBase::Env;
 
 use MooX qw( Options );
 use Config::INI;
-use Path::Class;
 
 has env_ini => (
     is => 'ro',
@@ -21,8 +20,8 @@ has commands => (
 
 sub load_env_ini {
     my ( $self ) = @_;
-    if (-f $self->env_ini) {
-        my $data = Config::INI::Reader->read_file(shift->env_ini)->{_};
+    if ($self->env_ini->is_file) {
+        my $data = Config::INI::Reader->read_file($self->env_ini)->{_};
         defined $data ? $data : {}
     } else {
         {}
