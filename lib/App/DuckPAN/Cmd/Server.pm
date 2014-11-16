@@ -21,7 +21,8 @@ option port => (
     format => 'i',
     lazy => 1,
     short => 'p',
-    default => sub { 5000 }
+    default => sub { 5000 },
+    doc  => 'set port on which server should listen. defaults to 5000',
 );
 
 

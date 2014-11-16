@@ -30,7 +30,8 @@ our $VERSION ||= '9.999';
 option dukgo_login => (
 	is => 'ro',
 	lazy => 1,
-	default => sub { 'https://duck.co/my/login' }
+	default => sub { 'https://duck.co/my/login' },
+	doc => 'URI to log into community platform. defaults to "https://duck.co/my/login"',
 );
 
 option check => (
@@ -38,14 +39,15 @@ option check => (
 	lazy        => 1,
 	negativable => 1,
 	default     => sub { 1 },
+	doc         => 'perform requirements checks. turn off with --no-check',
 );
 
 option 'empty' => (
 	is          => 'ro',
 	lazy        => 1,
-	negativable => 1,
 	short       => 'e',
 	default     => sub { 0 },
+	doc         => 'empty duckpan cache at start-up',
 );
 
 has cachesec => (
@@ -59,6 +61,7 @@ option colors => (
 	lazy        => 1,
 	negativable => 1,
 	default     => sub { 1 },
+	doc         => 'use color output. turn off with --no-colors',
 );
 
 option verbose => (
@@ -66,6 +69,7 @@ option verbose => (
 	lazy    => 1,
 	short   => 'v',
 	default => sub { 0 },
+	doc     => 'provide expanded output during operation',
 );
 
 has duckpan_packages => (
@@ -91,7 +95,8 @@ sub _build_duckpan_packages {
 option duckpan => (
 	is => 'ro',
 	lazy => 1,
-	default => sub { 'http://duckpan.org/' }
+	default => sub { 'http://duckpan.org/' },
+	doc => 'URI for the duckpan package server. defaults to "https://duckpan.org/"',
 );
 
 sub _ua_string {
@@ -104,16 +109,19 @@ sub _ua_string {
 option http_proxy => (
 	is => 'ro',
 	predicate => 1,
+	doc => 'proxy to use for outbound HTTP requests',
 );
 
 option config => (
 	is => 'ro',
 	predicate => 1,
+	doc => 'path to config directory. defaults to "~/.duckpan/config"',
 );
 
 option cache => (
 	is => 'ro',
 	predicate => 1,
+	doc => 'path to cache directory. defaults to "~/.duckpan/cache"',
 );
 
 has term => (

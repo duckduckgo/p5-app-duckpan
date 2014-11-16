@@ -7,14 +7,13 @@ with qw( App::DuckPAN::Cmd );
 use MooX::Options;
 use Email::Valid;
 
-option override => ( is => 'ro' );
-
 option user => (
 	is => 'rw',
 	lazy => 1,
 	predicate => 'has_user',
 	clearer => 'clear_user',
-	default => sub { shift->get_user }
+	default => sub { shift->get_user },
+	doc => 'set duck.co username',
 );
 
 sub get_user { shift->app->get_reply( 'What is your username on https://duck.co/ ? ' ) }
@@ -23,7 +22,8 @@ option pass => (
 	is => 'rw',
 	lazy => 1,
 	predicate => 'has_pass',
-	default => sub { shift->get_pass }
+	default => sub { shift->get_pass },
+	doc => 'set duck.co password',
 );
 
 sub get_pass { shift->app->get_reply( 'What is your password on https://duck.co/ ? ' ) }
@@ -32,7 +32,8 @@ option name => (
 	is => 'rw',
 	lazy => 1,
 	predicate => 'has_name',
-	default => sub { shift->get_name }
+	default => sub { shift->get_name },
+	doc => 'set duck.co name',
 );
 
 sub get_name { shift->app->get_reply( 'What is your name (real name not required) ? ' ) }
@@ -42,7 +43,8 @@ option email => (
 	isa => sub { Email::Valid->address(shift); },
 	lazy => 1,
 	predicate => 'has_email',
-	default => sub { shift->get_email }
+	default => sub { shift->get_email },
+	doc => 'set duck.co public email',
 );
 
 sub get_email { shift->app->get_reply( 'What is your email (public in your release) ? ' ) }
