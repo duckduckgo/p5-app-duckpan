@@ -346,14 +346,13 @@ duckpan query Twitter IsItUp
 ---
 
 ```
-duckpan server [--force] [--cachesec <seconds>] [--port <number>] [package_name ...]
+duckpan server [--port <number>] [package_name ...]
 ```
 
 Test Goodie and Spice Instant Answers on a local web server, which replicates the DuckDuckGo production environment. This should be used to ensure Spice and Goodies are displayed properly. For Spice Instant Answers, you should use the DuckPAN Server to also test your JavaScript code and Handlebars templates.
 
 Options:
 
-- `--force`, `-f` to prevent DuckPAN's cache from being used (this forces the requested files to be pushed into the cache).
 - `--port`, `-p` to specify which port DuckPAN's server should run on (defaults to 5000).
 
 Arguments:
@@ -391,14 +390,6 @@ environment.
 
 
 ### For DuckPAN Developers
-
-```
-duckpan empty
-```
-
-Deletes all files in the DuckPAN cache (located in `~/.duckpan/cache/`).
-
----
 
 ```
 duckpan reinstall

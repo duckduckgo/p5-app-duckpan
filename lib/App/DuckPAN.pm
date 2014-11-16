@@ -23,7 +23,7 @@ use Carp;
 use Encode;
 use Perl::Version;
 use Path::Tiny;
-use App::DuckPAN::Cmd::Help
+use App::DuckPAN::Cmd::Help;
 
 our $VERSION ||= '9.999';
 
@@ -38,6 +38,20 @@ option check => (
 	lazy        => 1,
 	negativable => 1,
 	default     => sub { 1 },
+);
+
+option 'empty' => (
+	is          => 'ro',
+	lazy        => 1,
+	negativable => 1,
+	short       => 'e',
+	default     => sub { 0 },
+);
+
+has cachesec => (
+	is      => 'ro',
+	lazy    => 1,
+	default => sub { 60 * 60 * 4 },    # 4 hours by default
 );
 
 option colors => (
@@ -244,7 +258,7 @@ sub _build_ddg {
 
 sub execute {
 	my ( $self, $args, $chain ) = @_;
-	my @arr_args = @{$args};
+	my @arr_args = grep { $_ !~ /^-/} @{$args}; # Command line switches make it here, so we try to remove
 	App::DuckPAN::Cmd::Help->run(1) if scalar @arr_args == 0;
 	if (@arr_args) {
 		my @modules;
@@ -256,7 +270,7 @@ sub execute {
 				$_ =~ /^app/i) {
 				push @modules, $_;
 			} elsif ($_ =~ m/^(duckpan|upgrade|update|reinstall)$/i) {
-				$self->empty_cache();
+				$self->empty_cache unless $self->empty;
 				push @modules, 'App::DuckPAN';
 				push @modules, 'DDG' if $_ =~ /^(?:upgrade|reinstall)$/i;
 				unshift @modules, 'reinstall' if lc($_) eq 'reinstall';
@@ -355,10 +369,17 @@ sub phrase_to_camel {
 sub check_requirements {
 	my ($self) = @_;
 
-	$self->emit_info("Checking for DuckPAN requirements...");
+	my $signal_file = $self->cfg->cache_path->child('perl_checked');
+	my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
+	if ((time - $last_checked_perl) <= $self->cachesec) {
+		$self->emit_debug("Perl module versions recently checked, skipping requirements check...");
+	} else {
+		$signal_file->touch;
+		$self->emit_info("Checking for DuckPAN requirements...");
 
-	$self->emit_and_exit(1, 'Requirements check failed')
-	  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ddg && $self->check_ssh && $self->check_git);
+		$self->emit_and_exit(1, 'Requirements check failed')
+		  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ddg && $self->check_ssh && $self->check_git);
+	}
 
 	return 1;
 }
@@ -518,6 +539,7 @@ sub BUILD {
 
 	$self->emit_and_exit(1, 'We dont support Win32') if ($^O eq 'MSWin32');
 	my $env_config = $self->cfg->config_path->child('env.ini');
+	$self->empty_cache if $self->empty;
 	if ($env_config->exists) {
 		my $env = Config::INI::Reader->read_file($env_config);
 		map { $ENV{$_} = $env->{'_'}{$_}; } keys %{$env->{'_'}} if $env->{'_'};

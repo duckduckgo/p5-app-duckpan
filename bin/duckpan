@@ -109,15 +109,9 @@ Examples:
 duckpan query Npm
 duckpan query Twitter IsItUp
 
-=item C<duckpan server> [--force] [--cachesec <seconds>] [--port <number>] [package_name ...]
+=item C<duckpan server> [--port <number>] [package_name ...]
 
 Starts a local web server, which emulates the DuckDuckGo production environment. Allows for live testing of Goodie and Spice Instant Answers. This tool should be used to ensure your Instant Answer displays correctly. For Spice Instant Answers, this is especially important to verify API calls are successful and no JavaScript errors exist.
-
--f, --force:
-Forces the cache to be repopulated each time the server starts (defaults to using cached copies of assets unless newer versions exist)
-
--c, --cachesec:
-Sets the maximum number seconds for which the asset cache is valid (defaults to 14400 [4 hours])
 
 -p, --port <number>:
 Forces DuckPAN server to run on the specified port (default port is 5000)

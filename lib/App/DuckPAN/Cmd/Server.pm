@@ -16,13 +16,6 @@ use Data::Printer;
 use Data::Dumper;
 use Term::ProgressBar;
 
-option force => (
-    is => 'ro',
-    lazy => 1,
-    short => 'f',
-    default => sub { 0 }
-);
-
 option port => (
     is => 'ro',
     format => 'i',
@@ -31,13 +24,6 @@ option port => (
     default => sub { 5000 }
 );
 
-option cachesec => (
-    is      => 'ro',
-    format  => 'i',
-    lazy    => 1,
-    short   => 'c',
-    default => sub { 60 * 60 * 4 },    # 4 hours by default
-);
 
 has page_info => (
     is      => 'ro',
@@ -109,24 +95,13 @@ sub run {
 
     my $cache_path = $self->app->cfg->cache_path;
 
-    # Ensure eveything is up do date, or exit.
-    my $signal_file = $cache_path->child('perl_checked');
-    my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
-    if ($self->force || (time - $last_checked_perl) > $self->cachesec) {
-        $self->app->check_requirements;    # Exits on missing requirements.
-        $signal_file->touch;
-    } else {
-        $self->app->emit_debug("Perl module versions recently checked, skipping requirements check...");
-    }
+    $self->app->check_requirements; # Ensure eveything is up do date, or exit.
+
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
 
     $self->app->emit_debug("Hostname is: http://" . $self->hostname);
-    if ($self->force) {
-        $self->app->emit_notice("Cache disabled forcing request for all assets...");
-    } else {
-        $self->app->emit_info("Checking asset cache validity...");
-    }
+    $self->app->emit_info("Checking asset cache...");
 
     foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice templates))) {
         if (defined $asset->{external}) {
@@ -387,7 +362,7 @@ sub retrieve_and_cache {
     my $url        = 'http://' . $self->hostname . $path_start . $asset->{external};
     my $prefix     = ($sub_of) ? '[via ' . $sub_of->{name} . '] ' : '';
     $prefix .= '[' . $asset->{name} . '] ';
-    if (!$self->force && $to_file->exists && (time - $to_file->stat->ctime) < $self->cachesec) {
+    if ($to_file->exists && (time - $to_file->stat->ctime) < $self->app->cachesec) {
         $self->app->emit_debug($prefix . $to_file->basename . " recently cached -- no request made.");
     } else {
         $self->app->emit_debug($prefix . 'requesting from: ' . $url . '...');
