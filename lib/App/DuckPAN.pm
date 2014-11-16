@@ -40,6 +40,13 @@ option check => (
 	default     => sub { 1 },
 );
 
+option colors => (
+	is          => 'ro',
+	lazy        => 1,
+	negativable => 1,
+	default     => sub { 1 },
+);
+
 option verbose => (
 	is      => 'ro',
 	lazy    => 1,
@@ -267,14 +274,14 @@ has standard_prefix_width => (
 	default => sub { 9 },
 );
 
-sub _colored_prefix {
+sub _output_prefix {
 	my ($self, $word, $color) = @_;
 
 	my $extra_spaces = max(0, $self->standard_prefix_width - length($word) - 2 ); # 2 []s to be added.
 
 	my $full_prefix = '[' . uc $word . ']' . (' ' x $extra_spaces);
 
-	return colored($full_prefix, $color);
+	return ($self->colors) ? colored($full_prefix, $color) : $full_prefix;
 }
 
 sub emit_info {
@@ -286,7 +293,7 @@ sub emit_info {
 sub emit_error {
 	my ($self, @msg) = @_;
 
-	state $prefix = $self->_colored_prefix('ERROR', 'red bold');
+	state $prefix = $self->_output_prefix('ERROR', 'red bold');
 
 	$self->_print_msg(*STDERR, $prefix, @msg);
 }
@@ -294,7 +301,7 @@ sub emit_error {
 sub emit_and_exit {
 	my ($self, $exit_code, @msg) = @_;
 
-	state $prefix = $self->_colored_prefix('FATAL', 'bright_red bold');
+	state $prefix = $self->_output_prefix('FATAL', 'bright_red bold');
 
 	if ($exit_code == 0) {      # This is just an info message.
 		$self->emit_info(@msg);
@@ -316,7 +323,7 @@ sub emit_debug {
 sub emit_notice {
 	my ($self, @msg) = @_;
 
-	state $prefix = $self->_colored_prefix('NOTiCE', 'yellow bold');
+	state $prefix = $self->_output_prefix('NOTICE', 'yellow bold');
 
 	$self->_print_msg(*STDOUT, $prefix, @msg);
 }
