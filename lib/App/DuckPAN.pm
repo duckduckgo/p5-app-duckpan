@@ -369,17 +369,21 @@ sub phrase_to_camel {
 sub check_requirements {
 	my ($self) = @_;
 
+	if (!$self->check) {
+		$self->emit_notice("Requirements checking was disabled...");
+		return 1;
+	}
 	my $signal_file = $self->cfg->cache_path->child('perl_checked');
 	my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
 	if ((time - $last_checked_perl) <= $self->cachesec) {
 		$self->emit_debug("Perl module versions recently checked, skipping requirements check...");
 	} else {
-		$signal_file->touch;
 		$self->emit_info("Checking for DuckPAN requirements...");
 
 		$self->emit_and_exit(1, 'Requirements check failed')
 		  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ddg && $self->check_ssh && $self->check_git);
 	}
+	$signal_file->touch;
 
 	return 1;
 }
@@ -457,7 +461,6 @@ sub check_perl {
 
 sub check_app_duckpan {
 	my ($self) = @_;
-	return 1 if !$self->check;
 	my $ok                = 1;
 	my $installed_version = $self->get_local_app_duckpan_version;
 	return $ok if $installed_version && $installed_version == '9.999';
@@ -480,7 +483,6 @@ sub check_app_duckpan {
 
 sub check_ddg {
 	my ($self) = @_;
-	return 1 if !$self->check;
 	my $ok                = 1;
 	my $installed_version = $self->get_local_ddg_version;
 	return $ok if $installed_version && $installed_version == '9.999';
