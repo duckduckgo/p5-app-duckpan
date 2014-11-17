@@ -9,10 +9,10 @@ sub run {
 	my ($self, @args) = @_;
 
 	$self->app->check_requirements;    # Will exit if missing
-	my $loader = $self->app->ddg->blocks_loader(@args);
-	$loader->();
+	my $loader = $self->app->ddg->blocks_loading_function(@args);
+	my $blocks = $loader->();
 	require App::DuckPAN::Query;
-	exit App::DuckPAN::Query->run($self->app, $loader);
+	exit App::DuckPAN::Query->run($self->app, $loader, $blocks);
 }
 
 1;

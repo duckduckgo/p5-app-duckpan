@@ -61,11 +61,12 @@ sub _build_all_modules {
     return \@plugins;
 }
 
-sub blocks_loader {
+sub blocks_loading_function {
     my ($self, @args) = @_;
 
+    my $type = $self->app->ia_type;
+
     return sub {
-        my $type = $self->app->ia_type;
         my @mods;
         if (@args == 0) {
             state $dir_checked = $type->{dir}->stat->mtime;
@@ -118,6 +119,8 @@ sub blocks_loader {
                 }
             };
         }
+
+        return unless $changes;
 
         # Now let's tell the user why some of the modules failed.
         $self->show_failed_modules(\%failed_to_load, $dep_error);

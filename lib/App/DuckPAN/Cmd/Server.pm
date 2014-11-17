@@ -99,8 +99,8 @@ sub run {
     $self->app->check_requirements; # Ensure eveything is up do date, or exit.
 
 
-    my $blocks_loader = $self->app->ddg->blocks_loader(@args);
-    $blocks_loader->();
+    my $blocks_loader = $self->app->ddg->blocks_loading_function(@args);
+    my $blocks = $blocks_loader->();
 
     $self->app->emit_debug("Hostname is: http://" . $self->hostname);
     $self->app->emit_info("Checking asset cache...");
@@ -118,6 +118,7 @@ sub run {
 
     # Pull files out of cache to be served later by DuckPAN server
     my %web_args = (
+        blocks          => $blocks,
         blocks_loader   => $blocks_loader,
         server_hostname => $self->hostname,
     );
