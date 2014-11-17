@@ -9,7 +9,6 @@ use again;
 use Module::Pluggable::Object;
 use Class::Unload;
 use Data::Printer;
-use List::Util qw (first);
 use Try::Tiny;
 
 sub get_dukgo_user_pass {
@@ -23,7 +22,7 @@ sub get_dukgo_user_pass {
 
 # This function tells the user which modules / instant answers failed to load.
 sub show_failed_modules {
-    my ($self, $failed_to_load) = @_;
+    my ($self, $failed_to_load, $dep_error) = @_;
 
     if (%$failed_to_load) {
         $self->app->emit_notice("These instant answers were not loaded:");
@@ -31,7 +30,7 @@ sub show_failed_modules {
         $self->app->emit_notice(
             "To learn more about installing Perl dependencies, please read https://duck.co/duckduckhack/faq#how-do-i-install-a-missing-perl-dependency.",
             "Note: You can ignore these errors if you're not working on these instant answers."
-        ) if first { /dependencies/ } values %$failed_to_load;
+        ) if $dep_error;
     }
 }
 
@@ -82,7 +81,6 @@ sub blocks_loader {
         require lib;
         lib->import('lib');
         Class::Unload->unload('Moo'); # Otherwise it will not reapply constructors.
-        $self->app->emit_info("Loading Instant Answers...");
 
         # This list contains all of the classes that loaded successfully.
         my @successfully_loaded = ();
@@ -91,12 +89,15 @@ sub blocks_loader {
         # The key contains the module name and the value contains the dependency that wasn't met.
         my %failed_to_load = ();
 
+        my ($changes, $dep_error);
+
         # This loop goes through each Goodie / Spice, and it tries to load it.
         foreach my $class (@mods) {
             # Let's try to load each Goodie / Spice module
             # and see if they load successfully.
             try {
                 if (require_again($class)) {
+                    $self->app->emit_info("Loading Instant Answers...") unless ($changes++);
                     # We actually (re-)loaded the class.
                     $self->app->emit_debug(" + $class (" . $class->triggers_block_type . ")");
                 }
@@ -104,9 +105,10 @@ sub blocks_loader {
                 push @successfully_loaded, $class;
             }
             catch {
+                $self->app->emit_info("Loading Instant Answers...") unless ($changes++);
                 # Get the module name that needs to be installed by the user.
                 if ($_ =~ /Can't locate ([^\.]+).pm in \@INC/) {
-                    my $dep_error = $1;
+                    $dep_error = $1;
                     $dep_error =~ s/\//::/g;
 
                     $failed_to_load{$class} = "Please install $dep_error and any other required dependencies to use this instant answer.";
@@ -118,7 +120,7 @@ sub blocks_loader {
         }
 
         # Now let's tell the user why some of the modules failed.
-        $self->show_failed_modules(\%failed_to_load);
+        $self->show_failed_modules(\%failed_to_load, $dep_error);
 
         my %blocks_plugins;
         for (@successfully_loaded) {
