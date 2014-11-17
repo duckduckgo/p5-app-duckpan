@@ -1,7 +1,7 @@
 package App::DuckPAN::CmdBase::Env;
 # ABSTRACT: Base class for ENV related functionality of duckpan
 
-use MooX qw( Options );
+use Moo;
 use Config::INI;
 
 has env_ini => (
