@@ -19,7 +19,7 @@ use URI::Escape;
 use JSON;
 use Data::Dumper;
 
-has blocks => ( is => 'ro', required => 1 );
+has blocks_loader => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
 has page_spice => ( is => 'ro', required => 1 );
 has page_css => ( is => 'ro', required => 1 );
@@ -51,7 +51,7 @@ sub BUILD {
 	my %share_dir_hash;
 	my %path_hash;
 	my %rewrite_hash;
-	for (@{$self->blocks}) {
+	for (@{$self->blocks_loader->()}) {
 		for (@{$_->only_plugin_objs}) {
 			if ($_->does('DDG::IsSpice')) {
 				$rewrite_hash{ref $_} = $_->rewrite if $_->has_rewrite;
@@ -208,7 +208,7 @@ sub request {
 		my @calls_script = ();
 		my %calls_template = ();
 
-		for (@{$self->blocks}) {
+		for (@{$self->blocks_loader->()}) {
 			push(@results,$_->request($ddg_request));
 		}
 

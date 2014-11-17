@@ -10,7 +10,7 @@ use Data::Printer;
 use POE qw( Wheel::ReadLine );
 
 sub run {
-	my ( $self, $app, @blocks ) = @_;
+	my ( $self, $app, $blocks_loader ) = @_;
 
 	require DDG;
 	DDG->import;
@@ -44,7 +44,7 @@ sub run {
 				language => test_language_by_env(),
 			);
 			my $hit;
-			for my $b (@blocks) {
+			for my $b (@{$blocks_loader->()}) {
 				for ($b->request($request)) {
 					$hit = 1;
 					$app->emit_info('---', p($_, colored => $app->colors), '---');
