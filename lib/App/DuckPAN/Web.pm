@@ -19,7 +19,7 @@ use URI::Escape;
 use JSON;
 use Data::Dumper;
 
-has blocks => ( is => 'ro', required => 1 );
+has blocks => ( is => 'rw', required => 1,  trigger => 1);
 has blocks_loader => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
 has page_spice => ( is => 'ro', required => 1 );
@@ -47,7 +47,7 @@ has ua => (
 	},
 );
 
-sub BUILD {
+sub _trigger_blocks {
 	my ( $self ) = @_;
 	my %share_dir_hash;
 	my %path_hash;
@@ -209,9 +209,10 @@ sub request {
 		my @calls_script = ();
 		my %calls_template = ();
 
-		my $blocks = $self->blocks_loader->() // $self->blocks;
-
-		for (@$blocks) {
+		if (my $updated_blocks = $self->blocks_loader->()) {
+			 $self->blocks($updated_blocks);
+		}
+		for (@{$self->blocks}) {
 			push(@results,$_->request($ddg_request));
 		}
 
