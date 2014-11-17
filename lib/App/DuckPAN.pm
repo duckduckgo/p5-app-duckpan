@@ -524,7 +524,13 @@ sub checking_dukgo_user {
 	$response->code == 302 ? 1 : 0; # workaround, need something in dukgo
 }
 
-sub get_ia_type {
+has 'ia_type' => (
+	is      => 'ro',
+	lazy    => 1,
+	builder => 1,
+);
+
+sub _build_ia_type {
 	my ($self) = @_;
 
 	my $ia_type = first { $_->{dir}->is_dir } @{$self->ia_types};

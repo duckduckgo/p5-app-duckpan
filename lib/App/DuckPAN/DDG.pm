@@ -38,7 +38,7 @@ sub get_blocks_from_current_dir {
     $self->emit_and_exit(1, 'You need to have the DDG distribution installed', 'To get the installation command, please run: duckpan check')
       unless ($self->app->get_local_ddg_version);
 
-    my $type   = $self->app->get_ia_type();
+    my $type   = $self->app->ia_type;
     my $finder = Module::Pluggable::Object->new(
         search_path => [$type->{dir}],
     );

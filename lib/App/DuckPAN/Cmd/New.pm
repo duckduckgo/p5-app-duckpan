@@ -20,7 +20,7 @@ sub run {
 	my ($self, @args) = @_;
 
 	# Check which IA repo we're in...
-	my $type = $self->app->get_ia_type();
+	my $type = $self->app->ia_type;
 
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer');
