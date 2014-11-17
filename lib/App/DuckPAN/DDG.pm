@@ -67,10 +67,11 @@ sub blocks_loading_function {
     my $type = $self->app->ia_type;
 
     return sub {
-        my @mods;
+        my (@mods, %loaded_before);
         if (@args == 0) {
             state $dir_checked = $type->{dir}->stat->mtime;
             if ((my $latest = $type->{dir}->stat->mtime) > $dir_checked) {
+                %loaded_before = map { $_ => 1 } (@{$self->all_modules});
                 $self->clear_all_modules;
                 $dir_checked = $latest;
             }
@@ -81,7 +82,7 @@ sub blocks_loading_function {
 
         require lib;
         lib->import('lib');
-        Class::Unload->unload('Moo'); # Otherwise it will not reapply constructors.
+        Class::Unload->unload('Moo');    # Otherwise it will not reapply constructors.
 
         # This list contains all of the classes that loaded successfully.
         my @successfully_loaded = ();
@@ -97,9 +98,10 @@ sub blocks_loading_function {
             # Let's try to load each Goodie / Spice module
             # and see if they load successfully.
             try {
+                delete $loaded_before{$class};
                 if (require_again($class)) {
-                    $self->app->emit_info("Loading Instant Answers...") unless ($changes++);
                     # We actually (re-)loaded the class.
+                    $self->app->emit_info("Loading Instant Answers...") unless ($changes++);
                     $self->app->emit_debug(" + $class (" . $class->triggers_block_type . ")");
                 }
                 # Regardless, it's loaded.
@@ -118,6 +120,12 @@ sub blocks_loading_function {
                     $failed_to_load{$class} = $_;
                 }
             };
+        }
+        foreach my $class (keys %loaded_before) {
+            # Didn't get cleared out, so must be newly disappeared.
+            $changes++;
+            Class::Unload->unload($class);
+            $self->app->emit_debug(" - $class");
         }
 
         return unless $changes;
