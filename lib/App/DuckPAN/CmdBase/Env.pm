@@ -46,14 +46,14 @@ sub get {
     $self->help('get', "<name>") if !$name;
     my $data = $self->load_env_ini;
     $name = uc $name;
-    $data->{$name} ? $self->app->emit_info("export ". $name ."=". $data->{$name}) : $self->app->emit_info("'". $name ."' is not set.");
+    $data->{$name} ? $self->app->emit_info("export ". $name ."=". $data->{$name}) : $self->app->emit_error("'". $name ."' is not set!");
 }
 
 sub rm {
     my ( $self, $name ) = @_;
     $self->help('rm', "<name>") if !$name;
     my $data = $self->load_env_ini;
-    delete $data->{uc $name} if defined $data->{uc $name};
+    defined $data->{uc $name} ? delete $data->{uc $name} : $self->app->emit_error("'". uc $name ."' not found!");
     $self->save_env_ini($data);
 }
 
@@ -62,6 +62,8 @@ sub list {
     my $data = $self->load_env_ini;
     if (keys %{$data}) {
         $self->app->emit_info("export ". $_ ."=". $data->{$_} ) for (sort keys %{$data});
+    } else {
+        $self->app->emit_notice("There are no env variables set currently.");
     }
 }
 

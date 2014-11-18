@@ -48,8 +48,8 @@ subtest 'env' => sub {
 
 	(undef, $getenvout, $getenverr) = run_script('duckpan', [qw( env get test )]);
 
-	like($getenvout, qr/'TEST' is not set/, 'getting test env from DuckPAN after removing it');
-	is($getenverr, '', 'no error output on test env from DuckPAN after removing it');
+	like($getenverr, qr/'TEST' is not set!/, 'getting test env from DuckPAN after removing it');
+	is($getenvout, '', 'no error output on test env from DuckPAN after removing it');
 };
 
 done_testing;
