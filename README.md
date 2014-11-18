@@ -55,7 +55,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
 
 Getting started with DuckPAN is easy! Here's a list of ways you can get DuckPAN up & running:
 
-- **Use our Codio Project Template ([see below](#codio-project-template))**. We highly recommended this choice! It's *super* quick and easy.
+- **Use our Codio Project Template ([see below](#using-the-codio-project-template))**. We highly recommended this choice! It's *super* quick and easy.
 - Use our DuckDuckHack development virtual machine image ([see below](#duckduckhack-development-virtual-machine))
 - Use the Vagrant virtual environment ([see below](#vagrant-virtual-environment))
 - Install DuckPAN locally ([see below](#installing-duckpan-locally)). Keep in mind, this **requires Linux or Mac OS X**. We suggest you install [Ubuntu](http://www.ubuntu.com/download).
