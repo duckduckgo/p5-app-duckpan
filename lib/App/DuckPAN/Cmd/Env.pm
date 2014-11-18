@@ -40,10 +40,15 @@ sub save_env_ini {
     Config::INI::Writer->write_file({ _ => $data }, $self->env_ini);
 }
 
+sub help {
+    my ( $self, $name ) = @_;
+    App::DuckPAN::Cmd::Env::Help->execute( $self, $name );
+}
+
 sub run {
     my ( $self, $name, @value ) = @_;
     $self->help($name) if (!defined $name || !(my ($command) = grep{$_ eq $name} @{$self->_commands}));
-    $command = ucfirst($command);
+    $command = ucfirst($command) if $command;
     ('App::DuckPAN::Cmd::Env::'. $command)->execute($self, @value) if $command;
     exit 0;
 }

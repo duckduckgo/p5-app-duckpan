@@ -1,7 +1,6 @@
 package App::DuckPAN::Cmd::Env::Help;
 # ABSTRACT: List commands and usage
 
-use Moo;
 
 sub execute {
     my ($class, $self, $cmd_input, $cmd_params) = @_;
