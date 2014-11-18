@@ -9,7 +9,7 @@ with qw( App::DuckPAN::Cmd );
 sub run {
     my ( $self, $name, @value ) = @_;
     $self->help($name) if (!defined $name || !(my ($command) = grep{$_ eq $name} @{$self->commands}));
-    $self->$command(@value);
+    $self->$command(@value) if $command;
     exit 0;
 }
 
