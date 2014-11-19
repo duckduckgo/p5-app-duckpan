@@ -389,9 +389,14 @@ sub check_requirements {
 		$self->emit_info("Checking for DuckPAN requirements...");
 
 		$self->emit_and_exit(1, 'Requirements check failed')
-		  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ddg && $self->check_ssh && $self->check_git);
+		  unless ($self->check_app_duckpan
+			&& $self->check_perl
+			&& $self->check_ddg
+			&& $self->check_ssh
+			&& $self->check_git);
+
+		$signal_file->touch;
 	}
-	$signal_file->touch;
 
 	return 1;
 }
