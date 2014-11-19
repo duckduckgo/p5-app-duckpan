@@ -13,6 +13,7 @@ option domain => (
 	is => 'ro',
 	format => 's',
 	predicate => 1,
+	doc => 'set token domain in upload',
 );
 
 option upload_uri => (
@@ -20,6 +21,7 @@ option upload_uri => (
 	format => 's',
 	lazy => 1,
 	builder => 1,
+	doc => 'URI for token uploads. defaults to "https://duck.co/translate/po/upload"',
 );
 
 sub _build_upload_uri { 'https://duck.co/translate/po/upload' }

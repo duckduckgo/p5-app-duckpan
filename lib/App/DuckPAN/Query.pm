@@ -47,7 +47,7 @@ sub run {
 			for my $b (@blocks) {
 				for ($b->request($request)) {
 					$hit = 1;
-					$app->emit_info('---', p($_, colored => 1), '---');
+					$app->emit_info('---', p($_, colored => $app->colors), '---');
 				}
 			}
 			unless ($hit) {
