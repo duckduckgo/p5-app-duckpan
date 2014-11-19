@@ -41,14 +41,11 @@ DuckPAN is an application built to aid DuckDuckHack contributors with Instant An
 
 =head1 SYNOPSIS
 
-usage: duckpan [-I=<path>] [-v|--verbose] <command> [<args>]
+duckpan [-I=<path>] [-v|--verbose] <command> [<args>]
 
 Commands include:
 
-=begin text
-
     check           Check if you fulfill all requirements for the development environment
-    empty           Clear the local DuckPAN cache
     env             Add, remove or retrive values from DuckPAN's Env.ini
     help            View more detailed help information
     installdeps     Install all Perl dependencies
@@ -64,13 +61,7 @@ Commands include:
     update          Installs neweset DuckPAN packages
     upgrade         Installs neweset DuckPAN and DDG packages
 
-    Use 'duckpan help' or 'man duckpan' for more details.
-  
-=for comment
-leave those two spaces above, need it for a linebreak.
-
-=end text
-
+Use 'duckpan help' or 'man duckpan' for more details.
 
 =head1 INSTALLATION
 
@@ -163,10 +154,6 @@ Upgrade DuckPAN and DDG to the latest versions.
 =item C<duckpan reinstall>
 
 Force installation of the latest released versions of DuckPAN and DDG.
-
-=item C<duckpan empty>
-
-Empties the DuckPAN Cache folder in ~/.duckpan/cache (mostly for DuckPAN)
 
 =item C<duckpan -I [filepath ...]>
 
