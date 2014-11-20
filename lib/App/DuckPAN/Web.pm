@@ -367,7 +367,11 @@ sub request {
 			}
 		}
 		
-		$error ? $error = "" :  $page = $root->as_HTML;
+		if($error) {
+			$error = "";
+		} else {
+			$page = $root->as_HTML;
+		}
 
 		$page =~ s/####DUCKDUCKHACK-CALL-NRJ####/$calls_nrj/g;
 		$page =~ s/####DUCKDUCKHACK-CALL-NRC####/$calls_nrc/g;
