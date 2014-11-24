@@ -42,6 +42,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
     + [Adding Shell Completion](#adding-shell-completion)
 - [Using DuckPAN](#using-duckpan)
     + [Help](#help)
+    + [Prerequisites For Instant Answer Developers](#prereqs-for-instant-answer-developers)
     + [For Instant Answer Developers](#for-instant-answer-developers)
     + [For DuckPAN Developers](#for-duckpan-developers)
     + [For DuckDuckHack Admins](#for-duckduckhack-admins)
@@ -301,6 +302,24 @@ man duckpan
 ```
 
 Shows you the DuckPAN help page which briefly describes DuckPAN and its features.
+
+
+### Prerequisites For Instant Answer Developers
+
+If you haven't already done so, [Determine your Instant Answer Type](https://duck.co/duckduckhack/determine_your_instant_answer_type) and follow GitHub's instructions to [fork](https://help.github.com/articles/fork-a-repo) the instant answer repository.
+
+The instant answer repositories are:
++ [zeroclickinfo-goodies](https://github.com/duckduckgo/zeroclickinfo-goodies)
++ [zeroclickinfo-spice](https://github.com/duckduckgo/zeroclickinfo-spice)
+
+Then, run the git clone command to clone the repository. The URL is the **SSH clone URL** listed on the right side of the github webpage for your forked repository. (You can also use the **HTTPS clone URL**.)
+```
+git clone URL
+```
+Then simply CD into the directory. For example, if you forked zeroclickinfo-spice:
+```
+cd zeroclickinfo-spice
+```
 
 
 ### For Instant Answer Developers
