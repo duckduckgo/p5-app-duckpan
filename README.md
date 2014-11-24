@@ -156,7 +156,7 @@ Supports: Windows, Linux
 #### Happy Hacking!
 
 Once you have installed the virtual machine you should be able to start up the VM and login with the following credentials:
-- **username** : `dax`
+- **username** : `vagrant`
 - **password** : `duckduckhack`
 
 **The DuckPAN client has already been installed for you.** You can now clone the Instant Answer repos and start developing/testing. See the instructions below on [Using DuckPAN](#using-duckpan).
