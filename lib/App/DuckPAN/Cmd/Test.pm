@@ -2,8 +2,9 @@ package App::DuckPAN::Cmd::Test;
 # ABSTRACT: Command for running the tests of this library
 
 use MooX;
-use MooX::Options protect_argv => 0;
 with qw( App::DuckPAN::Cmd );
+
+use MooX::Options protect_argv => 0;
 
 sub run {
     my ( $self ) = @_;

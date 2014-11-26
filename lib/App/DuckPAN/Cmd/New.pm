@@ -12,6 +12,8 @@ package App::DuckPAN::Cmd::New;
 
 use Moo;
 with qw( App::DuckPAN::Cmd );
+
+use MooX::Options protect_argv => 0;
 use Text::Xslate qw(mark_raw);
 use Path::Tiny;
 
