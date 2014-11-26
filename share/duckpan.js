@@ -1,3 +1,36 @@
+(function(env) {
+
+	// grab original Spice.failed to be called later
+	var oldSpiceFailed = Spice.failed;
+
+	// define new Spice.failed which calls the original
+	// and then notifies devs on the frontend
+	env.Spice.failed = function (ia) {
+
+		// First call original Spice.failed()
+		oldSpiceFailed(ia);
+
+		if (!ia){
+			console.log('[ERROR] Spice.failed() called without specifying Spice ID.');
+		}
+
+		var errorMsg = 'Spice.failed() called by Spice with ID "' + ia + '".',
+			$errorDiv = $('<div class="msg msg--warning">' + errorMsg + '</div>');
+
+		// Create div to collect our warnings
+		if ( !$('#spice-errors').length ){
+			$('div.content-wrap').append('<div id="spice-errors"></div>');
+		}
+
+		// Alert on frontend
+		$('#spice-errors').append($errorDiv);
+
+		// Alert in Console - just to be safe
+		console.log('[NOTICE] ' + errorMsg);
+	}
+}(this));
+
+
 $(document).ready(function() {
 
 	var $script, name, content;
