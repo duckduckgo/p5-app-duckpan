@@ -3,6 +3,8 @@ package App::DuckPAN::Cmd::Help;
 
 use Moo;
 with qw( App::DuckPAN::Cmd );
+
+use MooX::Options protect_argv => 0;
 use Pod::Usage qw(pod2usage);
 
 sub run {

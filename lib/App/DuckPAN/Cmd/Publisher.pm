@@ -5,7 +5,6 @@ use Moo;
 with qw( App::DuckPAN::Cmd );
 
 use MooX::Options protect_argv => 0;
-
 use Path::Tiny;
 use Plack::Handler::Starman;
 
