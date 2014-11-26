@@ -38,7 +38,7 @@ $(document).ready(function() {
 	DDG.duckpan = true;
 
 	// array of spice template <script>
-	var hb_templates = $("script.duckduckhack_spice_template"),
+	var hb_templates = $('script.duckduckhack_spice_template'),
 		toCall = [];
 
 	// Check for any spice templates
@@ -46,13 +46,13 @@ $(document).ready(function() {
 	// compile and add named template
 	// to global Handlebars obj
 	if (hb_templates.length) {
-		console.log("Compiling Spice Templates")
+		console.log('Compiling Spice Templates')
 		hb_templates.each(function() {
 			$script = $(this);
 			content = $script.html();
-			spiceName = $script.attr("spice-name");
-			templateName = $script.attr("template-name");
-			if ($script.attr("is-ct-self") === "1"){
+			spiceName = $script.attr('spice-name');
+			templateName = $script.attr('template-name');
+			if ($script.attr('is-ct-self') === '1'){
 				toCall.push(spiceName);
 			}
 
@@ -62,18 +62,18 @@ $(document).ready(function() {
 
 			Spice[spiceName][templateName] = Handlebars.compile(content);
 
-			console.log("Compiled template: ", spiceName+"_"+templateName);
+			console.log('Compiled template: ', spiceName + '_' + templateName);
 		});
 
-		console.log("Finished compiling templates")
-		console.log("Now Spice obj: ", Spice);
+		console.log('Finished compiling templates')
+		console.log('Now Spice obj: ', Spice);
 
 		// Need to wait a little for page JS to finish
 		// modifying the DOM
 		setTimeout(function(){
 			$.each(toCall, function(i, name){
-				var cbName = "ddg_spice_" + name;
-				console.log("Executing: " + cbName);
+				var cbName = 'ddg_spice_' + name;
+				console.log('Executing: ' + cbName);
 				window[cbName]();
 			});
 		}, 100);
