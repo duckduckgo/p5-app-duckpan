@@ -64,7 +64,7 @@ subtest 'env' => sub {
 	is($getenverr, '', 'no error output on env help from DuckPAN');
 
 	(undef, $getenvout, $getenverr) = run_script('duckpan', [qw( env randomcmd )]);
-	
+
         is($getenvout,'', 'checking an unsupported command for env from DuckPAN');
 	like($getenverr, qr/Command 'randomcmd' not found/, 'error output on using unsupported command for env from DuckPAN');
         

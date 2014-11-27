@@ -1,13 +1,9 @@
 package App::DuckPAN::Cmd::Env;
-# ABSTRACT: Base class for Env command
-
-use App::DuckPAN::Cmd::Env::Get;
-use App::DuckPAN::Cmd::Env::Help;
-use App::DuckPAN::Cmd::Env::List;
-use App::DuckPAN::Cmd::Env::Rm;
-use App::DuckPAN::Cmd::Env::Set;
+# ABSTRACT: Env command class
 
 use Moo;
+use MooX::Cmd;
+
 with qw( App::DuckPAN::Cmd );
 
 use Config::INI;
@@ -18,12 +14,10 @@ has env_ini => (
     builder => 1,
 );
 
-sub _build_env_ini { shift->app->cfg->config_path->child('env.ini') }
-
-has _commands => (
-    is => 'ro',
-    default => sub { ['get','help','list','rm','set'] }
-);
+sub _build_env_ini {
+    my ( $self ) = @_;
+    $self->command_chain->[0]->root->cfg->config_path->child('env.ini') 
+}
 
 sub load_env_ini {
     my ( $self ) = @_;
@@ -41,15 +35,21 @@ sub save_env_ini {
 }
 
 sub help {
-    my ( $self, $name ) = @_;
-    App::DuckPAN::Cmd::Env::Help->execute( $self, $name );
+    my ( $self, $cmd_input ) = @_;
+    my $help_msg = "Available Commands:\n\t get:  duckpan env get <name>\n\t help: duckpan env help\n\t ".
+                   "list: duckpan env list\n\t rm:   duckpan env rm  <name>\n\t set:  duckpan env set <name> <value>";
+
+    if($cmd_input) {
+        $self->command_chain->[0]->root->emit_and_exit(1, "Missing arguments!\n\t Usage:\tduckpan env ". $self->command_name ." ". $cmd_input) if $self->command_name;
+        $self->app->emit_and_exit(1, "Command '". $cmd_input ."' not found\n". $help_msg);
+    }
+
+    $self->command_name ? $self->command_chain->[0]->root->emit_info($help_msg) : $self->app->emit_info($help_msg);
 }
 
 sub run {
-    my ( $self, $name, @value ) = @_;
-    $self->help($name) if (!defined $name || !(my ($command) = grep{$_ eq $name} @{$self->_commands}));
-    $command = ucfirst($command) if $command;
-    ('App::DuckPAN::Cmd::Env::'. $command)->execute($self, @value) if $command;
+    my ( $self, $name ) = @_;
+    $self->help($name) if !$self->command_name;
     exit 0;
 }
 
