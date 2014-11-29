@@ -3,6 +3,9 @@
 	// grab original Spice.failed to be called later
 	var oldSpiceFailed = Spice.failed;
 
+	// Create div to collect our warnings
+	$('div.content-wrap').append('<div id="spice-errors"></div>');
+
 	// define new Spice.failed which calls the original
 	// and then notifies devs on the frontend
 	env.Spice.failed = function (ia) {
@@ -15,12 +18,7 @@
 		}
 
 		var errorMsg = 'Spice.failed() called by Spice with ID "' + ia + '".',
-			$errorDiv = $('<div class="msg msg--warning">' + errorMsg + '</div>');
-
-		// Create div to collect our warnings
-		if ( !$('#spice-errors').length ){
-			$('div.content-wrap').append('<div id="spice-errors"></div>');
-		}
+			$errorDiv = $('<div>').attr("class", "msg msg--warning").text(errorMsg);
 
 		// Alert on frontend
 		$('#spice-errors').append($errorDiv);
