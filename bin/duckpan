@@ -46,10 +46,10 @@ duckpan [-I=<path>] [-v|--verbose] <command> [<args>]
 Commands include:
 
     check           Check if you fulfill all requirements for the development environment
-    env             Add, remove or retrive values from DuckPAN's Env.ini
+    env             Add, remove or retrieve values from DuckPAN's Env.ini
     help            View more detailed help information
     installdeps     Install all Perl dependencies
-    new             Generate new Instant Answer skelton
+    new             Generate new Instant Answer skeleton
     poupload        Upload .po translations file to Duck.co
     publisher       Start local web server for DuckDuckGo-Publisher static websites
     query           Test Instant Answer triggers on command line
@@ -58,8 +58,8 @@ Commands include:
     roadrunner      Same as installdeps, but skips tests (dangerous!)
     server          Start local web server to test Instant Answer display
     setup           Configure Duck.co and PAUSE account 'poupload' and 'release'
-    update          Installs neweset DuckPAN packages
-    upgrade         Installs neweset DuckPAN and DDG packages
+    update          Installs newest DuckPAN packages
+    upgrade         Installs newest DuckPAN and DDG packages
 
 Use 'duckpan help' or 'man duckpan' for more details.
 
