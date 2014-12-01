@@ -35,6 +35,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
 - [Getting Started](#getting-started)
 - [Using the Codio Project Template](#using-the-codio-project-template)
 - [DuckDuckHack Development Virtual Machine](#duckduckhack-development-virtual-machine)
+    + [Installing the Virtual Machine](#installing-the-virtual-machine)
     + [Using the Virtual Machine](#using-the-virtual-machine)
 - [Vagrant Virtual Environment](#vagrant-virtual-environment)
     + [Setup Instructions](#setup-instructions-2)
@@ -103,16 +104,20 @@ The purpose of our DuckDuckHack VM is to provide a sandbox for DuckDuckGo Instan
 
 #### For VirtualBox hosts
 
-ddh-vbox.rar
-MD5: 1734373cbecc5820bb7d18406eb42854
-https://ddg-community.s3.amazonaws.com/ddh-vbox.rar
+ddh-vbox-2014-11-30.ova
+
+MD5: ed4768f11976697c16b0a1dff429944e
+
+https://ddg-community.s3.amazonaws.com/ddh-vbox-2014-11-30.ova
 
 
 #### For VMWare hosts
 
-ddh-vmw.rar:
-MD5: 95ad9acfacadb4b0cb0cf23ffaa3516e
-https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
+ddh-vmw-2014-11-30.ova:
+
+MD5: 92f0da01ddddbbfdd8de9411a5383f66
+
+https://ddg-community.s3.amazonaws.com/ddh-vmw-2014-11-30.ova
 
 
 #### Roadmap
@@ -120,9 +125,12 @@ https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
 - Docker support
 - Public AMI for use on EC2
 
-### Using the Virtual Machine
+
+### Installing the Virtual Machine
 
 To use the Virtual Machine, you will need to download and install **VirtualBox**, **VMWare Workstation** or **VMWare Player**, depending on your current OS.
+
+Then you will need to import the VM.
 
 
 #### VirtualBox (free)
@@ -131,11 +139,11 @@ Website: https://www.virtualbox.org/
 Supports: Windows, OS X, Linux
 
 
-##### Setup Instructions
+##### Import the VM
 
-1. Download the rar and verify the checksum--decompress: This archive contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
+1. Download the OVA
 2. Open VirtualBox, click "File" and then click "Import Appliance"
-3. Click "Open appliance..." and select the DuckDuckHack virtual appliance -- click "Next"
+3. Click "Open appliance..." and select the DuckDuckHack virtual appliance OVA file -- click "Next"
 4. Click "Import"
 
 
@@ -145,11 +153,14 @@ Website: https://www.vmware.com/products/player/
 Supports: Windows, Linux
 
 
-##### Setup Instructions
+##### Import the VM
 
-1. Download the rar and verify the checksum--decompress: This contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
+1. Download the OVA
 2. Open VMWare Player, and click "Open a Virtual Machine"
 3. Choose a storage path for the Virtual Machine -- click "Import"
+
+
+### Using the Virtual Machine
 
 
 #### Logging into the VM
@@ -157,6 +168,7 @@ Supports: Windows, Linux
 Once you have installed the virtual machine you should be able to start up the VM and login with the following credentials:
 - **username** : `vagrant`
 - **password** : `duckduckhack`
+
 
 #### Cloning the repository on the VM
 
