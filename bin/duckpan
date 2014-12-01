@@ -192,19 +192,27 @@ Upload a po file to the Community Platform.
 
 =item C<duckpan env>
 
-View env commands and also shows the env variables currently stored in ~/.duckpan/config/env.ini
+View env commands and shows command usage.
 
-=item C<duckpan env name value>
+=item C<duckpan env help>
+
+View env commands and shows command usage.
+
+=item C<duckpan env set> <name> <value>
 
 Add an environment variable that DuckPAN will remember. This is specifically useful for Spice API keys. Variables are stored in ~/.duckpan/config/env.ini
 
-=item C<duckpan env name>
+=item C<duckpan env get> <name>
 
 Retrieve the matching key for a given env variable.
 
-=item C<duckpan env rm name>
+=item C<duckpan env rm> <name>
 
 Remove an environment variable from DuckPAN.
+
+=item C<duckpan env list>
+
+Lists all the env variables currently stored in ~/.duckpan/config/env.ini.
 
 =back
 
