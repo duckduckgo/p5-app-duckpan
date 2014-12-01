@@ -490,4 +490,4 @@ Remove an environment variable from duckpan.
 duckpan env list <name>
 ```
 
-Lists all the env variables currently stored in `~/.duckpan/config/env.ini.
+Lists all the env variables currently stored in `~/.duckpan/config/env.ini`.
