@@ -453,12 +453,16 @@ Upload a `.po` file to the Community Platform.
 duckpan env
 ```
 
-View `env` commands and also shows the env variables currently stored in `~/.duckpan/config/env.ini`.
+```
+duckpan env help
+```
+
+View `env` commands and shows command usage.
 
 ---
 
 ```
-duckpan env <name> <value>
+duckpan env set <name> <value>
 ```
 
 Add an environment variable that duckpan will remember. Useful for
@@ -467,7 +471,7 @@ spice API keys. Variables are stored in `~/.duckpan/config/env.ini`.
 ---
 
 ```
-duckpan env <name>
+duckpan env get <name>
 ```
 
 Retrieve the matching key for a given env variable.
@@ -479,3 +483,11 @@ duckpan env rm <name>
 ```
 
 Remove an environment variable from duckpan.
+
+---
+
+```
+duckpan env list <name>
+```
+
+Lists all the env variables currently stored in `~/.duckpan/config/env.ini.
