@@ -13,7 +13,7 @@ sub run {
 		$self->app->emit_info("Found a dist.ini, suggesting a Dist::Zilla distribution");
 
 		$self->app->perl->cpanminus_install_error
-			if (system("dzil install --install-command 'cpanm .'"));
+			if (system("dzil install --install-command 'cpanm .' @args"));
 		$self->app->emit_info("Everything fine!");
 	}
 
