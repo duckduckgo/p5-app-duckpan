@@ -3,14 +3,11 @@ package App::DuckPAN::Query;
 
 use Moo;
 
-my $query;
-my $history_path;
-
 use Data::Printer;
 use POE qw( Wheel::ReadLine );
 
 sub run {
-	my ( $self, $app, @blocks ) = @_;
+	my ( $self, $app, $blocks ) = @_;
 
 	require DDG;
 	DDG->import;
@@ -21,76 +18,87 @@ sub run {
 	require DDG::Test::Language;
 	DDG::Test::Language->import;
 
-	$history_path = $app->cfg->cache_path->child("query_history");
+	POE::Session->create(
+      		package_states => [
+			$self => [qw(_start _get_user_input _got_user_input _run_query)]
+	      	],
+		args => [$app, $blocks]
 
-	$app->emit_info('(Empty query for ending test)');
-	while (1) {
+   	);
+  	POE::Kernel->run();
 
-		POE::Session->create(
-	      inline_states=> {
-	        _start => \&setup_console,
-	        got_user_input => \&handle_user_input,
-	      }
-	    );
-
-	    POE::Kernel->run();
-
-	    last unless $query;
-
-		eval {
-			my $request = DDG::Request->new(
-				query_raw => $query,
-				location => test_location_by_env(),
-				language => test_language_by_env(),
-			);
-			my $hit;
-			for my $b (@blocks) {
-				for ($b->request($request)) {
-					$hit = 1;
-					$app->emit_info('---', p($_, colored => $app->colors), '---');
-				}
-			}
-			unless ($hit) {
-				$app->emit_info("Sorry, no hit on your instant answer")
-			}
-		};
-		if ($@) {
-			my $error = $@;
-			if ($error =~ m/Malformed UTF-8 character/) {
-				$app->emit_info(
-					"You got a malformed utf8 error message, which normally means that you try to entered a special character on the query prompt, but your interface is not properly configured for utf8. Please check out the documentation of your terminal, ssh client or whatever client you use to access the shell of this system"
-				);
-			}
-			$app->emit_info("Caught error:", $error);
-		}
-	}
-	$app->emit_info("\\_o< Thanks for testing!");
 	return 0;
 }
 
-sub handle_user_input {
-  my ($input, $exception) = @_[ARG0, ARG1];
-  my $console = $_[HEAP]{console};
+sub _start {
+	my ($k, $h, $app, $blocks) = @_[KERNEL, HEAP, ARG0, ARG1];
 
-  exit 0 unless defined $input;
+	my $history_path = $app->cfg->cache_path->child('query_history');
+	@$h{qw(app blocks)} = ($app, $blocks);
 
-  unless ($input eq ""){
-    $console->put("  You entered: $input");
-    $console->addhistory($input);
-    $console->write_history($history_path);
-  }
-  $query = $input;
+	my $powh_readline = POE::Wheel::ReadLine->new(
+    		InputEvent => '_got_user_input'
+ 	);
+  	$powh_readline->bind_key("C-\\", "interrupt");
+  	$powh_readline->read_history($history_path);
+  	$powh_readline->put('(Empty query for ending test)');
+ 	@$h{qw(console history_path)} = ($powh_readline, $history_path);
+
+	$k->yield('_get_user_input');
+}
+
+sub _got_user_input {
+	my ($k, $h, $input, $exception) = @_[KERNEL, HEAP, ARG0, ARG1];
+
+	if($input){
+		my ($console, $history_path) = @$h{qw(console history_path)};
+
+		$console->put("  You entered: $input");
+		$console->addhistory($input);
+		$console->write_history($history_path);
+		$k->yield(_run_query => $input);
+	}
+	
+	$h->{console}->put('\\_o< Thanks for testing!');
+	# fall through here and the session ends
+}
+
+sub _get_user_input {
+	$_[HEAP]{console}->get("Query: ");
+}
+
+sub _run_query {
+	my ($k, $h, $query) = @_[KERNEL, HEAP, ARG0];	
+	
+	my ($app, $blocks) = @$h{qw{app blocks}};
+
+	eval {
+		my $request = DDG::Request->new(
+			query_raw => $query,
+			location => test_location_by_env(),
+			language => test_language_by_env(),
+		);
+		my $hit;
+		for my $b (@$blocks) {
+			for ($b->request($request)) {
+				$hit = 1;
+				$app->emit_info('---', p($_, colored => $app->colors), '---');
+			}
+		}
+		unless ($hit) {
+			$app->emit_info("Sorry, no hit on your instant answer")
+		}
+		1;
+	} or do {
+		my $error = $@;
+		if ($error =~ m/Malformed UTF-8 character/) {
+			$app->emit_info("You got a malformed utf8 error message, which normally means that you try to entered a special character on the query prompt, but your interface is not properly configured for utf8. Please check out the documentation of your terminal, ssh client or whatever client you use to access the shell of this system"
+			);
+		}
+		$app->emit_info("Caught error:", $error);
+	};
+
+	$k->yield('_get_user_input');
 }
  
-sub setup_console {
-  my $powh_readline = POE::Wheel::ReadLine->new(
-    InputEvent => 'got_user_input'
-  );
-  $powh_readline->bind_key("C-\\", "interrupt");
-  $_[HEAP]{console} = $powh_readline;
-  $_[HEAP]{console}->read_history($history_path);
-  $_[HEAP]{console}->get("Query: ");
-}
-
-
 1;
