@@ -4,6 +4,7 @@ package App::DuckPAN::Query;
 use Moo;
 use Data::Printer;
 use POE qw( Wheel::ReadLine );
+use Try::Tiny;
 
 sub run {
     my ( $self, $app, $blocks ) = @_;
@@ -70,7 +71,7 @@ sub _run_query {
     
     my ($app, $blocks) = @$h{qw{app blocks}};
 
-    eval {
+    try {
         my $request = DDG::Request->new(
             query_raw => $query,
             location => test_location_by_env(),
@@ -86,15 +87,15 @@ sub _run_query {
         unless ($hit) {
             $app->emit_info('Sorry, no hit on your instant answer')
         }
-        1;
-    } or do {
-        my $error = $@;
+    }
+    catch {
+        my $error = $_;
         if ($error =~ m/Malformed UTF-8 character/) {
-            $app->emit_info('You got a malformed utf8 error message, which normally' . 
-                ' means that you try to entered a special character on the query' . 
-                ' prompt, but your interface is not properly configured for utf8.' . 
-                ' Please check out the documentation of your terminal, ssh client' .
-                ' or whatever client you use to access the shell of this system'
+            $app->emit_info('You got a malformed utf8 error message. Normally' . 
+                ' it means that you tried to enter a special character at the query' . 
+                ' prompt but your interface is not properly configured for utf8.' . 
+                ' Please check the documentation for your terminal, ssh client' .
+                ' or other client used to execute duckpan.'
             );
         }
         $app->emit_info("Caught error: $error");
