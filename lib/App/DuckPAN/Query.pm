@@ -2,7 +2,6 @@ package App::DuckPAN::Query;
 # ABSTRACT: Main application/loop for duckpan query
 
 use Moo;
-
 use Data::Printer;
 use POE qw( Wheel::ReadLine );
 
@@ -19,13 +18,12 @@ sub run {
     DDG::Test::Language->import;
 
     POE::Session->create(
-              package_states => [
+        package_states => [
             $self => [qw(_start _get_user_input _got_user_input _run_query)]
-              ],
+        ],
         args => [$app, $blocks]
-
-       );
-      POE::Kernel->run();
+    );
+    POE::Kernel->run();
 
     return 0;
 }
@@ -37,12 +35,12 @@ sub _start {
     @$h{qw(app blocks)} = ($app, $blocks);
 
     my $powh_readline = POE::Wheel::ReadLine->new(
-            InputEvent => '_got_user_input'
-     );
-      $powh_readline->bind_key("C-\\", "interrupt");
-      $powh_readline->read_history($history_path);
-      $powh_readline->put('(Empty query for ending test)');
-     @$h{qw(console history_path)} = ($powh_readline, $history_path);
+	    InputEvent => '_got_user_input'
+    );
+    $powh_readline->bind_key("C-\\", "interrupt");
+    $powh_readline->read_history($history_path);
+    $powh_readline->put('(Empty query for ending test)');
+    @$h{qw(console history_path)} = ($powh_readline, $history_path);
 
     $k->yield('_get_user_input');
 }
