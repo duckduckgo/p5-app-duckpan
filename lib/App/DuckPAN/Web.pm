@@ -85,8 +85,8 @@ sub request {
 
 	if ($request->request_uri eq "/"){
 		$response->content_type("text/html");
-		$body = $self->page_root unless $error;
-		$body = $self->_inject_error() and $error = "" if $error;
+		$body = $self->page_root;
+	        $error = "" if $error;
 	} elsif (@path_parts && $path_parts[0] eq 'share') {
 		my $filename = pop @path_parts;
 		my $share_dir = join('/',@path_parts);
@@ -170,8 +170,8 @@ sub request {
 						$response->content_type($res->content_type);
 					} else {
 						p($res->status_line, color => { string => 'red' });
-						$error = encode_entities($res->status_line);
-						$body = "window.location.replace('http://" . $self->_our_hostname . "/')";
+						my $errormsg = (pop @{[split'::', $spice_class]}). ": ".$res->status_line;
+						$body = '$("div.content-wrap").append("<div class=\"msg msg--warning\">'. $errormsg .'</div>");';
 					}
 				}
 			}
@@ -395,6 +395,7 @@ sub request {
 	$response->body($body);
 	return $response;
 }
+
 sub _inject_error {
 	my $self = shift;
 	my $query = $self->_query;
@@ -409,4 +410,5 @@ sub _inject_error {
 	);
 	return $root->as_HTML;
 }
+
 1;
