@@ -6,6 +6,7 @@ use Data::Printer;
 use POE qw( Wheel::ReadLine );
 use Try::Tiny;
 
+# Entry into the module.
 sub run {
     my ( $self, $app, $blocks ) = @_;
 
@@ -18,37 +19,44 @@ sub run {
     require DDG::Test::Language;
     DDG::Test::Language->import;
 
+    # Main session. All events declared have equivalent subs.
     POE::Session->create(
         package_states => [
             $self => [qw(_start _get_user_input _got_user_input _run_query)]
         ],
-        args => [$app, $blocks]
+        args => [$app, $blocks] # passed to _start
     );
     POE::Kernel->run();
 
     return 0;
 }
 
+# Initialize the main session. Called once by default.
 sub _start {
     my ($k, $h, $app, $blocks) = @_[KERNEL, HEAP, ARG0, ARG1];
 
     my $history_path = $app->cfg->cache_path->child('query_history');
-    @$h{qw(app blocks)} = ($app, $blocks);
 
+    # Session that handles user input
     my $powh_readline = POE::Wheel::ReadLine->new(
-	    InputEvent => '_got_user_input'
+        InputEvent => '_got_user_input'
     );
     $powh_readline->bind_key("C-\\", "interrupt");
     $powh_readline->read_history($history_path);
     $powh_readline->put('(Empty query for ending test)');
-    @$h{qw(console history_path)} = ($powh_readline, $history_path);
 
+    # Store in the heap for use in other events
+    @$h{qw(app blocks console history_path)} = ($app, $blocks, $powh_readline, $history_path);
+
+    # Queue user input event
     $k->yield('_get_user_input');
 }
 
+# Event to handle user input, triggered by ReadLine
 sub _got_user_input {
-    my ($k, $h, $input, $exception) = @_[KERNEL, HEAP, ARG0, ARG1];
+    my ($k, $h, $input) = @_[KERNEL, HEAP, ARG0];
 
+    # If we have input, send it off to be processed
     if($input){
         my ($console, $history_path) = @$h{qw(console history_path)};
 
@@ -60,12 +68,15 @@ sub _got_user_input {
     else{
         $h->{console}->put('\\_o< Thanks for testing!');
     }
+    # falling through here without queuing an event ends the app.
 }
 
+# Event that prints the prompt and waits for input.
 sub _get_user_input {
     $_[HEAP]{console}->get('Query: ');
 }
 
+# Event that processes that query
 sub _run_query {
     my ($k, $h, $query) = @_[KERNEL, HEAP, ARG0];    
     
@@ -101,6 +112,7 @@ sub _run_query {
         $app->emit_info("Caught error: $error");
     };
 
+    # Enqueue input event
     $k->yield('_get_user_input');
 }
  
