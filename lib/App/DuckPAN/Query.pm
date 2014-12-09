@@ -71,7 +71,7 @@ sub _get_user_input {
     $_[HEAP]{console}->get('Query: ');
 }
 
-# Event that processes that query
+# Event that processes the query
 sub _run_query {
     my ($k, $h, $query) = @_[KERNEL, HEAP, ARG0];    
     
@@ -84,6 +84,7 @@ sub _run_query {
             language => test_language_by_env(),
         );
         my $hit;
+		# Iterate through the IAs passing each the query request
         for my $b (@$blocks) {
             for ($b->request($request)) {
                 $hit = 1;
