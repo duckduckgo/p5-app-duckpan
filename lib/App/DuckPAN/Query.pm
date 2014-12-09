@@ -84,7 +84,7 @@ sub _run_query {
             language => test_language_by_env(),
         );
         my $hit;
-		# Iterate through the IAs passing each the query request
+        # Iterate through the IAs passing each the query request
         for my $b (@$blocks) {
             for ($b->request($request)) {
                 $hit = 1;
