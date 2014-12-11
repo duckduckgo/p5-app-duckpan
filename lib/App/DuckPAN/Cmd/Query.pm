@@ -14,7 +14,8 @@ sub run {
 
         my $pid;
         # open pipe for child to parent communication of reloading
-        pipe(my $rdr, my $wrt); # XXX: check failure?
+		# will exit if it fails
+        pipe(my $rdr, my $wrt);
     
         if($pid = fork()) { # parent proces
             close $wrt;
@@ -29,6 +30,8 @@ sub run {
             my $old = select $wrt;$|++; select($old);
     
             $self->app->check_requirements;    # Will exit if missing
+
+			# These are the instant answers to be tested
             my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
     
             require App::DuckPAN::Query;
@@ -37,7 +40,7 @@ sub run {
             exit;
         }
         # The child will have set $reload if the exit was triggered by an updated file
-        exit unless defined $reload and $reload =~ /RELOAD/o; 
+        exit unless defined $reload and $reload =~ /_RELOAD_/o; 
     }
 }
 
