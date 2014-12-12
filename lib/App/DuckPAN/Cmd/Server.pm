@@ -15,6 +15,8 @@ use Config::INI;
 use Data::Printer;
 use Data::Dumper;
 use Term::ProgressBar;
+use File::Find::Rule;
+use Filesys::Notify::Simple;
 
 option port => (
     is => 'ro',
@@ -31,6 +33,7 @@ has page_info => (
     builder => '_build_page_info',
     lazy=> 1,
 );
+
 sub _build_page_info {
     my $self       = shift;
     my $cache_path = $self->asset_cache_path;
@@ -91,15 +94,84 @@ sub _build_asset_cache_path {
     return $asset_path;
 }
 
+# Entry point into app
 sub run {
     my ($self, @args) = @_;
+
+    # will keep (re)starting the server until user ctrl-c
+    while(1){
+        my $pid;
+        if($pid = fork()){ # parent process
+            $self->_monitor_directories;
+            # terminate the child
+            unless(kill SIGTERM => $pid){
+                # if we get here, let's pull the plug and
+                # not spawn off any more children we might
+                # not be  able to control
+                die "Failed to kill server with pid $pid\n";
+            }
+        }
+        else{ # child process
+            die "cannot fork: $!" unless defined $pid;
+            $self->_start_server(\@args);
+            exit;
+        }
+        warn "Restarting server\n";
+    }
+}
+
+# Monitors development directories for file changes.  This subroutine 
+# blocks, so when it returns we know there's been a change
+sub _monitor_directories {
+    my $self  = shift;
+
+    # Find all of the directories that neeed to monitored
+    my %distinct_dirs;
+    while(my ($type, $io) = each %{$self->app->get_ia_type()->{templates}}){
+        next if $type eq 'test'; # skip the test dir?
+        # Get any subdirectories
+        my @d = File::Find::Rule->directory()->in($io->{out});
+        ++$distinct_dirs{$_} for @d;
+    }
+    ++$distinct_dirs{$self->app->get_ia_type()->{dir}};
+    # No dupes
+    my @dirs = keys %distinct_dirs;
+    FSMON: while(1){
+        # Find all subdirectories
+        # Create our watcher with each directory
+        my $watcher = Filesys::Notify::Simple->new(\@dirs);
+        # Wait for something to happen.  This blocks, which is why
+        # it's in a wheel.  On detection of update it will fall
+        # through; thus the while(1)
+        my $reload;
+        $watcher->wait(sub {
+            for my $event (@_) {
+                my $file = $event->{path};
+                # if it's just a newly created directory or a dot file,
+                # there shouldn't be a need to reload
+                if( (-d $file) || ($file =~ m{^(?:.+/)?\.[^/]+$}o)){
+                    next;
+                }
+                # All other changes trigger a reload
+                ++$reload;
+            }
+        });
+        # time to reload or keep waiting
+        last FSMON if $reload;
+    }
+}
+
+# Starts the Plack server on the designated port.  Will be launched in a child
+# process since it blocks. Will be killed by user ctrl-c or parent explicitly
+# kill'ing it.
+sub _start_server {
+    my ($self, $args) = @_;
 
     my $cache_path = $self->app->cfg->cache_path;
 
     $self->app->check_requirements; # Ensure eveything is up do date, or exit.
 
-
-    my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
+    my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@$args)};
 
     $self->app->emit_debug("Hostname is: http://" . $self->hostname);
     $self->app->emit_info("Checking asset cache...");
@@ -136,7 +208,7 @@ sub run {
     );
     #$runner->loader->watch("./lib");
     $runner->parse_options("--port", $self->port);
-    exit $runner->run;
+    $runner->run;
 }
 
 sub slurp_or_empty {
