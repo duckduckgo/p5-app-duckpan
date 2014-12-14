@@ -104,20 +104,20 @@ The purpose of our DuckDuckHack VM is to provide a sandbox for DuckDuckGo Instan
 
 #### For VirtualBox hosts
 
-ddh-vbox-2014-11-30.ova
+ddh-vbox-2014-12-13.ova:
 
-MD5: ed4768f11976697c16b0a1dff429944e
+MD5: 3333a88845cced2fe02aea405c09596a
 
-https://ddg-community.s3.amazonaws.com/ddh-vbox-2014-11-30.ova
+https://ddg-community.s3.amazonaws.com/ddh-vbox-2014-12-13.ova
 
 
 #### For VMWare hosts
 
-ddh-vmw-2014-11-30.ova:
+ddh-vmw-2014-12-13.ova:
 
-MD5: 92f0da01ddddbbfdd8de9411a5383f66
+MD5: 02616f507b9ad613e12290baf9a5b41f
 
-https://ddg-community.s3.amazonaws.com/ddh-vmw-2014-11-30.ova
+https://ddg-community.s3.amazonaws.com/ddh-vmw-2014-12-13.ova
 
 
 #### Roadmap
