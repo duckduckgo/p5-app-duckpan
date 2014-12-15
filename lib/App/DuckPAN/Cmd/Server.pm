@@ -2,7 +2,7 @@ package App::DuckPAN::Cmd::Server;
 # ABSTRACT: Starting up the web server to test instant answers
 
 use Moo;
-with qw( App::DuckPAN::Cmd );
+with qw( App::DuckPAN::Cmd App::DuckPAN::Restart );
 
 use MooX::Options protect_argv => 0;
 use Plack::Runner;
@@ -15,6 +15,8 @@ use Config::INI;
 use Data::Printer;
 use Data::Dumper;
 use Term::ProgressBar;
+use File::Find::Rule;
+use Filesys::Notify::Simple;
 
 option port => (
     is => 'ro',
@@ -31,6 +33,7 @@ has page_info => (
     builder => '_build_page_info',
     lazy=> 1,
 );
+
 sub _build_page_info {
     my $self       = shift;
     my $cache_path = $self->asset_cache_path;
@@ -91,15 +94,24 @@ sub _build_asset_cache_path {
     return $asset_path;
 }
 
+# Entry point into app
 sub run {
     my ($self, @args) = @_;
+
+    $self->run_restarter(\@args);
+}
+
+# Starts the Plack server on the designated port.  Will be launched in a child
+# process since it blocks. Will be killed by user ctrl-c or parent explicitly
+# kill'ing it.
+sub _run_app {
+    my ($self, $args) = @_;
 
     my $cache_path = $self->app->cfg->cache_path;
 
     $self->app->check_requirements; # Ensure eveything is up do date, or exit.
 
-
-    my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@args)};
+    my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@$args)};
 
     $self->app->emit_debug("Hostname is: http://" . $self->hostname);
     $self->app->emit_info("Checking asset cache...");
@@ -136,7 +148,7 @@ sub run {
     );
     #$runner->loader->watch("./lib");
     $runner->parse_options("--port", $self->port);
-    exit $runner->run;
+    $runner->run;
 }
 
 sub slurp_or_empty {
