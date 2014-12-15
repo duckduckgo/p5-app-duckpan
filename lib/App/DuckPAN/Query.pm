@@ -17,7 +17,7 @@ sub run {
     # Main session. All events declared have equivalent subs.
     POE::Session->create(
         package_states => [
-            $self => [qw(_start _get_user_input _got_user_input _run_query)]
+            $self => [qw(_start _stop _get_user_input _got_user_input _run_query)]
         ],
         args => [$app, $blocks] # passed to _start
     );
@@ -46,6 +46,12 @@ sub _start {
     # Queue user input event
     $k->yield('_get_user_input');
 }
+
+# Explicitly get rid of the console.
+sub _stop {
+    delete $_[HEAP]->{console}; 
+}
+
 
 # Event to handle user input, triggered by ReadLine
 sub _got_user_input {
