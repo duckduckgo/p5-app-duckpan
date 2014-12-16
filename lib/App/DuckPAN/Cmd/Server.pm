@@ -15,8 +15,6 @@ use Config::INI;
 use Data::Printer;
 use Data::Dumper;
 use Term::ProgressBar;
-use File::Find::Rule;
-use Filesys::Notify::Simple;
 
 option port => (
     is => 'ro',
@@ -148,7 +146,7 @@ sub _run_app {
     );
     #$runner->loader->watch("./lib");
     $runner->parse_options("--port", $self->port);
-    $runner->run;
+    exit $runner->run;
 }
 
 sub slurp_or_empty {
