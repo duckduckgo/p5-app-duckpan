@@ -7,11 +7,8 @@ use DDG::Request;
 use DDG::Test::Location;
 use DDG::Test::Language;
 use Data::Printer;
-use Data::Dumper;
 use POE qw( Wheel::ReadLine );
 use Try::Tiny;
-
-#my $powh_readline;
 
 # Entry into the module.
 sub run {
