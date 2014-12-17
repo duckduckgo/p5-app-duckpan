@@ -48,12 +48,15 @@ sub _start {
     $k->yield('_get_user_input');
 }
 
-# Explicitly get rid of the console.
+sub _default { warn "Unhandled event - $_[ARG0]" }
+
+# The session is about to stop.  Ensure that the ReadLine object is
+# deleted, so it can place your terminal back into a sane mode.  This
+# function is triggered by POE's "_stop" event.
 sub _stop {
-    undef $_[HEAP]->{console}; 
+    undef $_[HEAP]->{console}; #powh_readline;
     exit;
 }
-
 
 # Event to handle user input, triggered by ReadLine
 sub _got_user_input {
