@@ -43,13 +43,15 @@ sub _start {
     # Store in the heap for use in other events
     @$h{qw(app blocks console history_path)} = ($app, $blocks, $powh_readline, $history_path);
 
+    $k->sig(TERM => '_stop');
     # Queue user input event
     $k->yield('_get_user_input');
 }
 
 # Explicitly get rid of the console.
 sub _stop {
-    delete $_[HEAP]->{console}; 
+    undef $_[HEAP]->{console}; 
+    exit;
 }
 
 
