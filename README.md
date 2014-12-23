@@ -108,8 +108,8 @@ ddh-vbox-2014-12-23.ova:
 
 MD5: 02a0fb03db2b2466504bf9fbc894c7dd
 
-https://ddg-community.s3.amazonaws.com/ddh-vbox-2014-12-23.ova
 
+https://ddg-community.s3.amazonaws.com/ddh-vbox-2014-12-13.ova
 
 #### For VMWare hosts
 
@@ -117,7 +117,7 @@ ddh-vmw-2014-12-23.ova:
 
 MD5: 6ecdeb8ead2c2eb7a9aba1db22359c4b
 
-https://ddg-community.s3.amazonaws.com/ddh-vmw-2014-12-23.ova
+https://ddg-community.s3.amazonaws.com/ddh-vmw-2014-12-13.ova
 
 
 #### Roadmap
