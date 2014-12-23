@@ -35,6 +35,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
 - [Getting Started](#getting-started)
 - [Using the Codio Project Template](#using-the-codio-project-template)
 - [DuckDuckHack Development Virtual Machine](#duckduckhack-development-virtual-machine)
+    + [Installing the Virtual Machine](#installing-the-virtual-machine)
     + [Using the Virtual Machine](#using-the-virtual-machine)
 - [Vagrant Virtual Environment](#vagrant-virtual-environment)
     + [Setup Instructions](#setup-instructions-2)
@@ -103,16 +104,20 @@ The purpose of our DuckDuckHack VM is to provide a sandbox for DuckDuckGo Instan
 
 #### For VirtualBox hosts
 
-ddh-vbox.rar
-MD5: 1734373cbecc5820bb7d18406eb42854
-https://ddg-community.s3.amazonaws.com/ddh-vbox.rar
+ddh-vbox-2014-12-23.ova:
+
+MD5: 02a0fb03db2b2466504bf9fbc894c7dd
+
+https://ddg-community.s3.amazonaws.com/ddh-vbox-2014-12-23.ova
 
 
 #### For VMWare hosts
 
-ddh-vmw.rar:
-MD5: 95ad9acfacadb4b0cb0cf23ffaa3516e
-https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
+ddh-vmw-2014-12-23.ova:
+
+MD5: 6ecdeb8ead2c2eb7a9aba1db22359c4b
+
+https://ddg-community.s3.amazonaws.com/ddh-vmw-2014-12-23.ova
 
 
 #### Roadmap
@@ -120,9 +125,12 @@ https://ddg-community.s3.amazonaws.com/ddh-vmw.rar
 - Docker support
 - Public AMI for use on EC2
 
-### Using the Virtual Machine
+
+### Installing the Virtual Machine
 
 To use the Virtual Machine, you will need to download and install **VirtualBox**, **VMWare Workstation** or **VMWare Player**, depending on your current OS.
+
+Then you will need to import the VM.
 
 
 #### VirtualBox (free)
@@ -131,11 +139,11 @@ Website: https://www.virtualbox.org/
 Supports: Windows, OS X, Linux
 
 
-##### Setup Instructions
+##### Import the VM
 
-1. Download the rar and verify the checksum--decompress: This archive contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
+1. Download the OVA
 2. Open VirtualBox, click "File" and then click "Import Appliance"
-3. Click "Open appliance..." and select the DuckDuckHack virtual appliance -- click "Next"
+3. Click "Open appliance..." and select the DuckDuckHack virtual appliance OVA file -- click "Next"
 4. Click "Import"
 
 
@@ -145,20 +153,42 @@ Website: https://www.vmware.com/products/player/
 Supports: Windows, Linux
 
 
-##### Setup Instructions
+##### Import the VM
 
-1. Download the rar and verify the checksum--decompress: This contains the VMDK (Virtual Machine Disk) and OVF (Open Virtualization Format) files.
+1. Download the OVA
 2. Open VMWare Player, and click "Open a Virtual Machine"
 3. Choose a storage path for the Virtual Machine -- click "Import"
 
 
-#### Happy Hacking!
+### Using the Virtual Machine
+
+
+#### Logging into the VM
 
 Once you have installed the virtual machine you should be able to start up the VM and login with the following credentials:
-- **username** : `dax`
+- **username** : `vagrant`
 - **password** : `duckduckhack`
 
-**The DuckPAN client has already been installed for you.** You can now clone the Instant Answer repos and start developing/testing.
+
+#### Cloning the repository on the VM
+
+**The DuckPAN client has already been installed for you.** To use it, you must 1st clone your instant answer git repository.
+
+If you haven't already done so, [Determine your Instant Answer Type](https://duck.co/duckduckhack/determine_your_instant_answer_type) and follow GitHub's instructions to [fork](https://help.github.com/articles/fork-a-repo) the instant answer repository.
+
+The instant answer repositories are:
++ [zeroclickinfo-goodies](https://github.com/duckduckgo/zeroclickinfo-goodies)
++ [zeroclickinfo-spice](https://github.com/duckduckgo/zeroclickinfo-spice)
+
+Then, run the git clone command to clone the repository. The URL is the **SSH clone URL** listed on the right side of the github webpage for your forked repository. (You can also use the **HTTPS clone URL**.)
+
+```
+git clone URL
+```
+
+#### Happy Hacking!
+
+See the instructions below on [Using DuckPAN](#using-duckpan).
 
 ------
 
