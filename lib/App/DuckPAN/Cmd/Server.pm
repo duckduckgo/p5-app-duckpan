@@ -13,7 +13,6 @@ use LWP::Simple;
 use HTML::TreeBuilder;
 use Config::INI;
 use Data::Printer;
-use Data::Dumper;
 use Term::ProgressBar;
 
 option port => (
