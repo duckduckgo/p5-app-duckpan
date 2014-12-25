@@ -389,9 +389,14 @@ sub check_requirements {
 		$self->emit_info("Checking for DuckPAN requirements...");
 
 		$self->emit_and_exit(1, 'Requirements check failed')
-		  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ddg && $self->check_ssh && $self->check_git);
+		  unless ($self->check_app_duckpan
+			&& $self->check_perl
+			&& $self->check_ddg
+			&& $self->check_ssh
+			&& $self->check_git);
+
+		$signal_file->touch;
 	}
-	$signal_file->touch;
 
 	return 1;
 }
@@ -524,7 +529,13 @@ sub checking_dukgo_user {
 	$response->code == 302 ? 1 : 0; # workaround, need something in dukgo
 }
 
-sub get_ia_type {
+has 'ia_type' => (
+	is      => 'ro',
+	lazy    => 1,
+	builder => 1,
+);
+
+sub _build_ia_type {
 	my ($self) = @_;
 
 	my $ia_type = first { $_->{dir}->is_dir } @{$self->ia_types};
