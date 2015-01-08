@@ -21,6 +21,8 @@ sub run_restarter {
             exit 0;
         }
 
+        # Slightly different format here since we need to take care of
+        # the newly spawned app on failure.
         my $fmon = fork;
         unless($fmon){ # file monitor kid
             unless(defined $fmon){
@@ -31,7 +33,7 @@ sub run_restarter {
             exit 0;
         }
 
-        # wait for one them to exit
+        # wait for one them to exit. -1 waits for all children
         my $pid = waitpid -1, 0;
 
         # reload the application
@@ -58,11 +60,15 @@ sub _monitor_directories {
     my $self  = shift;
 
     # Find all of the directories that neeed to monitored
+    # Note: Could potentially be functionality added to App::DuckPAN
+    # which would return the directories involved in an IA
+    # (see https://github.com/duckduckgo/p5-app-duckpan/issues/200)
     my %distinct_dirs;
     while(my ($type, $io) = each %{$self->app->get_ia_type()->{templates}}){
         next if $type eq 'test'; # skip the test dir?
         # Get any subdirectories
         my @d = File::Find::Rule->directory()->in($io->{out});
+        # We don't know what templates will contain, e.g. subdiretories
         ++$distinct_dirs{$_} for @d;
     }
     ++$distinct_dirs{$self->app->get_ia_type()->{dir}};
