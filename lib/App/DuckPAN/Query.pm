@@ -2,7 +2,6 @@ package App::DuckPAN::Query;
 # ABSTRACT: Main application/loop for duckpan query
 
 use Moo;
-use DDG;
 use DDG::Request;
 use DDG::Test::Location;
 use DDG::Test::Language;
