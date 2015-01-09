@@ -13,7 +13,10 @@ requires '_run_app';
 sub run_restarter {
     my ($self, $args) = @_;
 
-    # will keep (re)starting the server until user ctrl-c
+    # exit immediately if not in an IA directory
+    $self->app->get_ia_type;
+
+    # will keep (re)starting the server until the app exits
     while(1){
         defined(my $app = fork) or die 'Failed to fork application';
         unless($app){ # app kid
