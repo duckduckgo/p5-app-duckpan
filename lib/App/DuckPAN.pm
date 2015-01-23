@@ -25,8 +25,6 @@ use Perl::Version;
 use Path::Tiny;
 use App::DuckPAN::Cmd::Help;
 
-our $VERSION ||= '9.999';
-
 option dukgo_login => (
 	is => 'ro',
 	lazy => 1,
