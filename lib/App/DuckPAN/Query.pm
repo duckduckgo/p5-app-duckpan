@@ -2,9 +2,6 @@ package App::DuckPAN::Query;
 # ABSTRACT: Main application/loop for duckpan query
 
 use Moo;
-use DDG::Request;
-use DDG::Test::Location;
-use DDG::Test::Language;
 use Data::Printer;
 use POE qw( Wheel::ReadLine );
 use Try::Tiny;
@@ -12,6 +9,14 @@ use Try::Tiny;
 # Entry into the module.
 sub run {
     my ( $self, $app, $blocks ) = @_;
+
+    # Here so that travis builds will pass on github
+    require DDG::Request;
+    DDG::Request->import;
+    require DDG::Test::Location;
+    DDG::Test::Location->import;
+    require DDG::Test::Language;
+    DDG::Test::Language->import;
 
     # Main session. All events declared have equivalent subs.
     POE::Session->create(
