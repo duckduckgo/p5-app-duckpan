@@ -100,7 +100,7 @@ option duckpan => (
 sub _ua_string {
   my ($self) = @_;
   my $class   = ref $self || $self;
-  my $version = $class->VERSION; || 'dev';
+  my $version = $class->VERSION || '9.999';
   return "$class/$version";
 }
 
