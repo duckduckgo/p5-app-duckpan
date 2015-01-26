@@ -55,6 +55,7 @@ sub get_local_version {
 		} or return;
 	};
 
+	return 'dev' unless (defined $v && $module eq 'App::DuckPAN');
 	return unless defined $v;
 	return version->parse($v) unless ref $v;
 	return $v;

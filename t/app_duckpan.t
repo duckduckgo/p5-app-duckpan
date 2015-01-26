@@ -10,7 +10,7 @@ delete $ENV{APP_DUCKPAN_SERVER_HOSTNAME};
 
 use App::DuckPAN;
 
-my $version = $App::DuckPAN::VERSION;
+my $version = $App::DuckPAN::VERSION || 'dev';
 
 my $tempdir = Path::Tiny->tempdir(CLEANUP => 1);
 

@@ -8,8 +8,6 @@ use Path::Tiny;
 
 use App::DuckPAN;
 
-my $version = $App::DuckPAN::VERSION;
-
 subtest 'no arguments' => sub {
 	my ($return, $out, $err) = run_script('duckpan', []);
 
