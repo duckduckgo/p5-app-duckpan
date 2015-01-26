@@ -119,10 +119,11 @@ sub duckpan_install {
 				}
 			}
 		} elsif ($localver == $duckpan_module_version) {
-			$message = "You already have latest ($localver) version of $package";
+			$message = "You already have latest version ($localver) of $package";
 		} elsif ($localver > $duckpan_module_version) {
-			$message = "You have a newer ($localver) version of $package than duckpan ($duckpan_module_version)";
+			$message = "You have a newer version ($localver) of $package than duckpan.org ($duckpan_module_version)";
 		} else {
+			$message = "You have an outdated version ($localver) of $package than duckpan.org. Installing latest version ($duckpan_module_version)";
 			$install_it = 1;
 		}
 		$self->app->emit_info($message);
