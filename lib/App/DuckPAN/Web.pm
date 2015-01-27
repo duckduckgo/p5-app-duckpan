@@ -235,7 +235,6 @@ sub request {
 				HTML::TreeBuilder->new_from_content("<script type=\"text/javascript\">seterr('$error')</script>")->guts
 			);
 			p($error, color => { string => 'red' });
-			$page = $root->as_HTML;
 		}
 
 		# Iterate over results,
@@ -285,11 +284,21 @@ sub request {
 					# Inject a script which prints out what we want.
 					# There is no error-checking or support for non-auto-templates here.
 					my $structured = $result->structured_answer;
-					my $template_name = 'goodie_'.scalar @{$structured->{input}}.'_inputs';
-					my $json_string = encode_json({Answer => $structured});
-					$zci_container->push_content(HTML::TreeBuilder->new_from_content("<script>\$(window).load(function(){"
-								. "document.getElementById('zci-answer').innerHTML = DDG.exec_template('$template_name', $json_string);"
-								. "});</script>")->guts);
+					if(exists $structured->{templates}){ # user-specified templates
+						$page = $root->as_HTML;
+						$page =~ s|####DUCKDUCKHACK-CALL-NRJ####|;DDG.duckbar.future_signal_tab({signal:'high',from:'$structured->{id}'});|;
+						my $script = q|<script type="text/JavaScript" class="script-run-on-ready">/*DDH.add(| . encode_json($structured) . q|);*/</script>|;
+						$page =~ s/####DUCKDUCKHACK-CALL-SCRIPT####/$script/;
+						$root = HTML::TreeBuilder->new->parse($page);
+						last;
+					}
+					else{ # auto-template
+						my $template_name = 'goodie_'.scalar @{$structured->{input}}.'_inputs';
+						my $json_string = encode_json({Answer => $structured});
+						$zci_container->push_content(HTML::TreeBuilder->new_from_content("<script>\$(window).load(function(){"
+							. "document.getElementById('zci-answer').innerHTML = DDG.exec_template('$template_name', $json_string);"
+							. "});</script>")->guts);
+					}
 				} else {
 					$zci_container->push_content(
 						HTML::TreeBuilder->new_from_content(
@@ -316,13 +325,14 @@ sub request {
 				my $zci_wrapper = $root->look_down(id => "zero_click_wrapper");
 				$zci_wrapper->insert_element($zci_container);
 
+
 				my $duckbar_home = $root->look_down(id => "duckbar_home");
 				$duckbar_home->delete_content();
 				$duckbar_home->attr(class => "zcm__menu");
 				$duckbar_home->push_content(
 					HTML::TreeBuilder->new_from_content(
 						q(<li class="zcm__item">
-							<a data-zci-link="answer" class="zcm__link  zcm__link--answer is-active" href="javascript:;">Answer</a>
+					    	<a data-zci-link="answer" class="zcm__link  zcm__link--answer is-active" href="javascript:;">Answer</a>
 						</li>)
 					)->guts
 				);
@@ -332,7 +342,7 @@ sub request {
 
 				my $html = $root->look_down(_tag => "html");
 				$html->attr(class => "set-header--fixed  has-zcm js no-touch csstransforms3d csstransitions svg use-opts has-active-zci");
-
+				
 				# Make sure we only show one Goodie (this will change down the road)
 				last;
 
