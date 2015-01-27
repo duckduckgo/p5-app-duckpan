@@ -325,14 +325,13 @@ sub request {
 				my $zci_wrapper = $root->look_down(id => "zero_click_wrapper");
 				$zci_wrapper->insert_element($zci_container);
 
-
 				my $duckbar_home = $root->look_down(id => "duckbar_home");
 				$duckbar_home->delete_content();
 				$duckbar_home->attr(class => "zcm__menu");
 				$duckbar_home->push_content(
 					HTML::TreeBuilder->new_from_content(
 						q(<li class="zcm__item">
-					    	<a data-zci-link="answer" class="zcm__link  zcm__link--answer is-active" href="javascript:;">Answer</a>
+							<a data-zci-link="answer" class="zcm__link  zcm__link--answer is-active" href="javascript:;">Answer</a>
 						</li>)
 					)->guts
 				);
@@ -345,7 +344,6 @@ sub request {
 				
 				# Make sure we only show one Goodie (this will change down the road)
 				last;
-
 			}
 			if ($result_type eq 'other') {
 				# Not Spice or Goodie, inject raw Dumper() output from into page
