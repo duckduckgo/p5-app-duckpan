@@ -38,7 +38,6 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
     + [Installing the Virtual Machine](#installing-the-virtual-machine)
     + [Using the Virtual Machine](#using-the-virtual-machine)
 - [Vagrant Virtual Environment](#vagrant-virtual-environment)
-    + [Setup Instructions](#setup-instructions-2)
 - [Installing DuckPAN Locally](#installing-duckpan-locally)
     + [Adding Shell Completion](#adding-shell-completion)
 - [Using DuckPAN](#using-duckpan)
@@ -199,17 +198,7 @@ The Vagrant-based DuckDuckHack virtual environment provides a similar sandbox to
 
 Through the Vagrant configuration, you can easily switch back and forth between a headless-mode and the traditional VirtualBox interface.  The configuration defaults to headless.
 
-
-### Setup Instructions
-
-1. Install: [Vagrant](http://docs.vagrantup.com/v2/installation/index.html) and [Bundler](http://bundler.io/#getting-started)
-2. Clone the [duckpan-vagrant](https://github.com/shedd/duckpan-vagrant) repo, which contains the `Vagrantfile` and Chef cookbooks you'll need
-3. Run `bundle install` to install Berkshelf, a Chef cookbook manager.
-4. Run `vagrant plugin install vagrant-berkshelf` to hook Berkshelf into Vagrant.
-5. Review the CUSTOM_CONFIG settings at the top of `Vagrantfile`.  You will want to customize the value of the synced directory to point to your local directory containing the DuckDuckGo code you wish to test.  By default, Vagrant will load a [VirtualBox Precise64](http://files.vagrantup.com/precise64.box) machine image.  If you change this, [Ubuntu is recommended](https://github.com/duckduckgo/p5-app-duckpan#disclaimer).
-6. Run `vagrant up`
-
-The box takes some time to stand up as the duckpan-install script runs.  Refer to [the duckpan-vagrant readme](https://github.com/shedd/duckpan-vagrant#installation) for more info.
+Refer to [the duckpan-vagrant readme](https://github.com/shedd/duckpan-vagrant#installation) for installation instructions.
 
 Once the environment has been built, **the DuckPAN client is installed and ready to go.** You can now clone the Instant Answer repos and start developing/testing.
 
