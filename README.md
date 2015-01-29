@@ -38,6 +38,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
     + [Installing the Virtual Machine](#installing-the-virtual-machine)
     + [Using the Virtual Machine](#using-the-virtual-machine)
 - [Vagrant Virtual Environment](#vagrant-virtual-environment)
+    + [Setup Instructions](#setup-instructions)
 - [Installing DuckPAN Locally](#installing-duckpan-locally)
     + [Adding Shell Completion](#adding-shell-completion)
 - [Using DuckPAN](#using-duckpan)
@@ -197,6 +198,9 @@ See the instructions below on [Using DuckPAN](#using-duckpan).
 The Vagrant-based DuckDuckHack virtual environment provides a similar sandbox to the DuckDuckHack VM, but rather than downloading a prebuilt VM, Vagrant creates an environment for you based on the defined configuration.  Vagrant is an awesome tool for building development environments.  One command - `vagrant up` - gets you a complete working environment in minutes.  Something go wrong with the environment?  No messing around with snapshots.  Tear the VM down and build a fresh environment.  The DuckDuckHack Vagrant environment uses Chef cookbooks and the DuckPAN installer script, so configuration is transparent and easily shared.
 
 Through the Vagrant configuration, you can easily switch back and forth between a headless-mode and the traditional VirtualBox interface.  The configuration defaults to headless.
+
+
+### Setup Instructions
 
 Refer to [the duckpan-vagrant readme](https://github.com/shedd/duckpan-vagrant#installation) for installation instructions.
 
