@@ -118,6 +118,7 @@ sub duckpan_install {
 
 		my ($install_it, $message);
 		if ($reinstall || !$localver) {    # Note the ignored pinning.
+			$message = "You don't have $package installed. Installing latest version ($duckpan_module_version)";
 			$install_it = 1;
 		} elsif ($pin_version) {
 			$self->app->emit_info("$package: $localver installed, $pin_version pin, $duckpan_module_version latest");
