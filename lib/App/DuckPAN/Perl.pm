@@ -47,6 +47,8 @@ sub get_local_version {
 	my $v;
 	{
 		local $@;
+
+        # ensure $module is installed by trying to load (require) it
 		eval {
 			my $m = Module::Data->new($module);
 			$m->require;
@@ -55,6 +57,11 @@ sub get_local_version {
 		} or return;
 	};
 
+    # $module (e.g. DuckPAN, DDG) has loaded, but no $VERSION exists
+    # This means we're not working with code that was built by DZIL
+    #
+    # Example:
+    # > ./bin/duckpan -I/lib/ -I../duckduckgo/lib server
 	unless (defined $v) {
         if ($module eq 'App::DuckPAN' || $module eq 'DDG'){
             # When executing code in-place, $VERSION will not be defined.
