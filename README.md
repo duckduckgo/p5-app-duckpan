@@ -38,7 +38,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
     + [Installing the Virtual Machine](#installing-the-virtual-machine)
     + [Using the Virtual Machine](#using-the-virtual-machine)
 - [Vagrant Virtual Environment](#vagrant-virtual-environment)
-    + [Setup Instructions](#setup-instructions-2)
+    + [Setup Instructions](#setup-instructions)
 - [Installing DuckPAN Locally](#installing-duckpan-locally)
     + [Adding Shell Completion](#adding-shell-completion)
 - [Using DuckPAN](#using-duckpan)
