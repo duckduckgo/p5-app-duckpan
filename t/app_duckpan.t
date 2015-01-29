@@ -10,7 +10,7 @@ delete $ENV{APP_DUCKPAN_SERVER_HOSTNAME};
 
 use App::DuckPAN;
 
-my $version = $App::DuckPAN::VERSION;
+my $version = $App::DuckPAN::VERSION || '9.999';
 
 my $tempdir = Path::Tiny->tempdir(CLEANUP => 1);
 
@@ -32,7 +32,7 @@ isa_ok($app->cfg,'App::DuckPAN::Config');
 
 SKIP: {
 	skip "No DDG installed yet", 2 unless try_load_class('DDG');
-	my $ddg_version = $DDG::VERSION;
+	my $ddg_version = $DDG::VERSION || '9.999';
 	isa_ok($app->ddg,'App::DuckPAN::DDG');
 	is($app->get_local_ddg_version,$ddg_version,'Checking get_local_ddg_version');
 }

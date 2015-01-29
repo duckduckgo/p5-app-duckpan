@@ -47,6 +47,8 @@ sub get_local_version {
 	my $v;
 	{
 		local $@;
+
+        # ensure $module is installed by trying to load (require) it
 		eval {
 			my $m = Module::Data->new($module);
 			$m->require;
@@ -55,7 +57,20 @@ sub get_local_version {
 		} or return;
 	};
 
-	return unless defined $v;
+    # $module (e.g. DuckPAN, DDG) has loaded, but no $VERSION exists
+    # This means we're not working with code that was built by DZIL
+    #
+    # Example:
+    # > ./bin/duckpan -I/lib/ -I../duckduckgo/lib server
+	unless (defined $v) {
+        if ($module eq 'App::DuckPAN' || $module eq 'DDG'){
+            # When executing code in-place, $VERSION will not be defined.
+            # Only the installed package will have a defined version
+            # thanks to Dist::Zilla::Plugin::PkgVersion
+            return '9.999';
+        }
+        return;
+    }
 	return version->parse($v) unless ref $v;
 	return $v;
 }
@@ -118,10 +133,11 @@ sub duckpan_install {
 				}
 			}
 		} elsif ($localver == $duckpan_module_version) {
-			$message = "You already have latest ($localver) version of $package";
+			$message = "You already have latest version ($localver) of $package";
 		} elsif ($localver > $duckpan_module_version) {
-			$message = "You have a newer ($localver) version of $package than duckpan ($duckpan_module_version)";
+			$message = "You have a newer version ($localver) of $package than duckpan.org ($duckpan_module_version)";
 		} else {
+			$message = "You have an older version ($localver) of $package than duckpan.org. Installing latest version ($duckpan_module_version)";
 			$install_it = 1;
 		}
 		$self->app->emit_info($message);
