@@ -203,6 +203,7 @@ sub request {
 		my @calls_nrc = ();
 		my @calls_script = ();
 		my %calls_template = ();
+		my @calls_goodie;
 
 		for (@{$self->blocks}) {
 			push(@results,$_->request($ddg_request));
@@ -235,7 +236,6 @@ sub request {
 				HTML::TreeBuilder->new_from_content("<script type=\"text/javascript\">seterr('$error')</script>")->guts
 			);
 			p($error, color => { string => 'red' });
-			$page = $root->as_HTML;
 		}
 
 		# Iterate over results,
@@ -252,7 +252,8 @@ sub request {
 			my $result_type =	($res_ref eq 'DDG::ZeroClickInfo::Spice') ? 'spice' :
 								($res_ref eq 'DDG::ZeroClickInfo') ?		'goodie' :
 																			'other';
-			if (($result_type eq 'spice' || $result_type eq 'goodie')
+			my $is_goodie = $result_type eq 'goodie';
+			if (($result_type eq 'spice' || $is_goodie)
 				&& $result->caller->can('module_share_dir')) {
 				# grab associated JS, Handlebars and CSS
 				# and add them to correct arrays for injection into page
@@ -275,9 +276,8 @@ sub request {
 					}
 				}
 				push (@calls_nrj, $result->call_path) if ($result->can('call_path'));
-
 			}
-			if ($result_type eq 'goodie'){
+			if ($is_goodie){
 				# We have a Goodie result so modify HTML and return content
 				# Grab ZCI div, push in required HTML
 				my $zci_container = HTML::Element->new('div', id => "zci-answer", class => "zci zci--answer is-active");
@@ -285,11 +285,17 @@ sub request {
 					# Inject a script which prints out what we want.
 					# There is no error-checking or support for non-auto-templates here.
 					my $structured = $result->structured_answer;
-					my $template_name = 'goodie_'.scalar @{$structured->{input}}.'_inputs';
-					my $json_string = encode_json({Answer => $structured});
-					$zci_container->push_content(HTML::TreeBuilder->new_from_content("<script>\$(window).load(function(){"
-								. "document.getElementById('zci-answer').innerHTML = DDG.exec_template('$template_name', $json_string);"
-								. "});</script>")->guts);
+					if(exists $structured->{templates}){ # user-specified templates
+						push @calls_goodie, $structured;
+						last;
+					}
+					else{ # auto-template
+						my $template_name = 'goodie_'.scalar @{$structured->{input}}.'_inputs';
+						my $json_string = encode_json({Answer => $structured});
+						$zci_container->push_content(HTML::TreeBuilder->new_from_content("<script>\$(window).load(function(){"
+							. "document.getElementById('zci-answer').innerHTML = DDG.exec_template('$template_name', $json_string);"
+							. "});</script>")->guts);
+					}
 				} else {
 					$zci_container->push_content(
 						HTML::TreeBuilder->new_from_content(
@@ -332,10 +338,9 @@ sub request {
 
 				my $html = $root->look_down(_tag => "html");
 				$html->attr(class => "set-header--fixed  has-zcm js no-touch csstransforms3d csstransitions svg use-opts has-active-zci");
-
+				
 				# Make sure we only show one Goodie (this will change down the road)
 				last;
-
 			}
 			if ($result_type eq 'other') {
 				# Not Spice or Goodie, inject raw Dumper() output from into page
@@ -348,17 +353,27 @@ sub request {
 			}
 		}
 
-		# Setup various script tags:
-		#   calls_script : spice js files
-		#   calls_nrj : proxied spice api calls
-		#   calls_nrc : spice css calls
-		#   calls_template : spice handlebars templates
+		# Setup various script tags for IAs that can template:
+		#   calls_script : js files
+		#   calls_nrj : proxied spice api calls or goodie future
+		#   calls_nrc : css calls
+		#   calls_template : handlebars templates
 
-		my $calls_nrj = (scalar @calls_nrj) ? join(";",map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
-		my $calls_nrc = (scalar @calls_nrc) ? join(";",map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
-		my $calls_script = (scalar @calls_script)
-			? join("",map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script)
-			: '';
+		my ($calls_nrj, $calls_script);
+		# For now we only allow a single goodie. If that changes, we will do the
+		# same join/map as with spices.
+		if(@calls_goodie){
+			my $goodie = shift @calls_goodie;
+			$calls_nrj = "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
+			$calls_script = q|<script type="text/JavaScript" class="script-run-on-ready">/*DDH.add(| . encode_json($goodie) . q|);*/</script>|
+		}
+		else{
+			$calls_nrj = @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
+			$calls_script = @calls_script
+				? join('',map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script)
+				: '';
+		}
+		my $calls_nrc = @calls_nrc ? join(';', map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
 
 		if (%calls_template) {
 			foreach my $spice_name ( keys %calls_template ){
