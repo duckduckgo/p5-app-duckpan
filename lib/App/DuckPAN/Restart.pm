@@ -88,11 +88,11 @@ sub _monitor_directories {
         $watcher->wait(sub {
             for my $event (@_) {
                 my $file = $event->{path};
-                # if it's just a newly created directory or a dot file,
-                # there shouldn't be a need to reload.  This will catch
-                # directories with files in them properly, as each file
-                # will be its own event
-                if( (-d $file) || ($file =~ m{^(?:.+/)?\.[^/]+$}o)){
+                # if it's a newly created directory, dot file, or pulled 
+                # in dynamically there shouldn't be a need to reload.
+                # This will catch directories with files in them properly,
+                # as each file will be its own event
+                if( (-d $file) || ($file =~ m{^(?:.+/)?\.[^/]+$}o) || ($file =~ /\.(?:handlebars|css|js)$/oi) ){
                     next;
                 }
                 # All other changes trigger a reload
