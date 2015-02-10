@@ -366,6 +366,8 @@ sub request {
 		if(@calls_goodie){
 			my $goodie = shift @calls_goodie;
 			$calls_nrj = "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
+			# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
+			# $calls_script = q|<script type="text/JavaScript" class="script-run-on-ready">/*DDH.add(| . encode_json($goodie) . q|);*/</script>|;
 			$calls_script .= q|<script type="text/JavaScript" class="script-run-on-ready">/*window.setTimeout(DDH.add.bind(DDH, | . encode_json($goodie) . q|), 100);*/</script>|;
 		}
 		else{
