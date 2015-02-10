@@ -359,20 +359,17 @@ sub request {
 		#   calls_nrc : css calls
 		#   calls_template : handlebars templates
 
-		my ($calls_nrj, $calls_script);
+		my $calls_nrj;
+		my $calls_script = join('', map { q|<script type='text/JavaScript' src='| . $_ . q|'></script>| } @calls_script);
 		# For now we only allow a single goodie. If that changes, we will do the
 		# same join/map as with spices.
 		if(@calls_goodie){
 			my $goodie = shift @calls_goodie;
 			$calls_nrj = "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
-			#window.setTimeout(DDH.add.bind(DDH, '.encode_for_json($data->{answer_results}) . '), 100
-			$calls_script = q|<script type="text/JavaScript" class="script-run-on-ready">/*window.setTimeout(DDH.add.bind(DDH, | . encode_json($goodie) . q|), 100);*/</script>|
+			$calls_script .= q|<script type="text/JavaScript" class="script-run-on-ready">/*window.setTimeout(DDH.add.bind(DDH, | . encode_json($goodie) . q|), 100);*/</script>|;
 		}
 		else{
 			$calls_nrj = @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
-			$calls_script = @calls_script
-				? join('',map { "<script type='text/JavaScript' src='".$_."'></script>" } @calls_script)
-				: '';
 		}
 		my $calls_nrc = @calls_nrc ? join(';', map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
 

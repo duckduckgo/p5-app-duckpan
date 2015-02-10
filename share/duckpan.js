@@ -72,7 +72,9 @@ $(document).ready(function() {
 			$.each(toCall, function(i, name){
 				var cbName = 'ddg_spice_' + name;
 				console.log('Executing: ' + cbName);
-				window[cbName]();
+				if (typeof window[cbName] == 'function'){
+					window[cbName]();
+				}
 			});
 		}, 100);
 
