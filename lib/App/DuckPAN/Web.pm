@@ -168,7 +168,7 @@ sub request {
 					} else {
 						p($res->status_line, color => { string => 'red' });
 						my $errormsg = (pop @{[split'::', $spice_class]}). ": ".$res->status_line;
-						$body = '$("div.content-wrap").append("<div class=\"msg msg--warning\">'. $errormsg .'</div>");';
+						$body = '$("#message").removeClass("is-hidden").append("<div class=\"msg msg--warning\">'. $errormsg .'</div>");';
 					}
 				}
 			}

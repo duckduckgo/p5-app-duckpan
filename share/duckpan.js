@@ -4,7 +4,7 @@
 	var oldSpiceFailed = Spice.failed;
 
 	// Create div to collect our warnings
-	$('div.content-wrap').append('<div id="spice-errors"></div>');
+	$("#message").removeClass("is-hidden").append('<div id="spice-errors"></div>');
 
 	// define new Spice.failed which calls the original
 	// and then notifies devs on the frontend
