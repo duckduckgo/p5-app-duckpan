@@ -421,38 +421,37 @@ sub inject_mock_content {
 
     my $root= shift;
 
-    #inject a mock ad into the page
+    # ensure results and ad containers exist
     my $ad_container = $root->look_down(id => "ads");
     my $links_container = $root->look_down(id => "links");
-
     return unless $ad_container && $links_container;
 
+    #inject a mock ad into the page
     $ad_container->attr("style", "display: block");
 
-    my $ad = HTML::TreeBuilder->new_from_content(
-        q(<div id="ra-0" class="result results_links highlight_a  result--ad  highlight_sponsored  sponsored highlight highlight_sponsored_hover" data-nir="1">
-            <div class="result__body links_main links_deep">
-                <a href="#" class="result__badge  badge--ad">Ad</a>
-                <h2 class="result__title">
-                <a class="result__a" href="#">Lorem ipsum Culpa ex adipisicing.</a>
-                <a class="result__check" href="#">
-                    <span class="result__check__tt">Lorem ipsum Consectetur nostrud id quis in ut.</span>
-                </a>
-                </h2>
-                <div class="result__snippet">
-                    <a href="#">Lorem ipsum Nisi aute velit sit dolore sit amet fugiat consequat aute reprehenderit in dolore deserunt.</a>
-                </div>
-                <div class="result__extras">
-                    <div class="result__extras__url">
-                        <a class="result__url" href="#">duckduckgo.com</a>
+    $ad_container->push_content(
+        HTML::TreeBuilder->new_from_content(
+            q(<div id="ra-0" class="result results_links highlight_a  result--ad  highlight_sponsored  sponsored highlight highlight_sponsored_hover" data-nir="1">
+                <div class="result__body links_main links_deep">
+                    <a href="#" class="result__badge  badge--ad">Ad</a>
+                    <h2 class="result__title">
+                    <a class="result__a" href="#">Lorem ipsum Culpa ex adipisicing.</a>
+                    <a class="result__check" href="#">
+                        <span class="result__check__tt">Lorem ipsum Consectetur nostrud id quis in ut.</span>
+                    </a>
+                    </h2>
+                    <div class="result__snippet">
+                        <a href="#">Lorem ipsum Nisi aute velit sit dolore sit amet fugiat consequat aute reprehenderit in dolore deserunt.</a>
+                    </div>
+                    <div class="result__extras">
+                        <div class="result__extras__url">
+                            <a class="result__url" href="#">duckduckgo.com</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        )
-    )->guts;
-
-    $ad_container->push_content( $ad );
+            </div>)
+        )->guts
+    );
 
     #inject some mock ad into the page
     for (1..4){
@@ -486,8 +485,7 @@ sub inject_mock_content {
                             <a href="#">More results</a>
                         </div>
                     </div>
-                </div>
-                )
+                </div>)
             )->guts
         );
     }
