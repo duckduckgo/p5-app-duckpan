@@ -423,6 +423,10 @@ sub inject_mock_content {
 
     #inject a mock ad into the page
     my $ad_container = $root->look_down(id => "ads");
+    my $links_container = $root->look_down(id => "links");
+
+    return unless $ad_container && $links_container;
+
     $ad_container->attr("style", "display: block");
 
     my $ad = HTML::TreeBuilder->new_from_content(
@@ -451,8 +455,6 @@ sub inject_mock_content {
     $ad_container->push_content( $ad );
 
     #inject some mock ad into the page
-    my $links_container = $root->look_down(id => "links");
-
     for (1..4){
         $links_container->push_content(
             HTML::TreeBuilder->new_from_content(
