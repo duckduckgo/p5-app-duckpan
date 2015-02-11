@@ -432,15 +432,15 @@ sub inject_mock_content {
     my $ad = HTML::TreeBuilder->new_from_content(
         q(<div id="ra-0" class="result results_links highlight_a  result--ad  highlight_sponsored  sponsored highlight highlight_sponsored_hover" data-nir="1">
             <div class="result__body links_main links_deep">
-                <a href="https://duck.co/help/company/advertising-and-affiliates" class="result__badge  badge--ad">Ad</a>
+                <a href="#" class="result__badge  badge--ad">Ad</a>
                 <h2 class="result__title">
-                <a class="result__a" href="">Lorem ipsum Culpa ex adipisicing.</a>
-                <a class="result__check" href="">
+                <a class="result__a" href="#">Lorem ipsum Culpa ex adipisicing.</a>
+                <a class="result__check" href="#">
                     <span class="result__check__tt">Lorem ipsum Consectetur nostrud id quis in ut.</span>
                 </a>
                 </h2>
                 <div class="result__snippet">
-                    <a href="">Lorem ipsum Nisi aute velit sit dolore sit amet fugiat consequat aute reprehenderit in dolore deserunt.</a>
+                    <a href="#">Lorem ipsum Nisi aute velit sit dolore sit amet fugiat consequat aute reprehenderit in dolore deserunt.</a>
                 </div>
                 <div class="result__extras">
                     <div class="result__extras__url">
@@ -492,5 +492,7 @@ sub inject_mock_content {
         );
     }
 }
+
+1;
 
 1;
