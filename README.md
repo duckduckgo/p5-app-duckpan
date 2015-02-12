@@ -1,5 +1,7 @@
 # DuckPAN [![Build Status](https://travis-ci.org/duckduckgo/p5-app-duckpan.png?branch=master)](https://travis-ci.org/duckduckgo/p5-app-duckpan)
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/duckduckgo/p5-app-duckpan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 **The DuckDuckHack Developer Tool**
 
 DuckPAN is an application built to aid DuckDuckHack developers. It is mainly used to generate the required files for new Instant Answers (the devloper must implement functionality) and also test both the triggering and visual display of Instant Answers.
