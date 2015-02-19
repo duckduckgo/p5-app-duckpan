@@ -85,30 +85,49 @@ sub request {
 		$response->content_type("text/html");
 		$body = $self->page_root;
 	} elsif (@path_parts && $path_parts[0] eq 'share') {
-		my $filename = pop @path_parts;
-		my $share_dir = join('/',@path_parts);
+		my $share_dir;
+		for (keys %{$self->_share_dir_hash}) {
+			if ($request->path =~ m|^/$_|g) {
 
-		# remove spice version from path when present
-		# eg. get_asset_path returns `/share/spice/recipe/###/yummly.ico`
-		$share_dir =~ s!/\d+!!;
+				$share_dir = $_;
+				my $filename = pop @path_parts;
+				my $remainder = $request->path;
+				$remainder =~ s|$share_dir||;
+				$remainder =~ s|$filename||;
+				$remainder =~ s|//|/|;
+				$remainder =~ s|^/\d{3,4}||;
 
-		if ($filename =~ /\.js$/ and
-			$has_common_js and
-			$share_dir =~ /(share\/spice\/([^\/]+)\/?)(.*)/){
+				$filename = $remainder . $filename if $remainder;
 
-			my $parent_dir = $1;
-			my $parent_name = $2;
-			my $common_js = $parent_dir."$parent_name.js";
+				if (my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename)) {
 
-			$body = path($common_js)->slurp;
-			warn "\nAppended $common_js to $filename\n\n";
+					my $content_type = Plack::MIME->mime_type($filename);
+					$response->content_type($content_type);
+
+					if ($filename =~ /\.js$/ && $has_common_js &&
+						$request->path =~ /(share\/spice\/([^\/]+)\/?)(.*)/){
+
+						my $parent_dir = $1;
+						my $parent_name = $2;
+						my $common_js = $parent_dir."$parent_name.js";
+
+						$body = path($common_js)->slurp;
+						print "\nAppended $common_js to $filename\n\n";
+					}
+
+					$body .= path($filename_path)->slurp;
+				} else {
+					$share_dir = undef;
+				}
+			}
 		}
-
-		my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename);
-		my $content_type = Plack::MIME->mime_type($filename);
-		$response->content_type($content_type);
-		$body .= -f $filename_path ? path($filename_path)->slurp : "";
-
+		unless ($share_dir){
+			$response->status(404);
+			my $path = join "/", @path_parts;
+			my $errormsg = "ERROR: File not found - $path";
+			print "\n" . $errormsg . "\n";
+			$body = $errormsg;
+		}
 	} elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
 		for (keys %{$self->_path_hash}) {
 			if ($request->request_uri =~ m/^$_/g) {
