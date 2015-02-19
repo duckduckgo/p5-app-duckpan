@@ -129,6 +129,7 @@ sub request {
 			$body = $errormsg;
 		}
 	} elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
+		my $rewrite;
 		for (keys %{$self->_path_hash}) {
 			if ($request->request_uri =~ m/^$_/g) {
 				my $path_remainder = $request->request_uri;
@@ -136,7 +137,7 @@ sub request {
 				$path_remainder =~ s/\/+/\//g;
 				$path_remainder =~ s/^\///;
 				my $spice_class = $self->_path_hash->{$_};
-				my $rewrite = $self->_rewrite_hash->{$spice_class};
+				$rewrite = $self->_rewrite_hash->{$spice_class};
 				die "Spice tested here must have a rewrite..." unless $rewrite;
 				my $from = $rewrite->from;
 				my $re = $rewrite->has_from ? qr{$from} : qr{(.*)};
@@ -191,6 +192,13 @@ sub request {
 					}
 				}
 			}
+		}
+		unless ($rewrite){
+			$response->status(404);
+			my $path = join "/", @path_parts;
+			my $errormsg = "ERROR: Rewrite not found - $path";
+			print "\n" . $errormsg . "\n";
+			$body = $errormsg;
 		}
 	} elsif ($request->param('duckduckhack_ignore')) {
 		$response->status(204);
