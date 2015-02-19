@@ -253,8 +253,8 @@ sub request {
 		# Check for no results
 		if (!scalar(@results)) {
 			my $error = "Sorry, no hit for your instant answer";
-                        $root = HTML::TreeBuilder->new;
-                        $root->parse($self->page_root);
+			$root = HTML::TreeBuilder->new;
+			$root->parse($self->page_root);
 			my $text_field = $root->look_down(
 				"name", "q"
 			);
@@ -365,7 +365,7 @@ sub request {
 
 				my $html = $root->look_down(_tag => "html");
 				$html->attr(class => "set-header--fixed  has-zcm js no-touch csstransforms3d csstransitions svg use-opts has-active-zci");
-				
+
 				# Make sure we only show one Goodie (this will change down the road)
 				last;
 			}
@@ -433,7 +433,7 @@ sub request {
 			$response->code($res->code);
 			$response->content_type($res->content_type);
 		} else {
-                        p($res->status_line, color => { string => 'red' });
+			p($res->status_line, color => { string => 'red' });
 			$body = "";
 		}
 	}
@@ -446,78 +446,76 @@ sub request {
 #inject some mock results into the SERP to make it look a little more real
 sub inject_mock_content {
 
-    my $root= shift;
+	my $root= shift;
 
-    # ensure results and ad containers exist
-    my $ad_container = $root->look_down(id => "ads");
-    my $links_container = $root->look_down(id => "links");
-    return unless $ad_container && $links_container;
+	# ensure results and ad containers exist
+	my $ad_container = $root->look_down(id => "ads");
+	my $links_container = $root->look_down(id => "links");
+	return unless $ad_container && $links_container;
 
-    #inject a mock ad into the page
-    $ad_container->attr("style", "display: block");
+	#inject a mock ad into the page
+	$ad_container->attr("style", "display: block");
 
-    $ad_container->push_content(
-        HTML::TreeBuilder->new_from_content(
-            q(<div id="ra-0" class="result results_links highlight_a  result--ad  highlight_sponsored  sponsored highlight highlight_sponsored_hover" data-nir="1">
-                <div class="result__body links_main links_deep">
-                    <a href="#" class="result__badge  badge--ad">Ad</a>
-                    <h2 class="result__title">
-                    <a class="result__a" href="#">Lorem ipsum Culpa ex adipisicing.</a>
-                    <a class="result__check" href="#">
-                        <span class="result__check__tt">Lorem ipsum Consectetur nostrud id quis in ut.</span>
-                    </a>
-                    </h2>
-                    <div class="result__snippet">
-                        <a href="#">Lorem ipsum Nisi aute velit sit dolore sit amet fugiat consequat aute reprehenderit in dolore deserunt.</a>
-                    </div>
-                    <div class="result__extras">
-                        <div class="result__extras__url">
-                            <a class="result__url" href="#">duckduckgo.com</a>
-                        </div>
-                    </div>
-                </div>
-            </div>)
-        )->guts
-    );
+	$ad_container->push_content(
+		HTML::TreeBuilder->new_from_content(
+			q(<div id="ra-0" class="result results_links highlight_a  result--ad  highlight_sponsored  sponsored highlight highlight_sponsored_hover" data-nir="1">
+				<div class="result__body links_main links_deep">
+					<a href="#" class="result__badge  badge--ad">Ad</a>
+					<h2 class="result__title">
+					<a class="result__a" href="#">Lorem ipsum Culpa ex adipisicing.</a>
+					<a class="result__check" href="#">
+						<span class="result__check__tt">Lorem ipsum Consectetur nostrud id quis in ut.</span>
+					</a>
+					</h2>
+					<div class="result__snippet">
+						<a href="#">Lorem ipsum Nisi aute velit sit dolore sit amet fugiat consequat aute reprehenderit in dolore deserunt.</a>
+					</div>
+					<div class="result__extras">
+						<div class="result__extras__url">
+							<a class="result__url" href="#">duckduckgo.com</a>
+						</div>
+					</div>
+				</div>
+			</div>)
+		)->guts
+	);
 
-    #inject some mock ad into the page
-    for (1..4){
-        $links_container->push_content(
-            HTML::TreeBuilder->new_from_content(
-                q(<div id="r$_-0" class="result results_links_deep " data-nir="$_"
-                    <div class="result__body links_main links_deep">
-                        <h2 class="result__title">
-                        <a class="result__a" href="#">
-                            Lorem ipsum Duis elit voluptate in ut sed culpa nostrud sint est occaecat in irure veniam exercitation
-                        </a>
-                        <a class="result__check" href="#">
-                            <span class="result__check__tt">Your browser indicates if you've visited this link</span>
-                        </a>
-                        </h2>
-                        <div class="result__snippet">
-                            Lorem ipsum Mollit ut voluptate in id laborum nulla adipisicing ad ea do do nisi nulla qui quis do nisi pariatur voluptate minim dolore enim commodo cillum ullamco pariatur culpa.
-                        </div>
-                        <div class="result__extras">
-                            <div class="result__extras__url">
-                                <span class="result__icon">
-                                <a href="#">
-                                    <img title="Search www.duckduckgo.com" id="i101" height="16" width="16" class="result__icon__img" src="//icons.duckduckgo.com/ip2/www.duckduckgo.com.ico">
-                                </a>
-                                </span>
-                                <a class="result__url" href="#">
-                                    <span class="result__url__domain">Lorem.ipsum.com</span>
-                                    <span class="result__url__full">/Incididunt%20reprehenderit%20ullamco.</span>
-                                </a>
-                            </div>
-                            <a href="#">More results</a>
-                        </div>
-                    </div>
-                </div>)
-            )->guts
-        );
-    }
+	#inject some mock ad into the page
+	for (1..4){
+		$links_container->push_content(
+			HTML::TreeBuilder->new_from_content(
+				q(<div id="r$_-0" class="result results_links_deep " data-nir="$_"
+					<div class="result__body links_main links_deep">
+						<h2 class="result__title">
+						<a class="result__a" href="#">
+							Lorem ipsum Duis elit voluptate in ut sed culpa nostrud sint est occaecat in irure veniam exercitation
+						</a>
+						<a class="result__check" href="#">
+							<span class="result__check__tt">Your browser indicates if you've visited this link</span>
+						</a>
+						</h2>
+						<div class="result__snippet">
+							Lorem ipsum Mollit ut voluptate in id laborum nulla adipisicing ad ea do do nisi nulla qui quis do nisi pariatur voluptate minim dolore enim commodo cillum ullamco pariatur culpa.
+						</div>
+						<div class="result__extras">
+							<div class="result__extras__url">
+								<span class="result__icon">
+								<a href="#">
+									<img title="Search www.duckduckgo.com" id="i101" height="16" width="16" class="result__icon__img" src="//icons.duckduckgo.com/ip2/www.duckduckgo.com.ico">
+								</a>
+								</span>
+								<a class="result__url" href="#">
+									<span class="result__url__domain">Lorem.ipsum.com</span>
+									<span class="result__url__full">/Incididunt%20reprehenderit%20ullamco.</span>
+								</a>
+							</div>
+							<a href="#">More results</a>
+						</div>
+					</div>
+				</div>)
+			)->guts
+		);
+	}
 }
-
-1;
 
 1;
