@@ -341,6 +341,8 @@ sub request {
 						my $tb = HTML::TreeBuilder->new();
 						# Specifically allow unknown tags to support <svg> and <canvas>
 						$tb->ignore_unknown(0);
+						# Allow empty tags
+                                                $tb->empty_element_tags(1);
 						$answer = $tb->parse_content($result->html)->guts;
 					}
 					$zci_body->push_content($answer);
