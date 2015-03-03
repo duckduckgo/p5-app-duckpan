@@ -23,6 +23,7 @@ use Carp;
 use Encode;
 use Perl::Version;
 use Path::Tiny;
+use open qw/:std :utf8/;
 use App::DuckPAN::Cmd::Help;
 
 option dukgo_login => (
