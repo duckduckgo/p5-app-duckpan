@@ -5,6 +5,7 @@ use Moo;
 use Data::Printer;
 use POE qw( Wheel::ReadLine );
 use Try::Tiny;
+use open qw/:std :utf8/;
 
 # Entry into the module.
 sub run {

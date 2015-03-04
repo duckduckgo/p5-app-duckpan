@@ -14,7 +14,6 @@ use HTML::TreeBuilder;
 use Config::INI;
 use Data::Printer;
 use Term::ProgressBar;
-use open qw/:std :utf8/;
 
 option port => (
     is => 'ro',
