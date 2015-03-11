@@ -87,7 +87,7 @@ sub request {
 	} elsif (@path_parts && $path_parts[0] eq 'share') {
 		my $share_dir;
 		for (keys %{$self->_share_dir_hash}) {
-			if ($request->path =~ m|^/$_|g) {
+			if ($request->path =~ m|^/$_/|g) {
 
 				$share_dir = $_;
 				my $filename = pop @path_parts;
