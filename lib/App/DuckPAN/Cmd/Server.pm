@@ -12,7 +12,6 @@ use Path::Tiny;
 use LWP::Simple;
 use HTML::TreeBuilder;
 use Config::INI;
-use Data::Printer;
 use Term::ProgressBar;
 
 option port => (
