@@ -317,7 +317,10 @@ sub request {
 						last;
 					}
 					else{ # auto-template
-						my $template_name = 'goodie_'.scalar @{$structured->{input}}.'_inputs';
+						my $input_size = @{$structured->{input}};
+						die "Auto-templating with input of size $input_size called for '$structured->{operation}', "
+							. "while only sizes up to 2 are supported" if $input_size >= 3;
+						my $template_name = 'goodie_'.$input_size.'_inputs';
 						my $json_string = encode_json({Answer => $structured});
 						$zci_container->push_content(HTML::TreeBuilder->new_from_content("<script>\$(window).load(function(){"
 							. "document.getElementById('zci-answer').innerHTML = DDG.exec_template('$template_name', $json_string);"
