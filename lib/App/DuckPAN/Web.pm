@@ -17,6 +17,7 @@ use HTTP::Request;
 use LWP::UserAgent;
 use URI::Escape;
 use JSON;
+use Encode 'encode_utf8';
 use open qw/:std :utf8/;
 
 has blocks => ( is => 'ro', required => 1 );
@@ -443,7 +444,7 @@ sub request {
 		}
 	}
 
-	$response->body($body);
+	$response->body(encode_utf8 $body);
 	return $response;
 }
 
