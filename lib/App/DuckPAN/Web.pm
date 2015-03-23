@@ -17,7 +17,6 @@ use HTTP::Request;
 use LWP::UserAgent;
 use URI::Escape;
 use JSON;
-use open qw/:std :utf8/;
 
 has blocks => ( is => 'ro', required => 1 );
 has page_root => ( is => 'ro', required => 1 );
