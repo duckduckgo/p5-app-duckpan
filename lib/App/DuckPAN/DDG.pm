@@ -59,12 +59,13 @@ sub get_blocks_from_current_dir {
     $self->app->emit_info("Loading Instant Answers...");
 
     # This list contains all of the classes that loaded successfully.
-    my @successfully_loaded = ();
+    my @successfully_loaded;
 
     # This hash contains all of the modules that failed.
     # The key contains the module name and the value contains the dependency that wasn't met.
-    my %failed_to_load = ();
+    my %failed_to_load;
 
+    my (%blocks_plugins, @UC_TRIGGERS);
     # This loop goes through each Goodie / Spice, and it tries to load it.
     foreach my $class (@args) {
         # Let's try to load each Goodie / Spice module
@@ -80,6 +81,26 @@ sub get_blocks_from_current_dir {
 
             # Display to the user when a class has been successfully loaded.
             $self->app->emit_debug(" - $class (" . $class->triggers_block_type . ")");
+
+			unless ($blocks_plugins{$class->triggers_block_type}) {
+				$blocks_plugins{$class->triggers_block_type} = [];
+			}
+			push @{$blocks_plugins{$class->triggers_block_type}}, $class;
+
+			# We could potentially do other IA-specific checks here
+			my $trigger_types = $class->get_triggers;
+
+			# Check for useless uppercase triggers so we can warn
+			UC_TRIGGER: for my $triggers (values %$trigger_types){
+				for my $t (@$triggers){
+					if($t =~ /\p{Uppercase}/){
+						push @UC_TRIGGERS, $class;
+						#warn "is $t uppercase?\n";
+						# the first one found should be sufficient.
+						last UC_TRIGGER;
+					}
+				}
+			}
         } else {
             # Get the module name that needs to be installed by the user.
             if ($load_error_message =~ /Can't locate ([^\.]+).pm in \@INC/) {
@@ -101,13 +122,10 @@ sub get_blocks_from_current_dir {
     # Now let's tell the user why some of the modules failed.
     $self->show_failed_modules(\%failed_to_load);
 
-    my %blocks_plugins;
-    for (@args) {
-        unless ($blocks_plugins{$_->triggers_block_type}) {
-            $blocks_plugins{$_->triggers_block_type} = [];
-        }
-        push @{$blocks_plugins{$_->triggers_block_type}}, $_;
-    }
+	if(@UC_TRIGGERS){
+		$self->app->emit_notice('Detected potential UPPERCASE triggers in the following instant answers:' . "\n"
+			. p(@UC_TRIGGERS, colored => $self->app->colors));
+	}
 
     my @blocks;
     for (keys %blocks_plugins) {
