@@ -123,7 +123,7 @@ sub get_blocks_from_current_dir {
     $self->show_failed_modules(\%failed_to_load);
 
 	if(@UC_TRIGGERS){
-		$self->app->emit_notice('Detected potential UPPERCASE triggers in the following instant answers:' . "\n"
+		$self->app->emit_notice('Detected potential UPPERCASE triggers in the following instant answers. If yours is listed, check it out! Only lowercase will work.' . "\n"
 			. p(@UC_TRIGGERS, colored => $self->app->colors));
 	}
 
