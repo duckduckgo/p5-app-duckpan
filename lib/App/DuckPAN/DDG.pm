@@ -85,19 +85,23 @@ sub get_blocks_from_current_dir {
 			unless ($blocks_plugins{$class->triggers_block_type}) {
 				$blocks_plugins{$class->triggers_block_type} = [];
 			}
-			push @{$blocks_plugins{$class->triggers_block_type}}, $class;
+
+			my $triggers_block_type = $class->triggers_block_type;
+			push @{$blocks_plugins{$triggers_block_type}}, $class;
 
 			# We could potentially do other IA-specific checks here
-			my $trigger_types = $class->get_triggers;
+			# Check for useless uppercase Words triggers so we can warn
+			if($triggers_block_type eq 'Words'){
+				my $trigger_types = $class->get_triggers;
 
-			# Check for useless uppercase triggers so we can warn
-			UC_TRIGGER: for my $triggers (values %$trigger_types){
-				for my $t (@$triggers){
-					if($t =~ /\p{Uppercase}/){
-						push @UC_TRIGGERS, $class;
-						#warn "is $t uppercase?\n";
-						# the first one found should be sufficient.
-						last UC_TRIGGER;
+				UC_TRIGGER: for my $triggers (values %$trigger_types){
+					for my $t (@$triggers){
+						if($t =~ /\p{Uppercase}/){
+							push @UC_TRIGGERS, $class;
+							#warn "is $t uppercase?\n";
+							# the first one found should be sufficient.
+							last UC_TRIGGER;
+						}
 					}
 				}
 			}
