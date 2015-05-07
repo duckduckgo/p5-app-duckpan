@@ -42,7 +42,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
 - [Vagrant Virtual Environment](#vagrant-virtual-environment)
     + [Setup Instructions](#setup-instructions)
 - [Installing DuckPAN Locally](#installing-duckpan-locally)
-    + [Optional Dependecies](#optional-dependecies-for-staff-and-maintainers)
+    + [Optional Dependencies](#optional-dependencies-for-staff-and-maintainers)
     + [Adding Shell Completion](#adding-shell-completion)
 - [Using DuckPAN](#using-duckpan)
     + [Help](#help)
@@ -266,7 +266,7 @@ cpanm App::DuckPAN
 App::DuckPAN is up to date.
 ```
 
-### Optional Dependecies (for Staff and Maintainers)
+### Optional Dependencies (for Staff and Maintainers)
 
 DuckPAN now uses [**Node.js**](https://nodejs.org/), [**Handlebars.js**](http://handlebarsjs.com/), and [**Uglify.js**]() to build releases of the ZeroClickInfo repositories. Releases are only created and used by DuckDuckGo Staff and so these dependencies are **only required for DuckDuckGo Staff**. If you execute `dzil build`, `dzil install` or `dzil test` without these dependencies you will see errors.
 
