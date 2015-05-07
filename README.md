@@ -42,6 +42,7 @@ We run our DuckPAN tests against Perl 5.16 and 5.18 using Travis (https://travis
 - [Vagrant Virtual Environment](#vagrant-virtual-environment)
     + [Setup Instructions](#setup-instructions)
 - [Installing DuckPAN Locally](#installing-duckpan-locally)
+    + [Optional Dependecies](#optional-dependecies-for-staff-and-maintainers)
     + [Adding Shell Completion](#adding-shell-completion)
 - [Using DuckPAN](#using-duckpan)
     + [Help](#help)
@@ -265,7 +266,17 @@ cpanm App::DuckPAN
 App::DuckPAN is up to date.
 ```
 
-**Update:** We've just added a new, non-Perl dependency to DuckPAN: handlebars.js -- More updates are coming soon, but for now if you want to install/run DuckPAN locally [**you'll also need to install node.js**](https://nodejs.org/). Once you've installed Node, you'll also need to install Handlebars.js and Uglify.js by running:
+### Optional Dependecies (for Staff and Maintainers)
+
+DuckPAN now uses [**Node.js**](https://nodejs.org/), [**Handlebars.js**](http://handlebarsjs.com/), and [**Uglify.js**]() to build releases of the ZeroClickInfo repositories. Releases are only created and used by DuckDuckGo Staff and so these dependencies are **only required for DuckDuckGo Staff**. If you execute `dzil build`, `dzil install` or `dzil test` without these dependencies you will see errors.
+
+#### Installing Node.js
+
+Executables and binaries along with installation instructions can be found on the Node.js [download page](https://nodejs.org/download/).
+
+#### Installing Handlebars.js and Uglify.js
+
+Once you've installed Node, you'll also need to install Handlebars.js and Uglify.js by running:
 
 ```
 npm install -g handlebars@1.3.0 uglifyjs
