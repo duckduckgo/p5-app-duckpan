@@ -6,16 +6,24 @@ with qw( App::DuckPAN::Cmd );
 
 use MooX::Options protect_argv => 0;
 
+option full => (
+	is          => 'ro',
+	lazy        => 1,
+	short       => 'f',
+	default     => sub { 0 },
+	doc         => 'run full test suite via dzil',
+);
+
 sub run {
     my ( $self ) = @_;
 
     my $ret = 0;
 
-    if (-e 'dist.ini') {
-      $ret = system('dzil test');
-      $self->app->emit_error('Could not begin testing. Is Dist::Zilla installed?') if $ret == -1;
+    if ($self->full) {
+        $self->app->emit_error("Could not find dist.ini.") unless -e 'dist.ini';
+        $ret = system('dzil test');
+        $self->app->emit_error('Could not begin testing. Is Dist::Zilla installed?') if $ret == -1;
     } else {
-      $self->app->emit_notice("Could not find dist.ini.");
       $ret = system('prove -Ilib');
     }
 
