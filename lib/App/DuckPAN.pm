@@ -138,57 +138,57 @@ has ia_types => (
 );
 
 sub _build_ia_types {
-    my $ddg_path = path('lib', 'DDG');
-    my $t_dir = path('t');
-    return [{
-            name      => 'Goodie',
-            dir       => $ddg_path->child('Goodie'),
-            supported => 1,
-            templates => {
-                code => {
-                    in  => path('template', 'lib', 'DDG', 'Goodie', 'Example.pm'),
-                    out => $ddg_path->child('Goodie')
-                },
-                test => {
-                    in  => path('template', 't', 'Example.t'),
-                    out => $t_dir
-                },
-            },
-        },
-        {
-            name      => 'Spice',
-            dir       => $ddg_path->child('Spice'),
-            supported => 1,
-            templates => {
-                code => {
-                    in  => path('template', 'lib', 'DDG', 'Spice', 'Example.pm'),
-                    out => $ddg_path->child('Spice')
-                },
-                test => {
-                    in  => path('template', 't', 'Example.t'),
-                    out => $t_dir
-                },
-                handlebars => {
-                    in  => path('template', 'share', 'spice', 'example', 'example.handlebars'),
-                    out => path('share',    'spice')
-                },
-                js => {
-                    in  => path('template', 'share', 'spice', 'example', 'example.js'),
-                    out => path('share',    'spice')
-                },
-            },
-        },
-        {
-            name      => 'Fathead',
-            dir       => $ddg_path->child('Fathead'),
-            supported => 0
-        },
-        {
-            name      => 'Longtail',
-            dir       => $ddg_path->child('Longtail'),
-            supported => 0
-        },
-    ];
+	my $ddg_path = path('lib', 'DDG');
+	my $t_dir = path('t');
+	return [{
+			name      => 'Goodie',
+			dir       => $ddg_path->child('Goodie'),
+			supported => 1,
+			templates => {
+				code => {
+					in  => path('template', 'lib', 'DDG', 'Goodie', 'Example.pm'),
+					out => $ddg_path->child('Goodie')
+				},
+				test => {
+					in  => path('template', 't', 'Example.t'),
+					out => $t_dir
+				},
+			},
+		},
+		{
+			name      => 'Spice',
+			dir       => $ddg_path->child('Spice'),
+			supported => 1,
+			templates => {
+				code => {
+					in  => path('template', 'lib', 'DDG', 'Spice', 'Example.pm'),
+					out => $ddg_path->child('Spice')
+				},
+				test => {
+					in  => path('template', 't', 'Example.t'),
+					out => $t_dir
+				},
+				handlebars => {
+					in  => path('template', 'share', 'spice', 'example', 'example.handlebars'),
+					out => path('share',    'spice')
+				},
+				js => {
+					in  => path('template', 'share', 'spice', 'example', 'example.js'),
+					out => path('share',    'spice')
+				},
+			},
+		},
+		{
+			name      => 'Fathead',
+			dir       => $ddg_path->child('Fathead'),
+			supported => 0
+		},
+		{
+			name      => 'Longtail',
+			dir       => $ddg_path->child('Longtail'),
+			supported => 0
+		},
+	];
 }
 
 sub get_reply {
@@ -442,8 +442,8 @@ sub check_ssh {
 }
 
 my %perl_versions = (
-    required    => Perl::Version->new('v5.14'),
-    recommended => Perl::Version->new('v5.16'),
+	required    => Perl::Version->new('v5.14'),
+	recommended => Perl::Version->new('v5.16'),
 );
 
 sub check_perl {
@@ -470,23 +470,23 @@ sub check_app_duckpan {
 	my ($self) = @_;
 	my $ok                = 1;
 	my $installed_version = $self->get_local_app_duckpan_version;
-    my $pin_version       = $ENV{"DuckPAN"} || undef;
+	my $pin_version       = $ENV{"DuckPAN"} || undef;
 	return $ok if $installed_version && $installed_version == '9.999';
 	$self->emit_info("Checking for latest App::DuckPAN... ");
 	my $packages = $self->duckpan_packages;
 	my $module   = $packages->package('App::DuckPAN');
 	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
-    my $latest_version = version->parse($module->version);
+	my $latest_version = version->parse($module->version);
 
 	if ($installed_version >= $latest_version) {
 		my $msg = "App::DuckPAN version: $installed_version";
 		$msg .= " (duckpan has $latest_version )" if $installed_version ne $latest_version;
 		$self->emit_debug($msg);
 	} elsif ($pin_version && $pin_version < $latest_version) {
-        my @msg = ("A newer version of DuckPAN exists: $latest_version.");
-        push @msg, ("You have the version pinned to: $pin_version. Please update your version pin!");
-        $self->emit_notice(@msg);
-    } else {
+		my @msg = ("A newer version of DuckPAN exists: $latest_version.");
+		push @msg, ("You have the version pinned to: $pin_version. Please update your version pin!");
+		$self->emit_notice(@msg);
+	} else {
 		my @msg = ("Please install the latest App::DuckPAN package with: duckpan upgrade");
 		unshift @msg, "You have version: $installed_version, latest is: $latest_version!" if ($installed_version);
 		$self->emit_error(@msg);
@@ -499,23 +499,23 @@ sub check_ddg {
 	my ($self) = @_;
 	my $ok                = 1;
 	my $installed_version = $self->get_local_ddg_version;
-    my $pin_version       = $ENV{"DDG"} || undef;
+	my $pin_version       = $ENV{"DDG"} || undef;
 	return $ok if $installed_version && $installed_version == '9.999';
 	$self->emit_info("Checking for latest DDG Perl package...");
 	my $packages = $self->duckpan_packages;
 	my $module   = $packages->package('DDG');
 	my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
-    my $latest_version = version->parse($module->version);
+	my $latest_version = version->parse($module->version);
 
 	if ($installed_version >= $latest_version) {
 		my $msg = "DDG version: $installed_version";
 		$msg .= " (duckpan has $latest_version )" if $installed_version ne $latest_version;
 		$self->emit_debug($msg);
 	} elsif ($pin_version && $pin_version < $latest_version){
-            my @msg = ("A newer version of DDG exists: $latest_version.");
-            push @msg, ("You have the version pinned to: $pin_version. Please update your version pin!");
-            $self->emit_notice(@msg);
-    } else {
+			my @msg = ("A newer version of DDG exists: $latest_version.");
+			push @msg, ("You have the version pinned to: $pin_version. Please update your version pin!");
+			$self->emit_notice(@msg);
+	} else {
 		my @msg = ("Please install the latest DDG package with: duckpan DDG");
 		if ($installed_version) {
 			unshift @msg, "You have version: $installed_version, latest is: $latest_version!";
@@ -607,14 +607,14 @@ To contribute to DuckPAN, please visit L<https://github.com/duckduckgo/p5-app-du
 
 B<IRC>:
 
-    We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
+	We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
 
 B<Repository>:
 
-    L<https://github.com/duckduckgo/p5-app-duckpan>
+	L<https://github.com/duckduckgo/p5-app-duckpan>
 
 B<Issue Tracker>:
 
-    L<https://github.com/duckduckgo/p5-app-duckpan/issues>
+	L<https://github.com/duckduckgo/p5-app-duckpan/issues>
 
 =cut
