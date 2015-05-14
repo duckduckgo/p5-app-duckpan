@@ -123,7 +123,7 @@ sub duckpan_install {
                         "You don't have $package installed. Installing latest version ($duckpan_module_version)";
 			$install_it = 1;
 		} elsif ($pin_version) {
-			$self->app->emit_info("$package: $localver installed, $pin_version pin, $duckpan_module_version latest");
+			$self->app->emit_info("$package: $localver installed, $pin_version pinned, $duckpan_module_version latest");
 			if ($pin_version != $localver) {
 				#  We continue here, even if the version is larger than latest released,
 				#  on the premise that there might exist unreleased development versions.
@@ -131,10 +131,15 @@ sub duckpan_install {
 					$reinstall  = 1;       # Let us roll back, if necessary. Multiple packages may confuse this, but little harm.
 					$install_it = 1;
 				} else {
-					$message    = 'Could not locate version ' . $pin_version . ' of  ' . $package;
-					$install_it = 0;
+                    $message = "Could not locate version $pin_version of \'$package\'";
+                    $self->app->emit_and_exit(-1, $message);
 				}
-			}
+			} else {
+                $message = ($pin_version == $duckpan_module_version) ?
+                    "You already have the latest version of \'$package\' installed!" :
+                    "A newer version of \'$package\' exists. Please update your version pin to match the newest version: $duckpan_module_version";
+                $install_it = 0;
+            }
 		} elsif ($localver == $duckpan_module_version) {
 			$message = "You already have latest version ($localver) of $package";
 		} elsif ($localver > $duckpan_module_version) {
