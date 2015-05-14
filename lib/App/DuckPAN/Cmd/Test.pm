@@ -15,19 +15,20 @@ option full => (
 );
 
 sub run {
-    my ( $self ) = @_;
+	my ( $self ) = @_;
 
-    my $ret = 0;
+	my $ret = 0;
 
-    if ($self->full) {
-        $self->app->emit_error("Could not find dist.ini.") unless -e 'dist.ini';
-        $ret = system('dzil test');
-        $self->app->emit_error('Could not begin testing. Is Dist::Zilla installed?') if $ret == -1;
-    } else {
-      $ret = system('prove -Ilib');
-    }
+	if ($self->full) {
+		$self->app->emit_error("Could not find dist.ini.") unless -e "dist.ini";
+		$ret = system("dzil test");
+		$self->app->emit_error("Could not begin testing. Is Dist::Zilla installed?") if $ret;
+	} else {
+		$ret = system("prove -Ilib");
+		$self->app->emit_error("Tests failed! See output above for details") if $ret;
+	}
 
-    return $ret;
+	return $ret;
 }
 
 1;
