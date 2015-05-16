@@ -39,11 +39,11 @@ sub _build_page_info {
         locales   => [],
         css       => [],
         templates => [{
-                name     => 'DuckPAN JS',
-                internal => $cache_path->child('duckpan.js'),
+                name     => 'Template Compiling JS',
+                internal => $cache_path->child('template_compiler.js'),
                 # stored locally, no need to make web request for this
                 external => undef,
-                desc     => 'Small script DuckPAN runs on SERP load; compiles Spice templates',
+                desc     => 'Small script DuckPAN runs on SERP load; compiles Spice IA templates',
             },
         ],
         root => [{
@@ -109,7 +109,7 @@ sub _run_app {
 
     my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@$args)};
 
-    $self->app->emit_debug("Hostname is: http://" . $self->hostname);
+    $self->app->emit_debug("Hostname is: https://" . $self->hostname);
     $self->app->emit_info("Checking asset cache...");
 
     foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice templates))) {
@@ -150,7 +150,6 @@ sub _run_app {
 sub slurp_or_empty {
     my ($self, $which) = @_;
     my $cache_path = $self->asset_cache_path;
-
     my $contents = '';
     foreach my $which_file (grep { $_->{internal} } (@$which)) {
         my $where = $which_file->{internal};
@@ -242,13 +241,17 @@ sub change_html {
     # Temp Fix: Force ignore of d.js & duckduck.
     # This logic needs to be improved!
 
-    my $has_dpanjs = 0;
+    my $has_ddh = 0;
     for (@script) {
         if (my $src = $_->attr('src')) {
             next if ($src =~ m/^\/\?duckduckhack_/); # Already updated, no need to do again
             if ($src =~ m/^\/(dpan\d+|duckpan)\.js/) {
-                $_->attr('src','/?duckduckhack_js=1');
-                $has_dpanjs = 1;
+                if ($has_ddh){
+                    $_->attr('src','/?duckduckhack_ignore=1');
+                } else {
+                    $_->attr('src','/?duckduckhack_js=1');
+                    $has_ddh = 1;
+                }
             } elsif ($src =~ m/^\/(g\d+|serp)\.js/) {
                 $_->attr('src','/?duckduckhack_templates=1');
             } elsif ($src =~ m/^\/(d\d+|base)\.js/) {
@@ -256,7 +259,7 @@ sub change_html {
                 # If dpan.js is not present (ie. homepage)
                 # make sure we serve the js rather than blocking
                 # the call to d.js
-                if ($has_dpanjs){
+                if ($has_ddh){
                     $_->attr('src','/?duckduckhack_ignore=1');
                 } else {
                     $_->attr('src','/?duckduckhack_js=1');
@@ -368,7 +371,7 @@ sub retrieve_and_cache {
 
     my $to_file    = $asset->{internal};
     my $path_start = (substr($asset->{external}, 0, 1) eq '/') ? '' : '/';
-    my $url        = 'http://' . $self->hostname . $path_start . $asset->{external};
+    my $url        = 'https://' . $self->hostname . $path_start . $asset->{external};
     my $prefix     = ($sub_of) ? '[via ' . $sub_of->{name} . '] ' : '';
     $prefix .= '[' . $asset->{name} . '] ';
     if ($to_file->exists && (time - $to_file->stat->ctime) < $self->app->cachesec) {
