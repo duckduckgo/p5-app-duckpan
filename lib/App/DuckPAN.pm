@@ -520,7 +520,7 @@ sub check_ia_bundles {
 	my ($self)   = @_;
 	my $ok       = 1;
 	my @ia_types = qw(Goodie Spice Fathead Longtail);
-	my @bundles  = map { "DDG::". $_ . "Bundle::OpenSourceDuckDuckGo" } @ia_types;
+	my @bundles  = map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } @ia_types;
 
 	$self->emit_info("Checking for latest IA Bundles...");
 	my $packages = $self->duckpan_packages;
