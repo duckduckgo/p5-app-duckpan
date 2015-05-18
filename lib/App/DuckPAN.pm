@@ -469,9 +469,9 @@ sub check_perl {
 
 sub check_app_duckpan {
 	my ($self) = @_;
-	my $ok = 1;
-	my $installed_version = $self->get_local_app_duckpan_version;
+	my $ok                = 1;
 	my $pin_version       = $ENV{"DuckPAN"} || undef;
+	my $installed_version = $self->get_local_app_duckpan_version;
 	return $ok if $installed_version && $installed_version == '9.999';
 	$self->emit_info("Checking for latest App::DuckPAN... ");
 	my $packages = $self->duckpan_packages;
@@ -482,7 +482,7 @@ sub check_app_duckpan {
 	if ($installed_version >= $latest_version) {
 		my $msg = "App::DuckPAN version: $installed_version";
 		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
-		$self->emit_notice($msg);
+		$self->emit_debug($msg);
 	} else {
 		my @msg = (
 			"You have version $installed_version, latest is " . $module->version . "!",
@@ -496,8 +496,8 @@ sub check_app_duckpan {
 sub check_ddg {
 	my ($self) = @_;
 	my $ok                = 1;
-	my $installed_version = $self->get_local_ddg_version;
 	my $pin_version       = $ENV{"DDG"} || undef;
+	my $installed_version = $self->get_local_ddg_version;
 	return $ok if $installed_version && $installed_version == '9.999';
 	$self->emit_info("Checking for latest DDG Perl package...");
 	my $packages = $self->duckpan_packages;
@@ -510,8 +510,10 @@ sub check_ddg {
 		$msg .= " (duckpan has $latest_version )" if $installed_version ne $latest_version;
 		$self->emit_debug($msg);
 	} elsif ($pin_version && $pin_version < $latest_version){
-			my @msg = ("A newer version of DDG exists: $latest_version.");
-			push @msg, ("You have the version pinned to: $pin_version. Please update your version pin!");
+			my @msg = (
+				"A newer version of DDG exists: $latest_version.",
+				"You have the version pinned to: $pin_version. Please update your version pin!"
+			);
 			$self->emit_notice(@msg);
 	} else {
 		if ($installed_version) {
