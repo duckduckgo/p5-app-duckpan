@@ -279,7 +279,7 @@ sub execute {
 			} elsif ($_ =~ m/^(duckpan|upgrade|update|reinstall)$/i) {
 				$self->empty_cache unless $self->empty;
 				push @modules, 'App::DuckPAN';
-                push @modules, map { "DDG::".$_."Bundle::OpenSourceDuckDuckGo" } qw(Goodie Spice Fathead Longtail) if $_ =~ /^(?:upgrade|reinstall)$/i;
+				push @modules, map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } qw(Goodie Spice Fathead Longtail) if $_ =~ /^(?:upgrade|reinstall)$/i;
 				push @modules, 'DDG' if $_ =~ /^(?:upgrade|reinstall)$/i;
 				unshift @modules, 'reinstall' if lc($_) eq 'reinstall';
 			} else {
@@ -469,7 +469,7 @@ sub check_perl {
 
 sub check_app_duckpan {
 	my ($self) = @_;
-	my $ok                = 1;
+	my $ok = 1;
 	my $installed_version = $self->get_local_app_duckpan_version;
 	return $ok if $installed_version && $installed_version == '9.999';
 	$self->emit_info("Checking for latest App::DuckPAN... ");
@@ -479,7 +479,7 @@ sub check_app_duckpan {
 	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
 		my $msg = "App::DuckPAN version: $installed_version";
 		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
-        $self->emit_notice($msg);
+		$self->emit_notice($msg);
 	} else {
 		my @msg = ("Please install the latest App::DuckPAN package with: duckpan upgrade");
 		unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!" if ($installed_version);
@@ -505,7 +505,7 @@ sub check_ddg {
 		my @msg = ("Please install the latest DDG package with: duckpan DDG");
 		if ($installed_version) {
 			unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!";
-            $self->emit_notice(@msg);
+			$self->emit_notice(@msg);
 		} else {
 			unshift @msg, "You don't have DDG installed! Installing latest version " . $module->version . "!";
 			$self->emit_notice(@msg);
@@ -516,7 +516,7 @@ sub check_ddg {
 }
 
 sub check_ia_bundles {
-    my ($self)   = @_;
+	my ($self)   = @_;
 	my $ok       = 1;
     my @ia_types = qw(Goodie Spice Fathead Longtail);
     my @bundles  = map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } @ia_types;
