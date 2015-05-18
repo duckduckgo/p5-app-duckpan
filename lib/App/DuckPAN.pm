@@ -279,6 +279,7 @@ sub execute {
 			} elsif ($_ =~ m/^(duckpan|upgrade|update|reinstall)$/i) {
 				$self->empty_cache unless $self->empty;
 				push @modules, 'App::DuckPAN';
+                push @modules, map { "DDG::".$_."Bundle::OpenSourceDuckDuckGo" } qw(Goodie Spice Fathead Longtail) if $_ =~ /^(?:upgrade|reinstall)$/i;
 				push @modules, 'DDG' if $_ =~ /^(?:upgrade|reinstall)$/i;
 				unshift @modules, 'reinstall' if lc($_) eq 'reinstall';
 			} else {
@@ -388,7 +389,7 @@ sub check_requirements {
 		$self->emit_info("Checking for DuckPAN requirements...");
 
 		$self->emit_and_exit(1, 'Requirements check failed')
-		  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ddg && $self->check_ssh && $self->check_git);
+		  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ia_bundles && $self->check_ddg && $self->check_ssh && $self->check_git);
 	}
 	$signal_file->touch;
 
@@ -478,7 +479,7 @@ sub check_app_duckpan {
 	if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
 		my $msg = "App::DuckPAN version: $installed_version";
 		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
-		$self->emit_debug($msg);
+        $self->emit_notice($msg);
 	} else {
 		my @msg = ("Please install the latest App::DuckPAN package with: duckpan upgrade");
 		unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!" if ($installed_version);
@@ -505,12 +506,45 @@ sub check_ddg {
 		my @msg = ("Please install the latest DDG package with: duckpan DDG");
 		if ($installed_version) {
 			unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!";
+            $self->emit_notice(@msg);
 		} else {
 			unshift @msg, "You don't have DDG installed! Latest is " . $module->version . "!";
+		    $self->emit_error(@msg);
+		    $ok = 0;
 		}
-		$self->emit_error(@msg);
-		$ok = 0;
 	}
+	return $ok;
+}
+
+sub check_ia_bundles {
+    my ($self)   = @_;
+	my $ok       = 1;
+    my @ia_types = qw(Goodie Spice Fathead Longtail);
+    my @bundles  = map { "DDG::". $_ . "Bundle::OpenSourceDuckDuckGo" } @ia_types;
+
+	$self->emit_info("Checking for latest IA Bundles...");
+	my $packages = $self->duckpan_packages;
+    foreach my $bundle (@bundles){
+	    my $installed_version = $self->perl->get_local_version($bundle);
+        my $module   = $packages->package($bundle);
+        my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
+        if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
+            my $msg = "$bundle version: $installed_version";
+            $msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+            $self->emit_debug($msg);
+        } else {
+            my @msg = ("Please install the latest $bundle package with: duckpan $bundle");
+            if ($installed_version) {
+                unshift @msg, "$bundle: You have version " . $installed_version . ", latest is " . $module->version . "!";
+                $self->emit_notice(@msg);
+            } else {
+                unshift @msg, "You don't have $bundle installed! Latest is " . $module->version . "!";
+                $self->emit_error(@msg);
+                $ok = 0;
+            }
+        }
+    }
+
 	return $ok;
 }
 
