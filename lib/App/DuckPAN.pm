@@ -99,10 +99,10 @@ option duckpan => (
 );
 
 sub _ua_string {
-  my ($self) = @_;
-  my $class   = ref $self || $self;
-  my $version = $class->VERSION || '9.999';
-  return "$class/$version";
+	my ($self) = @_;
+	my $class   = ref $self || $self;
+	my $version = $class->VERSION || '9.999';
+	return "$class/$version";
 }
 
 option http_proxy => (
@@ -138,57 +138,57 @@ has ia_types => (
 );
 
 sub _build_ia_types {
-    my $ddg_path = path('lib', 'DDG');
-    my $t_dir = path('t');
-    return [{
-            name      => 'Goodie',
-            dir       => $ddg_path->child('Goodie'),
-            supported => 1,
-            templates => {
-                code => {
-                    in  => path('template', 'lib', 'DDG', 'Goodie', 'Example.pm'),
-                    out => $ddg_path->child('Goodie')
-                },
-                test => {
-                    in  => path('template', 't', 'Example.t'),
-                    out => $t_dir
-                },
-            },
-        },
-        {
-            name      => 'Spice',
-            dir       => $ddg_path->child('Spice'),
-            supported => 1,
-            templates => {
-                code => {
-                    in  => path('template', 'lib', 'DDG', 'Spice', 'Example.pm'),
-                    out => $ddg_path->child('Spice')
-                },
-                test => {
-                    in  => path('template', 't', 'Example.t'),
-                    out => $t_dir
-                },
-                handlebars => {
-                    in  => path('template', 'share', 'spice', 'example', 'example.handlebars'),
-                    out => path('share',    'spice')
-                },
-                js => {
-                    in  => path('template', 'share', 'spice', 'example', 'example.js'),
-                    out => path('share',    'spice')
-                },
-            },
-        },
-        {
-            name      => 'Fathead',
-            dir       => $ddg_path->child('Fathead'),
-            supported => 0
-        },
-        {
-            name      => 'Longtail',
-            dir       => $ddg_path->child('Longtail'),
-            supported => 0
-        },
-    ];
+	my $ddg_path = path('lib', 'DDG');
+	my $t_dir = path('t');
+	return [{
+			name      => 'Goodie',
+			dir       => $ddg_path->child('Goodie'),
+			supported => 1,
+			templates => {
+				code => {
+					in  => path('template', 'lib', 'DDG', 'Goodie', 'Example.pm'),
+					out => $ddg_path->child('Goodie')
+				},
+				test => {
+					in  => path('template', 't', 'Example.t'),
+					out => $t_dir
+				},
+			},
+		},
+		{
+			name      => 'Spice',
+			dir       => $ddg_path->child('Spice'),
+			supported => 1,
+			templates => {
+				code => {
+					in  => path('template', 'lib', 'DDG', 'Spice', 'Example.pm'),
+					out => $ddg_path->child('Spice')
+				},
+				test => {
+					in  => path('template', 't', 'Example.t'),
+					out => $t_dir
+				},
+				handlebars => {
+					in  => path('template', 'share', 'spice', 'example', 'example.handlebars'),
+					out => path('share',    'spice')
+				},
+				js => {
+					in  => path('template', 'share', 'spice', 'example', 'example.js'),
+					out => path('share',    'spice')
+				},
+			},
+		},
+		{
+			name      => 'Fathead',
+			dir       => $ddg_path->child('Fathead'),
+			supported => 0
+		},
+		{
+			name      => 'Longtail',
+			dir       => $ddg_path->child('Longtail'),
+			supported => 0
+		},
+	];
 }
 
 sub get_reply {
@@ -443,8 +443,8 @@ sub check_ssh {
 }
 
 my %perl_versions = (
-    required    => Perl::Version->new('v5.14'),
-    recommended => Perl::Version->new('v5.16'),
+	required    => Perl::Version->new('v5.14'),
+	recommended => Perl::Version->new('v5.16'),
 );
 
 sub check_perl {
@@ -482,9 +482,9 @@ sub check_app_duckpan {
 		$self->emit_notice($msg);
 	} else {
 		my @msg = (
-		    "You have version $installed_version, latest is " . $module->version . "!",
-            "Please install the latest App::DuckPAN package with: duckpan upgrade"
-        );
+			"You have version $installed_version, latest is " . $module->version . "!",
+			"Please install the latest App::DuckPAN package with: duckpan upgrade"
+		);
 		$self->emit_notice(@msg);
 	}
 	return $ok;
@@ -505,10 +505,10 @@ sub check_ddg {
 		$self->emit_debug($msg);
 	} else {
 		if ($installed_version) {
-            my @msg = (
-                "You have version $installed_version, latest is " . $module->version . "!",
-                "Please install the latest DDG package with: duckpan DDG"
-            );
+			my @msg = (
+				"You have version $installed_version, latest is " . $module->version . "!",
+				"Please install the latest DDG package with: duckpan DDG"
+			);
 			$self->emit_notice(@msg);
 		} else {
 			$self->perl->duckpan_install('DDG');
@@ -520,31 +520,31 @@ sub check_ddg {
 sub check_ia_bundles {
 	my ($self)   = @_;
 	my $ok       = 1;
-    my @ia_types = qw(Goodie Spice Fathead Longtail);
-    my @bundles  = map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } @ia_types;
+	my @ia_types = qw(Goodie Spice Fathead Longtail);
+	my @bundles  = map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } @ia_types;
 
 	$self->emit_info("Checking for latest IA Bundles...");
 	my $packages = $self->duckpan_packages;
-    foreach my $bundle (@bundles){
-	    my $installed_version = $self->perl->get_local_version($bundle);
-        my $module   = $packages->package($bundle);
-        my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
-        if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-            my $msg = "$bundle version: $installed_version";
-            $msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
-            $self->emit_debug($msg);
-        } else {
-            if ($installed_version) {
-                my @msg = (
-                    "You have version $installed_version, latest is " . $module->version . "!",
-                    "Please install the latest $bundle package with: duckpan $bundle"
-                );
-                $self->emit_notice(@msg);
-            } else {
-                $self->perl->duckpan_install($bundle);
-            }
-        }
-    }
+	foreach my $bundle (@bundles){
+		my $installed_version = $self->perl->get_local_version($bundle);
+		my $module   = $packages->package($bundle);
+		my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
+		if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
+			my $msg = "$bundle version: $installed_version";
+			$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
+			$self->emit_debug($msg);
+		} else {
+			if ($installed_version) {
+				my @msg = (
+					"You have version $installed_version, latest is " . $module->version . "!",
+					"Please install the latest $bundle package with: duckpan $bundle"
+				);
+				$self->emit_notice(@msg);
+			} else {
+				$self->perl->duckpan_install($bundle);
+			}
+		}
+	}
 
 	return $ok;
 }
@@ -628,14 +628,14 @@ To contribute to DuckPAN, please visit L<https://github.com/duckduckgo/p5-app-du
 
 B<IRC>:
 
-    We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
+	We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
 
 B<Repository>:
 
-    L<https://github.com/duckduckgo/p5-app-duckpan>
+	L<https://github.com/duckduckgo/p5-app-duckpan>
 
 B<Issue Tracker>:
 
-    L<https://github.com/duckduckgo/p5-app-duckpan/issues>
+	L<https://github.com/duckduckgo/p5-app-duckpan/issues>
 
 =cut
