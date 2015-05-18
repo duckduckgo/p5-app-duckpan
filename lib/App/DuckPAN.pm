@@ -483,8 +483,7 @@ sub check_app_duckpan {
 	} else {
 		my @msg = ("Please install the latest App::DuckPAN package with: duckpan upgrade");
 		unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!" if ($installed_version);
-		$self->emit_error(@msg);
-		$ok = 0;
+		$self->emit_notice(@msg);
 	}
 	return $ok;
 }
@@ -508,9 +507,9 @@ sub check_ddg {
 			unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!";
             $self->emit_notice(@msg);
 		} else {
-			unshift @msg, "You don't have DDG installed! Latest is " . $module->version . "!";
-		    $self->emit_error(@msg);
-		    $ok = 0;
+			unshift @msg, "You don't have DDG installed! Installing latest version " . $module->version . "!";
+			$self->emit_notice(@msg);
+			$self->perl->duckpan_install($module);
 		}
 	}
 	return $ok;
@@ -520,7 +519,7 @@ sub check_ia_bundles {
     my ($self)   = @_;
 	my $ok       = 1;
     my @ia_types = qw(Goodie Spice Fathead Longtail);
-    my @bundles  = map { "DDG::". $_ . "Bundle::OpenSourceDuckDuckGo" } @ia_types;
+    my @bundles  = map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } @ia_types;
 
 	$self->emit_info("Checking for latest IA Bundles...");
 	my $packages = $self->duckpan_packages;
@@ -538,9 +537,9 @@ sub check_ia_bundles {
                 unshift @msg, "$bundle: You have version " . $installed_version . ", latest is " . $module->version . "!";
                 $self->emit_notice(@msg);
             } else {
-                unshift @msg, "You don't have $bundle installed! Latest is " . $module->version . "!";
-                $self->emit_error(@msg);
-                $ok = 0;
+                unshift @msg, "You don't have $bundle installed! Installing latest version " . $module->version . "!";
+                $self->emit_notice(@msg);
+                $self->perl->duckpan_install($bundle);
             }
         }
     }
