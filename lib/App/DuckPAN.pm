@@ -481,8 +481,10 @@ sub check_app_duckpan {
 		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
 		$self->emit_notice($msg);
 	} else {
-		my @msg = ("Please install the latest App::DuckPAN package with: duckpan upgrade");
-		unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!" if ($installed_version);
+		my @msg = (
+		    "You have version $installed_version, latest is " . $module->version . "!",
+            "Please install the latest App::DuckPAN package with: duckpan upgrade"
+        );
 		$self->emit_notice(@msg);
 	}
 	return $ok;
@@ -502,14 +504,14 @@ sub check_ddg {
 		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
 		$self->emit_debug($msg);
 	} else {
-		my @msg = ("Please install the latest DDG package with: duckpan DDG");
 		if ($installed_version) {
-			unshift @msg, "You have version " . $installed_version . ", latest is " . $module->version . "!";
+            my @msg = (
+                "You have version $installed_version, latest is " . $module->version . "!",
+                "Please install the latest DDG package with: duckpan DDG"
+            );
 			$self->emit_notice(@msg);
 		} else {
-			unshift @msg, "You don't have DDG installed! Installing latest version " . $module->version . "!";
-			$self->emit_notice(@msg);
-			$self->perl->duckpan_install($module);
+			$self->perl->duckpan_install('DDG');
 		}
 	}
 	return $ok;
@@ -532,13 +534,13 @@ sub check_ia_bundles {
             $msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
             $self->emit_debug($msg);
         } else {
-            my @msg = ("Please install the latest $bundle package with: duckpan $bundle");
             if ($installed_version) {
-                unshift @msg, "$bundle: You have version " . $installed_version . ", latest is " . $module->version . "!";
+                my @msg = (
+                    "You have version $installed_version, latest is " . $module->version . "!",
+                    "Please install the latest $bundle package with: duckpan $bundle"
+                );
                 $self->emit_notice(@msg);
             } else {
-                unshift @msg, "You don't have $bundle installed! Installing latest version " . $module->version . "!";
-                $self->emit_notice(@msg);
                 $self->perl->duckpan_install($bundle);
             }
         }
