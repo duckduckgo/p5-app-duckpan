@@ -148,7 +148,7 @@ sub duckpan_install {
 			$message = "You have an older version ($localver) of $package than duckpan.org. Installing latest version ($duckpan_module_version)";
 			$install_it = 1;
 		}
-		$self->app->emit_info($message);
+		$self->app->emit_notice($message);
 		push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
 	}
 
