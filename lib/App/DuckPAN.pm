@@ -279,7 +279,7 @@ sub execute {
 			} elsif ($_ =~ m/^(duckpan|upgrade|update|reinstall)$/i) {
 				$self->empty_cache unless $self->empty;
 				push @modules, 'App::DuckPAN';
-                push @modules, map { "DDG::".$_."Bundle::OpenSourceDuckDuckGo" } qw(Goodie Spice Fathead Longtail) if $_ =~ /^(?:upgrade|reinstall)$/i;
+				push @modules, map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } qw(Goodie Spice Fathead Longtail) if $_ =~ /^(?:upgrade|reinstall)$/i;
 				push @modules, 'DDG' if $_ =~ /^(?:upgrade|reinstall)$/i;
 				unshift @modules, 'reinstall' if lc($_) eq 'reinstall';
 			} else {
