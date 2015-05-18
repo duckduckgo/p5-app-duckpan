@@ -131,13 +131,13 @@ sub duckpan_install {
 					$reinstall  = 1;       # Let us roll back, if necessary. Multiple packages may confuse this, but little harm.
 					$install_it = 1;
 				} else {
-					$message = "Could not locate version $pin_version of \'$package\'";
+					$message = "Could not locate version $pin_version of '$package'";
 					$self->app->emit_and_exit(-1, $message);
 				}
 			} else {
 				$message = ($pin_version == $duckpan_module_version) ?
-					"You already have the latest version of \'$package\' installed!" :
-					"A newer version of \'$package\' exists. Please update your version pin to match the newest version: $duckpan_module_version";
+					"You already have the latest version of '$package' installed!" :
+					"A newer version of '$package' exists. Please update your version pin to match the newest version: $duckpan_module_version";
 				$install_it = 0;
 			}
 		} elsif ($localver == $duckpan_module_version) {
