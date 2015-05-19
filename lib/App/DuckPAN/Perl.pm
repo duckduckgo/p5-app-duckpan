@@ -48,7 +48,7 @@ sub get_local_version {
 	{
 		local $@;
 
-        # ensure $module is installed by trying to load (require) it
+		# ensure $module is installed by trying to load (require) it
 		eval {
 			my $m = Module::Data->new($module);
 			$m->require;
@@ -57,20 +57,20 @@ sub get_local_version {
 		} or return;
 	};
 
-    # $module (e.g. DuckPAN, DDG) has loaded, but no $VERSION exists
-    # This means we're not working with code that was built by DZIL
-    #
-    # Example:
-    # > ./bin/duckpan -I/lib/ -I../duckduckgo/lib server
+	# $module (e.g. DuckPAN, DDG) has loaded, but no $VERSION exists
+	# This means we're not working with code that was built by DZIL
+	#
+	# Example:
+	# > ./bin/duckpan -I/lib/ -I../duckduckgo/lib server
 	unless (defined $v) {
-        if ($module eq 'App::DuckPAN' || $module eq 'DDG'){
-            # When executing code in-place, $VERSION will not be defined.
-            # Only the installed package will have a defined version
-            # thanks to Dist::Zilla::Plugin::PkgVersion
-            return '9.999';
-        }
-        return;
-    }
+		if ($module eq 'App::DuckPAN' || $module eq 'DDG'){
+			# When executing code in-place, $VERSION will not be defined.
+			# Only the installed package will have a defined version
+			# thanks to Dist::Zilla::Plugin::PkgVersion
+			return '9.999';
+		}
+		return;
+	}
 	return version->parse($v) unless ref $v;
 	return $v;
 }
@@ -78,12 +78,12 @@ sub get_local_version {
 sub cpanminus_install_error {
 	shift->app->emit_and_exit(1,
 		"Failure on installation of modules!",
-        "There are several possible explanations and fixes for this error:",
-        "1. The download from CPAN was unsuccessful - Please restart this installer.",
-        "2. Some other error occured - Please read the `build.log` mentioned in the errors and see if you can fix the problem yourself.",
-        "If you are unable to solve the problem, please let us know by making a GitHub Issue in the DuckPAN Repo:",
-        "https://github.com/duckduckgo/p5-app-duckpan/issues",
-        "Make sure to attach the `build.log` file if it exists. Otherwise, copy/paste the output you see."
+		"There are several possible explanations and fixes for this error:",
+		"1. The download from CPAN was unsuccessful - Please restart this installer.",
+		"2. Some other error occured - Please read the `build.log` mentioned in the errors and see if you can fix the problem yourself.",
+		"If you are unable to solve the problem, please let us know by making a GitHub Issue in the DuckPAN Repo:",
+		"https://github.com/duckduckgo/p5-app-duckpan/issues",
+		"Make sure to attach the `build.log` file if it exists. Otherwise, copy/paste the output you see."
 	);
 }
 
@@ -119,11 +119,11 @@ sub duckpan_install {
 		my ($install_it, $message);
 		if ($reinstall || !$localver) {    # Note the ignored pinning.
 			$message = $reinstall ?
-                        "Reinstalling $package. Latest version ($duckpan_module_version)" :
-                        "You don't have $package installed. Installing latest version ($duckpan_module_version)";
+				"Reinstalling $package. Latest version ($duckpan_module_version)" :
+				"You don't have $package installed. Installing latest version ($duckpan_module_version)";
 			$install_it = 1;
 		} elsif ($pin_version) {
-			$self->app->emit_info("$package: $localver installed, $pin_version pin, $duckpan_module_version latest");
+			$self->app->emit_info("$package: $localver installed, $pin_version pinned, $duckpan_module_version latest");
 			if ($pin_version != $localver) {
 				#  We continue here, even if the version is larger than latest released,
 				#  on the premise that there might exist unreleased development versions.
@@ -131,9 +131,14 @@ sub duckpan_install {
 					$reinstall  = 1;       # Let us roll back, if necessary. Multiple packages may confuse this, but little harm.
 					$install_it = 1;
 				} else {
-					$message    = 'Could not locate version ' . $pin_version . ' of  ' . $package;
-					$install_it = 0;
+					$message = "Could not locate version $pin_version of '$package'";
+					$self->app->emit_and_exit(-1, $message);
 				}
+			} else {
+				$message = ($pin_version == $duckpan_module_version) ?
+					"You already have the latest version of '$package' installed!" :
+					"A newer version of '$package' exists. Please update your version pin to match the newest version: $duckpan_module_version";
+				$install_it = 0;
 			}
 		} elsif ($localver == $duckpan_module_version) {
 			$message = "You already have latest version ($localver) of $package";
