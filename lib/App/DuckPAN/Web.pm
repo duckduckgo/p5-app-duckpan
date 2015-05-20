@@ -5,6 +5,7 @@ use Moo;
 use DDG::Request;
 use DDG::Test::Location;
 use DDG::Test::Language;
+use DDG::Meta::Data;
 use Path::Tiny;
 use Plack::Request;
 use Plack::Response;
@@ -230,6 +231,7 @@ sub request {
 		my @calls_script = ();
 		my %calls_template = ();
 		my @calls_goodie;
+		my @ids;
 
 		for (@{$self->blocks}) {
 			push(@results,$_->request($ddg_request));
@@ -269,6 +271,10 @@ sub request {
 		# and sets up the page content accordingly
 		foreach my $result (@results) {
 
+			my $caller = $result->caller;
+			my $id = eval{ $caller->id };
+			push @ids, $id if $id;
+
 			# Info for terminal.
 			p($result) if $result;
 
@@ -280,10 +286,10 @@ sub request {
 																			'other';
 			my $is_goodie = $result_type eq 'goodie';
 			if (($result_type eq 'spice' || $is_goodie)
-				&& $result->caller->can('module_share_dir')) {
+				&& $caller->can('module_share_dir')) {
 				# grab associated JS, Handlebars and CSS
 				# and add them to correct arrays for injection into page
-				my $share_dir = path($result->caller->module_share_dir);
+				my $share_dir = path($caller->module_share_dir);
 				my @path = split(/\/+/, $share_dir);
 				my $ia_name = join("_", @path[2..$#path]);
 
@@ -344,7 +350,7 @@ sub request {
 						# Specifically allow unknown tags to support <svg> and <canvas>
 						$tb->ignore_unknown(0);
 						# Allow empty tags
-                                                $tb->empty_element_tags(1);
+						$tb->empty_element_tags(1);
 						$answer = $tb->parse_content($result->html)->guts;
 					}
 					$zci_body->push_content($answer);
@@ -390,19 +396,19 @@ sub request {
 		#   calls_nrc : css calls
 		#   calls_template : handlebars templates
 
-		my $calls_nrj;
+		my $calls_nrj = join('', map{ DDG::Meta::Data->get_js($_) } @ids);
 		my $calls_script = join('', map { q|<script type='text/JavaScript' src='| . $_ . q|'></script>| } @calls_script);
 		# For now we only allow a single goodie. If that changes, we will do the
 		# same join/map as with spices.
 		if(@calls_goodie){
 			my $goodie = shift @calls_goodie;
-			$calls_nrj = "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
+			$calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
 			# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
 			# $calls_script = q|<script type="text/JavaScript" class="script-run-on-ready">/*DDH.add(| . encode_json($goodie) . q|);*/</script>|;
 			$calls_script .= q|<script type="text/JavaScript" class="script-run-on-ready">/*window.setTimeout(DDH.add.bind(DDH, | . encode_json($goodie) . q|), 100);*/</script>|;
 		}
 		else{
-			$calls_nrj = @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
+			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
 		}
 		my $calls_nrc = @calls_nrc ? join(';', map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
 
