@@ -346,7 +346,7 @@ sub get_sub_assets {
         if (my $href = $_->attr('href')) {
             # We're looking for txxx.css and sxxx.css.
             # style.css and static.css are for development mode.
-            if ($href =~ m/^\/((?:[st]\d+|style|static|serp)\.css)/) {
+            if ($href =~ m/^\/((?:[str]\d+|style|static|serp)\.css)/) {
                 my $name = $1;
                 unshift @{$self->page_info->{css}},
                   {
