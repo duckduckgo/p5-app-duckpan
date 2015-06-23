@@ -45,6 +45,12 @@ has ua => (
 	},
 );
 
+# ddhX servers to use for API calls.
+has ddh_servers => (
+	is => 'ro',
+	default => sub { [reverse 1..10] }
+);
+
 sub BUILD {
 	my ( $self ) = @_;
 	my %share_dir_hash;
@@ -156,39 +162,53 @@ sub request {
 					# Make sure we replace "${dollar}" with "$".
 					$to =~ s/\$\{dollar\}/\$/g;
 
+					my ($wrap_jsonp_callback, $callback, $wrap_string_callback, $missing_envs, $accept_header) =
+						($rewrite->wrap_jsonp_callback, $rewrite->callback, $rewrite->wrap_string_callback, $rewrite->missing_envs, $rewrite->accept_header);
+
 					# Check if environment variables (most likely the API key) is missing.
 					# If it is missing, switch to the DDG endpoint.
-					if(defined $rewrite->missing_envs) {
-						 $to = 'https://ddh1.duckduckgo.com' . $request->request_uri;
+					my ($use_ddh, $request_uri);
+					if(defined $missing_envs) {
+						++$use_ddh;
+						$request_uri = $request->request_uri;
 						 # Display the URL that we used.
 						 print "\nAPI key not found. Using DuckDuckGo's endpoint:\n";
 					}
-					p($to);
 
-					my $res = $self->ua->request(HTTP::Request->new(
-						GET => $to,
-						[ $rewrite->accept_header ? ("Accept", $rewrite->accept_header) : () ]
+					my @ddh = @{$self->ddh_servers};
+					for my $ddh (@ddh){
+						$to = "https://ddh$ddh.duckduckgo.com$request_uri" if $use_ddh;
+						p($to);
+
+						my $res = $self->ua->request(HTTP::Request->new(
+							GET => $to,
+							[ $accept_header ? (Accept => $accept_header) : () ]
 						));
-					if ($res->is_success) {
-						$body = $res->decoded_content;
-						# Encode utf8 api_responses to bytestream for Plack.
-						utf8::encode $body if utf8::is_utf8 $body;
-						warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $rewrite->wrap_jsonp_callback && $rewrite->wrap_string_callback;
-						if ($rewrite->wrap_jsonp_callback && $rewrite->callback) {
-							$body = $rewrite->callback.'('.$body.');' unless defined $rewrite->missing_envs;
+
+						if ($res->is_success) {
+							$body = $res->decoded_content;
+							# Encode utf8 api_responses to bytestream for Plack.
+							utf8::encode $body if utf8::is_utf8 $body;
+							warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $wrap_jsonp_callback && $wrap_string_callback;
+							if ($wrap_jsonp_callback && $callback) {
+								$body = $callback.'('.$body.');' unless defined $missing_envs;
+							}
+							elsif ($wrap_string_callback && $callback) {
+								$body =~ s/"/\\"/g;
+								$body =~ s/\n/\\n/g;
+								$body =~ s/\R//g;
+								$body = qq{$callback("'.$body.'");} unless defined $missing_envs;
+							}
+							$response->code($res->code);
+							$response->content_type($res->content_type);
 						}
-						elsif ($rewrite->wrap_string_callback && $rewrite->callback) {
-							$body =~ s/"/\\"/g;
-							$body =~ s/\n/\\n/g;
-							$body =~ s/\R//g;
-							$body = $rewrite->callback.'("'.$body.'");' unless defined $rewrite->missing_envs;
+						else {
+							next if $use_ddh && ($ddh != $ddh[-1]);
+							p($res->status_line, color => { string => 'red' });
+							my $errormsg = (pop @{[split'::', $spice_class]}). ": ".$res->status_line;
+							$body = '$("#message").removeClass("is-hidden").append("<div class=\"msg msg--warning\">'. $errormsg .'</div>");';
 						}
-						$response->code($res->code);
-						$response->content_type($res->content_type);
-					} else {
-						p($res->status_line, color => { string => 'red' });
-						my $errormsg = (pop @{[split'::', $spice_class]}). ": ".$res->status_line;
-						$body = '$("#message").removeClass("is-hidden").append("<div class=\"msg msg--warning\">'. $errormsg .'</div>");';
+						last;
 					}
 				}
 			}
