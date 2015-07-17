@@ -89,9 +89,10 @@ sub _get_user_input {
 
 # Event that processes the query
 sub _run_query {
-    my ($k, $h, $query) = @_[KERNEL, HEAP, ARG0];    
-    
+    my ($k, $h, $query) = @_[KERNEL, HEAP, ARG0];
+
     my ($app, $blocks) = @$h{qw{app blocks}};
+    Encode::_utf8_on($query);
 
     try {
         my $request = DDG::Request->new(
