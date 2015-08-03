@@ -111,10 +111,10 @@ sub duckpan_install {
 		$sp =~ s/\:\:/_/g;
 
 		# special case: check for a pinned verison number
-		my $pinned_version		= $ENV{$sp};
-		my $installed_version	= $self->get_local_version($package);
-		my $latest_version		= version->parse($module->version);
-		my $duckpan_module_url	= $self->app->duckpan . 'authors/id/' . $module->distribution->pathname;
+		my $pinned_version      = $ENV{$sp};
+		my $installed_version   = $self->get_local_version($package);
+		my $latest_version      = version->parse($module->version);
+		my $duckpan_module_url  = $self->app->duckpan . 'authors/id/' . $module->distribution->pathname;
 
 		# Remind user about having pinned env variables
 		$self->app->emit_info("$package: $installed_version installed, $pinned_version pinned, $latest_version latest") if $pinned_version;
@@ -169,7 +169,7 @@ sub duckpan_install {
 
 	if(@to_install){
 		unshift @to_install, '--reinstall' if $reinstall;    # cpanm will do the actual forcing.
-		if(system "cpanm --fdfdfdfdfdf @to_install"){
+		if(system "cpanm @to_install"){
 			my $err = "cpanm failed (err $?) to (re)install the following modules:\n\n\t" .
 				join("\n\t", @to_install);
 			$self->app->emit_and_exit(-1, $err);

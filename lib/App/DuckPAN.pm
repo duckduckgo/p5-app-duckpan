@@ -276,16 +276,23 @@ sub execute {
 				/^dist/i ||
 				/^(ddg)$/i ||
 				/(opensourceduckduckgo)$/i ||
+				/^(goodie)$/i || /^(spice)$/ || /^(fathead)$/ || /^(longtail)$/ ||
 				/^app/i) {
 				my $m = lc $1;
+
+				if($m eq 'goodie' or $m eq 'spice' or $m eq 'fathead' or $m eq 'longtail'){
+					$_ = 'DDG::' . ucfirst($m) . 'Bundle::OpenSourceDuckDuckGo';
+					$m = 'opensourceduckduckgo';
+				}
+
 				if($m eq 'opensourceduckduckgo' && !$ddg){
 					unshift @modules, 'DDG';
-					++$ddg;
+					$ddg = 1;
 				}
 				elsif($m eq 'ddg' && $ddg){ next }
 				push @modules, $_;
 			}
-			elsif ($_ =~ m/^duckpan|update|(upgrade|reinstall)$/i) {
+			elsif (m/^duckpan|update|(upgrade|reinstall)$/i) {
 				my $upgrade_reinstall = lc $1;
 				$self->empty_cache unless $self->empty;
 				push @modules, 'App::DuckPAN';
