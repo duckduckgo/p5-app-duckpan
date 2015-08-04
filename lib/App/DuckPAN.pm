@@ -276,7 +276,7 @@ sub execute {
 				/^dist/i ||
 				/^(ddg)$/i ||
 				/(opensourceduckduckgo)$/i ||
-				/^(goodie)$/i || /^(spice)$/ || /^(fathead)$/ || /^(longtail)$/ ||
+				/^(goodie)$/i || /^(spice)$/i || /^(fathead)$/i || /^(longtail)$/i ||
 				/^app/i) {
 				my $m = lc $1;
 
