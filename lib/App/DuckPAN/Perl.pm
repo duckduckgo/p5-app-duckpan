@@ -92,10 +92,15 @@ sub cpanminus_install_error {
 sub duckpan_install {
 	my ($self, @modules) = @_;
 	my $mirror = $self->app->duckpan;
-	my $reinstall;
-	if ($modules[0] eq 'reinstall') {
+	my ($reinstall, $latest);
+	my $reinstall_latest = $modules[0];
+	if($reinstall_latest eq 'reinstall') {
 		# We sent in a signal to force reinstallation
 		$reinstall = 1;
+		shift @modules;
+	}
+	elsif($reinstall_latest eq 'latest') {
+		$latest = 1;
 		shift @modules;
 	}
 	my $packages = $self->app->duckpan_packages;
@@ -120,9 +125,11 @@ sub duckpan_install {
 		$self->app->emit_info("$package: $installed_version installed, $pinned_version pinned, $latest_version latest") if $pinned_version;
 
 		my ($install_it, $message);
-		if($reinstall || !$installed_version) {
+		if($reinstall || $latest || !$installed_version) {
 			# Prefer versions in the following order when (re)installing: installed, pinned, latest
-			my $version = $installed_version || $pinned_version || $latest_version;
+			# Latest ignores the installed version
+			my $version = $installed_version unless $latest;
+			$version ||= $pinned_version || $latest_version;
 			# update the url if not the latest
 			if($version != $latest_version){
 				unless($duckpan_module_url = $self->find_previous_url($module, $version)){

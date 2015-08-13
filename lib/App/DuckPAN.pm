@@ -292,13 +292,13 @@ sub execute {
 				elsif($m eq 'ddg' && $ddg){ next }
 				push @modules, $_;
 			}
-			elsif (m/^duckpan|update|(upgrade|reinstall)$/i) {
-				my $upgrade_reinstall = lc $1;
+			elsif (m/^duckpan|update|(upgrade|reinstall|latest)$/i) {
+				my ($all_modules, $reinstall_latest) = map { lc } ($1, $2);
 				$self->empty_cache unless $self->empty;
 				push @modules, 'App::DuckPAN';
-				if($upgrade_reinstall){
+				if($all_modules){
 					push @modules, 'DDG', map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } qw(Goodie Spice Fathead Longtail);
-					unshift @modules, 'reinstall' if $upgrade_reinstall eq 'reinstall';
+					unshift @modules, $reinstall_latest if $reinstall_latest; 
 				}
 			}
 			else {

@@ -53,7 +53,8 @@ Commands include:
     poupload        Upload .po translations file to Duck.co
     publisher       Start local web server for DuckDuckGo-Publisher static websites
     query           Test Instant Answer triggers on command line
-    reinstall       Reinstall most recent DuckPAN and DDG Perl modules
+    reinstall       Reinstalls installed, pinned, or most recent DuckPAN and DDG Perl modules
+    latest          Like reintall but ignores installed versions
     release         Pushes a new release of the current project to duckpan.org
     roadrunner      Same as installdeps, but skips tests (dangerous!)
     server          Start local web server to test Instant Answer display
@@ -147,7 +148,11 @@ Upgrade DuckPAN and DDG to the latest versions.
 
 =item C<duckpan reinstall>
 
-Force installation of the latest released versions of DuckPAN and DDG.
+Force installation of DuckPAN and DDG modules using the installed, pinned, or latest versions, in that order.
+
+=item C<duckpan latest>
+
+Like L<reinstall> except it ignores any installed version.
 
 =item C<duckpan -I [filepath ...]>
 
