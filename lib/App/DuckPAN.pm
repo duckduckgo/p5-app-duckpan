@@ -26,6 +26,8 @@ use Path::Tiny;
 use open qw/:std :utf8/;
 use App::DuckPAN::Cmd::Help;
 
+no warnings 'uninitialized';
+
 option dukgo_login => (
 	is => 'ro',
 	lazy => 1,
@@ -268,21 +270,39 @@ sub execute {
 	my @arr_args = grep { $_ !~ /^-/} @{$args}; # Command line switches make it here, so we try to remove
 	App::DuckPAN::Cmd::Help->run(1) if scalar @arr_args == 0;
 	if (@arr_args) {
-		my @modules;
-		my @left_args;
+		my (@modules, @left_args, $ddg);
 		for (@arr_args) {
-			if ($_ =~ /^www/i ||
-				$_ =~ /^dist/i ||
-				$_ =~ /^ddg/i ||
-				$_ =~ /^app/i) {
+			if (/^www/i ||
+				/^dist/i ||
+				/^(ddg)$/i ||
+				/(opensourceduckduckgo)$/i ||
+				/^(goodie)$/i || /^(spice)$/i || /^(fathead)$/i || /^(longtail)$/i ||
+				/^ddgc?::/i ||
+				/^app/i) {
+				my $m = lc $1;
+
+				if($m eq 'goodie' or $m eq 'spice' or $m eq 'fathead' or $m eq 'longtail'){
+					$_ = 'DDG::' . ucfirst($m) . 'Bundle::OpenSourceDuckDuckGo';
+					$m = 'opensourceduckduckgo';
+				}
+
+				if($m eq 'opensourceduckduckgo' && !$ddg){
+					unshift @modules, 'DDG';
+					$ddg = 1;
+				}
+				elsif($m eq 'ddg' && $ddg){ next }
 				push @modules, $_;
-			} elsif ($_ =~ m/^(duckpan|upgrade|update|reinstall)$/i) {
+			}
+			elsif (m/^duckpan|update|(upgrade|reinstall|latest)$/i) {
+				my ($all_modules, $reinstall_latest) = map { lc } ($1, $2);
 				$self->empty_cache unless $self->empty;
 				push @modules, 'App::DuckPAN';
-				push @modules, map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } qw(Goodie Spice Fathead Longtail) if $_ =~ /^(?:upgrade|reinstall)$/i;
-				push @modules, 'DDG' if $_ =~ /^(?:upgrade|reinstall)$/i;
-				unshift @modules, 'reinstall' if lc($_) eq 'reinstall';
-			} else {
+				if($all_modules){
+					push @modules, 'DDG', map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } qw(Goodie Spice Fathead Longtail);
+					unshift @modules, $reinstall_latest if $reinstall_latest; 
+				}
+			}
+			else {
 				push @left_args, $_;
 			}
 		}
@@ -389,7 +409,13 @@ sub check_requirements {
 		$self->emit_info("Checking for DuckPAN requirements...");
 
 		$self->emit_and_exit(1, 'Requirements check failed')
-		  unless ($self->check_perl && $self->check_app_duckpan && $self->check_ia_bundles && $self->check_ddg && $self->check_ssh && $self->check_git);
+		  unless (
+			$self->check_perl &&
+			$self->check_app_duckpan &&
+			$self->check_ddg &&
+			$self->check_ia_bundles &&
+			$self->check_ssh &&
+			$self->check_git);
 	}
 	$signal_file->touch;
 
