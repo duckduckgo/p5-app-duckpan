@@ -28,6 +28,13 @@ use App::DuckPAN::Cmd::Help;
 
 no warnings 'uninitialized';
 
+option dukgo_my_account => (
+	is => 'ro',
+	lazy => 1,
+	default => sub { 'https://duck.co/my/account' },
+	doc => 'URI to log into community platform. defaults to "https://duck.co/my/login"',
+);
+
 option dukgo_login => (
 	is => 'ro',
 	lazy => 1,
@@ -589,11 +596,10 @@ sub check_ia_bundles {
 
 sub checking_dukgo_user {
 	my ( $self, $user, $pass ) = @_;
-	my $response = $self->http->request(POST($self->dukgo_login, Content => {
-		username => $user,
-		password => $pass,
-	}));
-	$response->code == 302 ? 1 : 0; # workaround, need something in dukgo
+	my $request = GET( $self->dukgo_my_account );
+	$request->authorization_basic( $user, $pass );
+	my $response = $self->http->request( $request );
+	return ( $response->code == 200 );
 }
 
 sub get_ia_type {
