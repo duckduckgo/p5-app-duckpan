@@ -32,7 +32,7 @@ option dukgo_my_account => (
 	is => 'ro',
 	lazy => 1,
 	default => sub { 'https://duck.co/my/account' },
-	doc => 'URI to log into community platform. defaults to "https://duck.co/my/login"',
+	doc => 'Account page URI - you need to be authed to get HTTP 200',
 );
 
 option dukgo_login => (
