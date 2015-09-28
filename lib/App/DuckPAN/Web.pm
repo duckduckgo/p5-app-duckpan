@@ -45,12 +45,6 @@ has ua => (
 	},
 );
 
-# ddhX servers to use for API calls.
-has ddh_servers => (
-	is => 'ro',
-	default => sub { [reverse 1..10] }
-);
-
 sub BUILD {
 	my ( $self ) = @_;
 	my %share_dir_hash;
@@ -175,40 +169,35 @@ sub request {
 						 print "\nAPI key not found. Using DuckDuckGo's endpoint:\n";
 					}
 
-					my @ddh = @{$self->ddh_servers};
-					for my $ddh (@ddh){
-						$to = "https://ddh$ddh.duckduckgo.com$request_uri" if $use_ddh;
-						p($to);
+					$to = "https://beta.duckduckgo.com$request_uri" if $use_ddh;
+					p($to);
 
-						my $res = $self->ua->request(HTTP::Request->new(
-							GET => $to,
-							[ $accept_header ? (Accept => $accept_header) : () ]
-						));
+					my $res = $self->ua->request(HTTP::Request->new(
+						GET => $to,
+						[ $accept_header ? (Accept => $accept_header) : () ]
+					));
 
-						if ($res->is_success) {
-							$body = $res->decoded_content;
-							# Encode utf8 api_responses to bytestream for Plack.
-							utf8::encode $body if utf8::is_utf8 $body;
-							warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $wrap_jsonp_callback && $wrap_string_callback;
-							if ($wrap_jsonp_callback && $callback) {
-								$body = $callback.'('.$body.');' unless defined $missing_envs;
-							}
-							elsif ($wrap_string_callback && $callback) {
-								$body =~ s/"/\\"/g;
-								$body =~ s/\n/\\n/g;
-								$body =~ s/\R//g;
-								$body = qq{$callback("'.$body.'");} unless defined $missing_envs;
-							}
-							$response->code($res->code);
-							$response->content_type($res->content_type);
+					if ($res->is_success) {
+						$body = $res->decoded_content;
+						# Encode utf8 api_responses to bytestream for Plack.
+						utf8::encode $body if utf8::is_utf8 $body;
+						warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $wrap_jsonp_callback && $wrap_string_callback;
+						if ($wrap_jsonp_callback && $callback) {
+							$body = $callback.'('.$body.');' unless defined $missing_envs;
 						}
-						else {
-							next if $use_ddh && ($ddh != $ddh[-1]);
-							p($res->status_line, color => { string => 'red' });
-							my $errormsg = (pop @{[split'::', $spice_class]}). ": ".$res->status_line;
-							$body = '$("#message").removeClass("is-hidden").append("<div class=\"msg msg--warning\">'. $errormsg .'</div>");';
+						elsif ($wrap_string_callback && $callback) {
+							$body =~ s/"/\\"/g;
+							$body =~ s/\n/\\n/g;
+							$body =~ s/\R//g;
+							$body = qq{$callback("'.$body.'");} unless defined $missing_envs;
 						}
-						last;
+						$response->code($res->code);
+						$response->content_type($res->content_type);
+					}
+					else {
+						p($res->status_line, color => { string => 'red' });
+						my $errormsg = (pop @{[split'::', $spice_class]}). ": ".$res->status_line;
+						$body = '$("#message").removeClass("is-hidden").append("<div class=\"msg msg--warning\">'. $errormsg .'</div>");';
 					}
 				}
 			}
