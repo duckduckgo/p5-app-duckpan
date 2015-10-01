@@ -420,7 +420,6 @@ sub check_requirements {
                         $self->check_perl &&
                         $self->check_app_duckpan &&
                         $self->check_ddg &&
-                        $self->check_ia_bundles &&
                         $self->check_ssh &&
                         $self->check_git);
         }
