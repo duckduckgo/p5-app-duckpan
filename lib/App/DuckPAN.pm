@@ -279,7 +279,6 @@ sub execute {
 	if (@arr_args) {
 		my (@modules, @left_args, $ddg);
 		for (@arr_args) {
-			warn "arg: $_";
 			if (/^www/i ||
 				/^dist/i ||
 				/^(ddg)$/i ||
