@@ -402,33 +402,6 @@ sub phrase_to_camel {
 	return join('', map { ucfirst $_; } (split /\s+/, $phrase));
 }
 
-sub check_requirements {
-	my ($self) = @_;
-
-	if (!$self->check) {
-		$self->emit_notice("Requirements checking was disabled...");
-		return 1;
-	}
-	my $signal_file = $self->cfg->cache_path->child('perl_checked');
-	my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
-	if ((time - $last_checked_perl) <= $self->cachesec) {
-		$self->emit_debug("Perl module versions recently checked, skipping requirements check...");
-	} else {
-		$self->emit_info("Checking for DuckPAN requirements...");
-
-		$self->emit_and_exit(1, 'Requirements check failed')
-		  unless (
-			$self->check_perl &&
-			$self->check_app_duckpan &&
-			$self->check_ddg &&
-			$self->check_ssh &&
-			$self->check_git);
-	}
-	$signal_file->touch;
-
-	return 1;
-}
-
 sub get_local_ddg_version {
 	my ( $self ) = @_;
 	return $self->perl->get_local_version('DDG');
