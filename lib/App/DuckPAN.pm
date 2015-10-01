@@ -279,6 +279,7 @@ sub execute {
 	if (@arr_args) {
 		my (@modules, @left_args, $ddg);
 		for (@arr_args) {
+			warn "arg: $_";
 			if (/^www/i ||
 				/^dist/i ||
 				/^(ddg)$/i ||
@@ -300,12 +301,12 @@ sub execute {
 				elsif($m eq 'ddg' && $ddg){ next }
 				push @modules, $_;
 			}
-			elsif (m/^duckpan|update|(upgrade|reinstall|latest)$/i) {
+			elsif (m/^duckpan|update|(upgrade|(reinstall|latest))$/i) {
 				my ($all_modules, $reinstall_latest) = map { lc } ($1, $2);
 				$self->empty_cache unless $self->empty;
 				push @modules, 'App::DuckPAN';
 				if($all_modules){
-					push @modules, 'DDG', map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } qw(Goodie Spice Fathead Longtail);
+					push @modules, 'DDG';
 					unshift @modules, $reinstall_latest if $reinstall_latest; 
 				}
 			}
@@ -420,7 +421,6 @@ sub check_requirements {
 			$self->check_perl &&
 			$self->check_app_duckpan &&
 			$self->check_ddg &&
-			$self->check_ia_bundles &&
 			$self->check_ssh &&
 			$self->check_git);
 	}
