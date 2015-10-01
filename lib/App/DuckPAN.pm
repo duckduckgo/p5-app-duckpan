@@ -401,6 +401,34 @@ sub phrase_to_camel {
 	return join('', map { ucfirst $_; } (split /\s+/, $phrase));
 }
 
+sub check_requirements {
+        my ($self) = @_;
+
+        if (!$self->check) {
+                $self->emit_notice("Requirements checking was disabled...");
+                return 1;
+        }
+        my $signal_file = $self->cfg->cache_path->child('perl_checked');
+        my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
+        if ((time - $last_checked_perl) <= $self->cachesec) {
+                $self->emit_debug("Perl module versions recently checked, skipping requirements check...");
+        } else {
+                $self->emit_info("Checking for DuckPAN requirements...");
+
+                $self->emit_and_exit(1, 'Requirements check failed')
+                  unless (
+                        $self->check_perl &&
+                        $self->check_app_duckpan &&
+                        $self->check_ddg &&
+                        $self->check_ia_bundles &&
+                        $self->check_ssh &&
+                        $self->check_git);
+        }
+        $signal_file->touch;
+
+        return 1;
+}
+
 sub get_local_ddg_version {
 	my ( $self ) = @_;
 	return $self->perl->get_local_version('DDG');
@@ -531,38 +559,6 @@ sub check_ddg {
 			$self->perl->duckpan_install('DDG');
 		}
 	}
-	return $ok;
-}
-
-sub check_ia_bundles {
-	my ($self)   = @_;
-	my $ok       = 1;
-	my @ia_types = qw(Goodie Spice Fathead Longtail);
-	my @bundles  = map { "DDG::${_}Bundle::OpenSourceDuckDuckGo" } @ia_types;
-
-	$self->emit_info("Checking for latest IA Bundles...");
-	my $packages = $self->duckpan_packages;
-	foreach my $bundle (@bundles){
-		my $installed_version = $self->perl->get_local_version($bundle);
-		my $module   = $packages->package($bundle);
-		my $latest   = $self->duckpan . 'authors/id/' . $module->distribution->pathname;
-		if ($installed_version && version->parse($installed_version) >= version->parse($module->version)) {
-			my $msg = "$bundle version: $installed_version";
-			$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
-			$self->emit_debug($msg);
-		} else {
-			if ($installed_version) {
-				my @msg = (
-					"You have version $installed_version, latest is " . $module->version . "!",
-					"Please install the latest $bundle package with: duckpan $bundle"
-				);
-				$self->emit_notice(@msg);
-			} else {
-				$self->perl->duckpan_install($bundle);
-			}
-		}
-	}
-
 	return $ok;
 }
 
