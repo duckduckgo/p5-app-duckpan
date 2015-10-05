@@ -128,7 +128,8 @@ sub duckpan_install {
 		if($reinstall || $latest || !$installed_version) {
 			# Prefer versions in the following order when (re)installing: installed, pinned, latest
 			# Latest ignores the installed version
-			my $version = $installed_version unless $latest;
+			my $version;
+			$version = $installed_version unless $latest;
 			$version ||= $pinned_version || $latest_version;
 			if($version == 9.999){
 				$self->app->emit_notice("You appear to be using a GitHub repository for unversioned package $package...skipping");
