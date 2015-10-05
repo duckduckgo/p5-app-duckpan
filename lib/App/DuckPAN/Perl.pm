@@ -131,7 +131,7 @@ sub duckpan_install {
 			my $version = $installed_version unless $latest;
 			$version ||= $pinned_version || $latest_version;
 			if($version == 9.999){
-				$self->app->emit_notice("You appear to be using a github repository for unversioned package $package...skipping");
+				$self->app->emit_notice("You appear to be using a GitHub repository for unversioned package $package...skipping");
 				next;
 			}
 			# update the url if not the latest
