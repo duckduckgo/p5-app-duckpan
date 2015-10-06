@@ -1,5 +1,6 @@
 package DDG::Spice::NagaBhutJolokiaDax;
 
+use strict; use warnings;
 use DDG::Spice;
 
 triggers start => //;
