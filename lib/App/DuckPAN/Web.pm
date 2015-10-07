@@ -292,8 +292,10 @@ sub request {
 		foreach my $result (@results) {
 
 			my $caller = $result->caller;
-			my $id = eval{ $caller->id };
-			push @ids, $id if $id;
+			#exlude parent/child IAs like CheatSheets
+			if(my $ia = DDG::Meta::Data->get_ia(module => $caller)){
+				push @ids, $ia->[0]{id} if @$ia == 1;
+			}
 
 			# Info for terminal.
 			p($result) if $result;
@@ -337,6 +339,7 @@ sub request {
 					# Inject a script which prints out what we want.
 					# There is no error-checking or support for non-auto-templates here.
 					my $structured = $result->structured_answer;
+					push @ids, $structured->{dynamic_id} if exists $structured->{dynamic_id};
 					if(exists $structured->{templates}){ # user-specified templates
 						push @calls_goodie, $structured;
 						last;
@@ -416,7 +419,7 @@ sub request {
 		#   calls_nrc : css calls
 		#   calls_template : handlebars templates
 
-		my $calls_nrj = join('', map{ DDG::Meta::Data->get_js($_) } @ids);
+		my $calls_nrj = join('', map{ DDG::Meta::Data->get_js(id => $_) } @ids);
 		my $calls_script = join('', map { q|<script type='text/JavaScript' src='| . $_ . q|'></script>| } @calls_script);
 		# For now we only allow a single goodie. If that changes, we will do the
 		# same join/map as with spices.
