@@ -293,8 +293,8 @@ sub request {
 
 			my $caller = $result->caller;
 			#exlude parent/child IAs like CheatSheets
-			if( (my @ia = @{ DDG::Meta::Data->get_ia(module => $caller) }) == 1){
-				push @ids, $ia[0]->{id};
+			if(my $ia = DDG::Meta::Data->get_ia(module => $caller)){
+				push @ids, $ia->[0]{id} if @$ia == 1;
 			}
 
 			# Info for terminal.
