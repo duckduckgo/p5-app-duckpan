@@ -25,7 +25,7 @@ sub run {
 	my $type = $self->app->get_ia_type();
 
 	# Instant Answer name as parameter
-	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer');
+	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer: ');
 	$self->app->emit_and_exit(-1, "Must supply a name for your Instant Answer.") unless $entered_name;
 	$entered_name =~ s/\//::/g;    #change "/" to "::" for easier handling
 	my $name = $self->app->phrase_to_camel($entered_name);
