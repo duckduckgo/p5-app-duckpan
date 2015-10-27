@@ -13,7 +13,7 @@ use Plack::MIME;
 use HTML::Entities;
 use HTML::TreeBuilder;
 use HTML::Element;
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 use HTTP::Request;
 use LWP::UserAgent;
 use URI::Escape;
