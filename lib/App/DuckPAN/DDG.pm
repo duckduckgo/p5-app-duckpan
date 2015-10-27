@@ -6,7 +6,7 @@ with 'App::DuckPAN::HasApp';
 
 use Module::Pluggable::Object;
 use Class::Load ':all';
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 use List::Util qw (first);
 
 sub get_dukgo_user_pass {

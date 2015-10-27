@@ -2,7 +2,7 @@ package App::DuckPAN::Query;
 # ABSTRACT: Main application/loop for duckpan query
 
 use Moo;
-use Data::Printer;
+use Data::Printer return_value => 'dump';
 use POE qw( Wheel::ReadLine );
 use Try::Tiny;
 use open qw/:std :utf8/;
