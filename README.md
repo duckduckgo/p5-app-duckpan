@@ -1,6 +1,6 @@
 # DuckPAN [![Build Status](https://travis-ci.org/duckduckgo/p5-app-duckpan.png?branch=master)](https://travis-ci.org/duckduckgo/p5-app-duckpan)
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/duckduckgo/p5-app-duckpan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Join us on Slack! [Request invite](mailto:QuackSlack@duckduckgo.com?subject=AddMe)
 
 **The DuckDuckHack Developer Tool**
 
