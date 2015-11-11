@@ -401,6 +401,23 @@ sub phrase_to_camel {
 	return join('', map { ucfirst $_; } (split /\s+/, $phrase));
 }
 
+# Guess the name of the instant answer from user input
+sub phrase_to_separated_name {
+    my ($self, $phrase) = @_;
+    my $separated_name = $phrase;
+
+    for ($separated_name) { # Set the context
+        # Capitalize words if there are no capital letters
+        s/\b([a-z])/\U$1/g         unless /[A-Z]/;
+        # Insert spaces at transitions to captial letters if there are no spaces
+        s/(?<=[^A-Z])(?=[A-Z])/ /g unless / /;
+        # Clear the package/path separators
+        s!(::|/)\s*! !g;
+    }
+
+    return $separated_name;
+}
+
 sub check_requirements {
         my ($self) = @_;
 

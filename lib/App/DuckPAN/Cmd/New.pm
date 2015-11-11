@@ -29,8 +29,9 @@ sub run {
 	$self->app->emit_and_exit(-1, "Must supply a name for your Instant Answer.") unless $entered_name;
 	$entered_name =~ s/\//::/g;    #change "/" to "::" for easier handling
 	my $name = $self->app->phrase_to_camel($entered_name);
-	my ($package_name, $separated_name, $path, $lc_path) = ($name, $name, "", "");
-	$separated_name =~ s/::/ /g;
+	my ($package_name, $separated_name, $path, $lc_path) = ($name, "", "", "");
+
+	$separated_name = $self->app->phrase_to_separated_name($entered_name);
 
 	if ($entered_name =~ m/::/) {
 		my @path_parts = split(/::/, $entered_name);
