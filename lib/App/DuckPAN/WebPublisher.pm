@@ -74,7 +74,7 @@ sub request {
 		$self->app->emit_info('Request '.$request->path_info.' uses '.$file.' from DDG::Publisher...');
 		$body = $site->fullpath_files->{$file}->uncached_content;
 		$response->code("200");
-		$response->content_type('text/html');
+		$response->content_type('text/html; charset=utf-8');
 	} else {
 		my $res = $self->app->http->request(HTTP::Request->new(GET => $url.$request->request_uri));
 		if ($res->is_success) {
