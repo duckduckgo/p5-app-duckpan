@@ -207,6 +207,13 @@ sub get_reply {
 	return $return;
 }
 
+sub get_reply_yes_no {
+	my ( $self, $prompt, %params ) = @_;
+	my $reply = $self->get_reply($prompt . " [y/n]", %params);
+
+	return $reply =~ /^y/i;
+}
+
 has http => (
 	is => 'ro',
 	builder => '_build_http',
