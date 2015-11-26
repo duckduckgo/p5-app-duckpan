@@ -22,7 +22,7 @@ sub run {
 	$self->app->emit_info("Checking for Publisher...");
 
 	my $publisher_pm = path('lib','DDG','Publisher.pm');
-	$self->add->emit_and_exit(1, "You must be in the root of the duckduckgo-publisher repository") unless $publisher_pm->exists;
+	$self->app->emit_and_exit(1, "You must be in the root of the duckduckgo-publisher repository") unless $publisher_pm->exists;
 
 	$self->app->emit_info("Starting up publisher webserver...", "You can stop the webserver with Ctrl-C");
 
