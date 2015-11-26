@@ -8,7 +8,7 @@ use MooX::Options protect_argv => 0;
 use Path::Tiny;
 use Plack::Handler::Starman;
 
-for (qw( duckduckgo dontbubbleus donttrackus whatisdnt fixtracking duckduckhack )) {
+for (qw( duckduckgo dontbubbleus donttrackus duckduckhack )) {
 	option $_ => (
 		is => 'ro',
 		format => 's',
@@ -38,14 +38,6 @@ sub run {
 		donttrackus => {
 			port => 5002,
 			url => $self->has_donttrackus ? $self->donttrackus : "http://donttrack.us/",
-		},
-		whatisdnt => {
-			port => 5003,
-			url => $self->has_whatisdnt ? $self->whatisdnt : "http://whatisdnt.com/",
-		},
-		fixtracking => {
-			port => 5004,
-			url => $self->has_fixtracking ? $self->fixtracking : "http://fixtracking.com/",
 		},
 		duckduckhack => {
 			port => 5005,
