@@ -207,11 +207,10 @@ sub get_reply {
 	return $return;
 }
 
-sub get_reply_yes_no {
+sub ask_yn {
 	my ( $self, $prompt, %params ) = @_;
-	my $reply = $self->get_reply($prompt . " [y/n]", %params);
 
-	return $reply =~ /^y/i;
+	return $self->term->ask_yn( prompt => $prompt, %params );
 }
 
 has http => (

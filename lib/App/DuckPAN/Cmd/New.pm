@@ -2,7 +2,7 @@ package App::DuckPAN::Cmd::New;
 # ABSTRACT: Take a name as input and generates a new, named Goodie or Spice instant answer skeleton
 
 # See the template/templates.yml file in the Goodie or Spice repository for the
-# list of sub-types and files generated for them
+# list of template-sets and files generated for them
 
 use Moo;
 with qw( App::DuckPAN::Cmd );
@@ -12,17 +12,17 @@ use Try::Tiny;
 
 use App::DuckPAN::TemplateDefinitions;
 
-# A 'subtype' for the user is equivalent to a 'template set' for the program
-option subtype => (
+# A 'template' for the user is equivalent to a 'template-set' for the program
+option template => (
 	is      => 'ro',
 	format  => 's',
 	default => 'default',
-	doc     => 'sub-type of instant answer (default: default)',
+	doc     => 'template used to generate the instant answer skeleton (default: default)',
 );
 
-option list_subtypes => (
+option list_templates => (
 	is  => 'ro',
-	doc => 'list the available instant answer sub-types and exit',
+	doc => 'list the available instant answer templates and exit',
 );
 
 has _template_defs => (
@@ -30,7 +30,7 @@ has _template_defs => (
 	init_arg => undef,
 	lazy     => 1,
 	builder  => 1,
-	doc      => 'template definitions for the subtypes of this IA type',
+	doc      => 'template definitions for the templates for the current IA type',
 );
 
 sub _build__template_defs {
@@ -67,11 +67,11 @@ sub run {
 	# Check which IA repo we're in...
 	my $type = $self->app->get_ia_type();
 
-	# Process the --list-subtypes option: List the sub-type names and exit with success
-	$self->app->emit_and_exit(0, $self->_available_subtypes_message)
-		if $self->list_subtypes;
+	# Process the --list-templates option: List the template-set names and exit with success
+	$self->app->emit_and_exit(0, $self->_available_templates_message)
+		if $self->list_templates;
 
-	# Get the template set instance based on the command line arguments.
+	# Get the template-set instance based on the command line arguments.
 	my $template_set = $self->_get_template_set();
 
 	$self->app->emit_info("Creating a new " . $template_set->description . "...");
@@ -117,24 +117,29 @@ sub run {
 	my @optional_templates;
 
 	for my $template (@{$template_set->optional_templates}) {
-		if ($self->app->get_reply_yes_no('Create ' . $template->description . '?')) {
-            push @optional_templates, $template;
-        }
+		if ($self->app->ask_yn('Create ' . $template->description . '?',
+				default => 0)) {
+			push @optional_templates, $template;
+		}
+		print "\n";
 	}
-
-	my %generate_result;
 
 	# Generate the instant answer files. The return value is a hash with
 	# information about the created files and any error that was encountered.
-	%generate_result = $template_set->generate(\%vars, \@optional_templates);
+	my %generate_result = $template_set->generate(\%vars, \@optional_templates);
 
 	# Show the list of files that were successfully created
-	$self->app->emit_info("Created file: $_") for @{$generate_result{created_files}};
+	my @created_files = @{$generate_result{created_files}};
+	$self->app->emit_info("Created files:");
+	$self->app->emit_info("    $_")     for    @created_files;
+	$self->app->emit_info("    (none)") unless @created_files; # possible on error
 
 	if (my $error = $generate_result{error}) {
-        # Remove the line number information if not in verbose mode
-        $error =~ s/.*\K at .* line \d+\.$//
-            unless $self->app->verbose;
+		# Remove the line number information if not in verbose mode.
+		# This error message would be seen mostly by users writing IAs
+		# for whom the line numbers don't add much value.
+		$error =~ s/.*\K at .* line \d+\.$//
+		    unless $self->app->verbose;
 
 		$self->app->emit_and_exit(-1, $error)
 	}
@@ -142,48 +147,47 @@ sub run {
 	$self->app->emit_info("Successfully created " . $type->{name} . ": $package_name");
 }
 
-# Get the template set from the '--subtype' command line argument
+# Get the template-set from the '--template' command line argument
 sub _get_template_set {
 	my $self = shift;
 	my $type = $self->app->get_ia_type();
 	my $template_defs = $self->_template_defs;
 
-	# Get the template set for the chosen  sub-type
-	my $template_set = $template_defs->get_template_set($self->subtype);
+	# Get the template chosen by the user
+	my $template_set = $template_defs->get_template_set($self->template);
 
 	unless ($template_set) {
-		# We didn't find the template set for the chosen sub-type. This
-		# could mean that there was a typo in the sub-type name or the
-		# user has an older IA repo and this sub-type was not present
-		# in that version.
+		# We didn't find the template-set by the name. This could mean
+		# that there was a typo in the name or the user has an older IA
+		# repo and it not present in that version.
 		$self->app->emit_and_exit(-1,
-			"'" . $self->subtype . "' is not a valid sub-type of a " .
+			"'" . $self->template . "' is not a valid template for a " .
 			$type->{name} . " Instant Answer. You may need to update " .
-			"your repository to get the latest sub-type definitions.\n" .
-			$self->_available_subtypes_message);
+			"your repository to get the latest templates.\n" .
+			$self->_available_templates_message);
 	}
 
 	return $template_set;
 }
 
-# Create a message with the list of available types (aka template sets) for this IA type
-sub _available_subtypes_message {
+# Create a message with the list of available template-sets for this IA type
+sub _available_templates_message {
 	my $self = shift;
 	my $template_defs = $self->_template_defs;
-	# template sets, sorted by name
+	# template-sets, sorted by name
 	my @template_sets =
-	    sort { $a->name cmp $b->name} $template_defs->get_template_sets;
+	    sort { $a->name cmp $b->name } $template_defs->get_template_sets;
 
-	my $available_subtypes_msg = "Available sub-types:";
+	my $message = "Available templates:";
 
 	for my $template_set (@template_sets) {
-		$available_subtypes_msg .= sprintf("\n    %10s - %s",
+		$message .= sprintf("\n    %10s - %s",
 			$template_set->name,
 			$template_set->description,
 		);
 	}
 
-	return $available_subtypes_msg;
+	return $message;
 }
 
 1;
