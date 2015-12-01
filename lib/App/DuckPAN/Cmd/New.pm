@@ -12,6 +12,10 @@ use Try::Tiny;
 
 use App::DuckPAN::TemplateDefinitions;
 
+##########################
+# Command line arguments #
+##########################
+
 # A 'template' for the user is equivalent to a 'template-set' for the program
 option template => (
 	is      => 'ro',
@@ -25,12 +29,16 @@ option list_templates => (
 	doc => 'list the available instant answer templates and exit',
 );
 
+##############
+# Attributes #
+##############
+
 has _template_defs => (
 	is       => 'ro',
 	init_arg => undef,
 	lazy     => 1,
 	builder  => 1,
-	doc      => 'template definitions for the templates for the current IA type',
+	doc      => 'Template definitions for the templates for the current IA type',
 );
 
 sub _build__template_defs {
@@ -61,6 +69,40 @@ sub _build__template_defs {
 	return $template_defs;
 }
 
+has _template_set => (
+	is       => 'ro',
+	init_arg => undef,
+	lazy     => 1,
+	builder  => 1,
+	doc      => 'The template set chosen by the user',
+);
+
+sub _build__template_set {
+	my $self = shift;
+	my $type = $self->app->get_ia_type();
+	my $template_defs = $self->_template_defs;
+
+	# Get the template chosen by the user
+	my $template_set = $template_defs->get_template_set($self->template);
+
+	unless ($template_set) {
+		# We didn't find the template-set by the name. This could mean
+		# that there was a typo in the name or the user has an older IA
+		# repo and it not present in that version.
+		$self->app->emit_and_exit(-1,
+			"'" . $self->template . "' is not a valid template for a " .
+			$type->{name} . " Instant Answer. You may need to update " .
+			"your repository to get the latest templates.\n" .
+			$self->_available_templates_message);
+	}
+
+	return $template_set;
+}
+
+###########
+# Methods #
+###########
+
 sub run {
 	my ($self, @args) = @_;
 
@@ -72,7 +114,7 @@ sub run {
 		if $self->list_templates;
 
 	# Get the template-set instance based on the command line arguments.
-	my $template_set = $self->_get_template_set();
+	my $template_set = $self->_template_set();
 
 	$self->app->emit_info("Creating a new " . $template_set->description . "...");
 
@@ -105,6 +147,8 @@ sub run {
 		$lc_name = $lc_path . "_" . $lc_name;
 	}
 
+	my @optional_templates = $self->_ask_optional_templates;
+
 	my %vars = (
 		ia_package_name   => $package_name,
 		ia_name_separated => $separated_name,
@@ -112,17 +156,6 @@ sub run {
 		ia_path           => $filepath,
 		ia_path_lc        => $lc_filepath,
 	);
-
-	# Ask which optional templates to create
-	my @optional_templates;
-
-	for my $template (@{$template_set->optional_templates}) {
-		if ($self->app->ask_yn('Create ' . $template->description . '?',
-				default => 0)) {
-			push @optional_templates, $template;
-		}
-		print "\n";
-	}
 
 	# Generate the instant answer files. The return value is a hash with
 	# information about the created files and any error that was encountered.
@@ -139,7 +172,7 @@ sub run {
 		# This error message would be seen mostly by users writing IAs
 		# for whom the line numbers don't add much value.
 		$error =~ s/.*\K at .* line \d+\.$//
-		    unless $self->app->verbose;
+			unless $self->app->verbose;
 
 		$self->app->emit_and_exit(-1, $error)
 	}
@@ -147,27 +180,46 @@ sub run {
 	$self->app->emit_info("Successfully created " . $type->{name} . ": $package_name");
 }
 
-# Get the template-set from the '--template' command line argument
-sub _get_template_set {
+# Ask the user for which optional templates they want to use and return a list
+# of the chosen templates
+sub _ask_optional_templates {
 	my $self = shift;
-	my $type = $self->app->get_ia_type();
-	my $template_defs = $self->_template_defs;
+	my $template_set = $self->_template_set;
+	my $combinations = $template_set->optional_template_combinations;
 
-	# Get the template chosen by the user
-	my $template_set = $template_defs->get_template_set($self->template);
+	# no optional templates; nothing to do
+	return unless @$combinations;
 
-	unless ($template_set) {
-		# We didn't find the template-set by the name. This could mean
-		# that there was a typo in the name or the user has an older IA
-		# repo and it not present in that version.
-		$self->app->emit_and_exit(-1,
-			"'" . $self->template . "' is not a valid template for a " .
-			$type->{name} . " Instant Answer. You may need to update " .
-			"your repository to get the latest templates.\n" .
-			$self->_available_templates_message);
+	my $show_optional_templates = $self->app->ask_yn(
+		'Would you like to configure optional templates?',
+		default => 0,
+	);
+
+	if ($show_optional_templates) {
+		# The choice strings to show to the user
+		my @choices;
+		# Mapping from a choice string to the corresponding template combination
+		my %choice_combinations;
+
+		for my $combination (@$combinations) {
+			# Label of every template in the combination
+			my @labels = map { $_->label } @$combination;
+			my $choice = join(', ', @labels);
+
+			push @choices, $choice;
+			$choice_combinations{$choice} = $combination;
+		}
+
+		my $reply = $self->app->get_reply(
+			'Choose configuration',
+			choices => \@choices,
+			default => $choices[0],
+		);
+
+		return @{$choice_combinations{$reply}};
 	}
 
-	return $template_set;
+	return;
 }
 
 # Create a message with the list of available template-sets for this IA type
@@ -176,7 +228,7 @@ sub _available_templates_message {
 	my $template_defs = $self->_template_defs;
 	# template-sets, sorted by name
 	my @template_sets =
-	    sort { $a->name cmp $b->name } $template_defs->get_template_sets;
+		sort { $a->name cmp $b->name } $template_defs->get_template_sets;
 
 	my $message = "Available templates:";
 

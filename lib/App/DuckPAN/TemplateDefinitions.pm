@@ -45,7 +45,7 @@ sub _build__template_map {
 
         my $template = App::DuckPAN::Template->new(
             name          => $name,
-            description   => $template_data->{description},
+            label         => $template_data->{label},
             input_file    => path($template_root, $template_data->{input}),
             output_file   => path($template_data->{output}),
             needs_restart => $template_data->{needs_restart},

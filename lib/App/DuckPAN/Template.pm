@@ -18,10 +18,10 @@ has name => (
     doc      => 'Name of the template',
 );
 
-has description => (
+has label => (
     is       => 'ro',
     required => 1,
-    doc      => 'Description of the template',
+    doc      => 'Label of the template',
 );
 
 has input_file => (
