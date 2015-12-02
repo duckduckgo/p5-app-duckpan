@@ -60,11 +60,17 @@ sub BUILD {
 		for (@{$_->only_plugin_objs}) {
 			if ($_->does('DDG::IsSpice')) {
 				$rewrite_hash{ref $_} = $_->rewrite if $_->has_rewrite;
+				while(my ($short_name, $rewrite) = each %{$_->alt_rewrites}){
+					$rewrite_hash{$short_name} = $rewrite;
+					$path_hash{$rewrite->path} = $short_name;
+				}
 			}
 			$share_dir_hash{$_->module_share_dir} = ref $_ if $_->can('module_share_dir');
 			$path_hash{$_->path} = ref $_ if $_->can('path');
+
 		}
 	}
+
 	$self->_share_dir_hash(\%share_dir_hash);
 	$self->_path_hash(\%path_hash);
 	$self->_rewrite_hash(\%rewrite_hash);
