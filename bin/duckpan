@@ -16,6 +16,10 @@ BEGIN {
             map { try { $_->realpath } || $_->absolute } @missing) . "\n";
         exit 1;
     }
+
+    # For other commands, bundling is desirable but pass_through leads to
+    # incomplete validation of command line arguments
+    Getopt::Long::Configure('no_pass_through');
 }
 use lib @libs;
 
