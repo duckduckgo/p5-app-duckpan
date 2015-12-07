@@ -103,6 +103,11 @@ sub _build__template_set {
 # Methods #
 ###########
 
+# Copy of @ARGV before MooX::Options processes it
+my @ORIG_ARGV;
+
+before new_with_options => sub { @ORIG_ARGV = @ARGV };
+
 sub run {
 	my ($self, @args) = @_;
 
@@ -112,6 +117,13 @@ sub run {
 	# Process the --list-templates option: List the template-set names and exit with success
 	$self->app->emit_and_exit(0, $self->_available_templates_message)
 		if $self->list_templates;
+
+	# Gracefully handle the case where '--template' is the last argument
+	$self->app->emit_and_exit(
+		1,
+		"Please specify the template for your Instant Answer.\n" .
+		$self->_available_templates_message
+	) if ($ORIG_ARGV[$#ORIG_ARGV] // '') eq '--template';
 
 	# Get the template-set instance based on the command line arguments.
 	my $template_set = $self->_template_set();
