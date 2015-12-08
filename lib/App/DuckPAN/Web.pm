@@ -60,7 +60,8 @@ sub BUILD {
 		for (@{$_->only_plugin_objs}) {
 			if ($_->does('DDG::IsSpice')) {
 				$rewrite_hash{ref $_} = $_->rewrite if $_->has_rewrite;
-				while(my ($short_name, $rewrite) = each %{$_->alt_rewrites}){
+				my $rewrites = $_->alt_rewrites;
+				while(my ($short_name, $rewrite) = each %$rewrites){
 					$rewrite_hash{$short_name} = $rewrite;
 					$path_hash{$rewrite->path} = $short_name;
 				}
