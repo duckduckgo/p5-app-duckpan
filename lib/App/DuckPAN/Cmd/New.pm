@@ -67,6 +67,7 @@ sub run {
 		ia_name_separated => $separated_name,
 		ia_id             => $lc_name,
 		ia_path           => $filepath,
+		ia_path_lc        => $lc_filepath,
 	);
 	foreach my $template_type (sort keys %template_info) {
 		my ($source, $dest) = ($template_info{$template_type}{in}, $template_info{$template_type}{out});
