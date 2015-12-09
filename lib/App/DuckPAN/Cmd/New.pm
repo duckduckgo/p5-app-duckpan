@@ -63,11 +63,10 @@ sub run {
 		handlebars => [$lc_filepath, "$lc_name.handlebars"],
 		js         => [$lc_filepath, "$lc_name.js"]);
 	my %vars = (
-		ia_name           => $name,
 		ia_package_name   => $package_name,
 		ia_name_separated => $separated_name,
-		lia_name          => $lc_name,
-		ia_path           => $filepath
+		ia_id             => $lc_name,
+		ia_path           => $filepath,
 	);
 	foreach my $template_type (sort keys %template_info) {
 		my ($source, $dest) = ($template_info{$template_type}{in}, $template_info{$template_type}{out});
