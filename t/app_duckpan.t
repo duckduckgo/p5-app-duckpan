@@ -30,6 +30,17 @@ is($app->perl->get_local_version('App::DuckPAN'),$version,'Checking get_local_ve
 ###############################################################
 isa_ok($app->cfg,'App::DuckPAN::Config');
 
+###############################################################
+# phrase_to_camel
+is $app->phrase_to_camel("DuckDuckGo"), "DuckDuckGo", "phrase to camel, from camel";
+is $app->phrase_to_camel("Duck Duck Go"), "DuckDuckGo", "phrase to camel, without case change";
+is $app->phrase_to_camel("duck duck Go"), "DuckDuckGo", "phrase to camel, with case changes";
+is $app->phrase_to_camel("duck    duckGo"), "DuckDuckGo", "phrase to camel, with variable spaces";
+is $app->phrase_to_camel("  duck duck Go  "), "DuckDuckGo", "phrase to camel, surrounded by spaces";
+is $app->phrase_to_camel("duck::duck::Go"), "Duck::Duck::Go", "phrase to camel, with package";
+is $app->phrase_to_camel("duck::duck Go"), "Duck::DuckGo", "phrase to camel, with package and space";
+
+###############################################################
 SKIP: {
 	skip "No DDG installed yet", 2 unless try_load_class('DDG');
 	my $ddg_version = $DDG::VERSION || '9.999';

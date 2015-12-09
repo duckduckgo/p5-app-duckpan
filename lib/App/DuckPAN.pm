@@ -396,9 +396,21 @@ sub camel_to_underscore {
 }
 
 sub phrase_to_camel {
- my ($self, $phrase) = @_;
-	# Other things imply camelCase, we're going with CamelCase, kinda.
-	return join('', map { ucfirst $_; } (split /\s+/, $phrase));
+	my ($self, $phrase) = @_;
+	my $camel = $phrase;
+
+	$camel =~ s/
+		(?:           # if a character:
+		      \s+     # - follows spaces
+		    | (?<=::) # - or follows ::
+		    | ^       # - or is the first character
+		)(.)          # (the character)
+		/\U$1/gx;     # then uppercase it (preceding spaces are removed)
+
+	# remove trailing spaces
+	$camel =~ s/\s+$//;
+
+	return $camel;
 }
 
 sub check_requirements {
