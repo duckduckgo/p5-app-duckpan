@@ -74,6 +74,7 @@ sub _build__template_sets {
         my $data     = $sets_data->{$name};
         my @required = @{$data->{required} // []};
         my @optional = @{$data->{optional} // []};
+        my $subdir_support = $data->{subdir_support};
 
         # check if all templates in this set are defined
         for my $template_name (@required, @optional) {
@@ -86,6 +87,7 @@ sub _build__template_sets {
             description        => $data->{description},
             required_templates => [ @{$self->_template_map}{@required} ],
             optional_templates => [ @{$self->_template_map}{@optional} ],
+            defined($subdir_support) ? (subdir_support => $subdir_support) : (),
         );
 
         $template_sets{$name} = $template_set;

@@ -52,5 +52,14 @@ template_sets:
         description: Template set with templates that can produce errors
         required:    [ pm ]
         optional:    [ no_input ]
+
+    subdir_support_specified:
+        description: Template which will not work if IAs are created inside a subdirectory
+        required:    [ pm ]
+        subdir_support: false
+
+    subdir_support_not_defined:
+        description: Template which will work if IAs are created inside a subdirectory
+        required:    [ pm ]
 ...
 

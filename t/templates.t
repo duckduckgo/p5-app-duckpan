@@ -50,7 +50,7 @@ isa_ok $_, 'App::DuckPAN::TemplateSet'
 
 # check if all the template sets have been read
 is_deeply [ sort map { $_->name } @template_sets ],
-    [qw(all_optional errors required_and_optional)],
+    [qw(all_optional errors required_and_optional subdir_support_not_defined subdir_support_specified)],
     'template defs: read all template sets';
 
 ###############################
@@ -97,6 +97,9 @@ is_deeply $template_set_ro->required_templates, [@template_map{qw(pm test)}],
     'template defs: set template_set required templates';
 is_deeply $template_set_ro->optional_templates, [@template_map{qw(js css)}],
     'template defs: set template_set optional templates';
+
+ok !$template_set_map{subdir_support_specified}->subdir_support, 'Template set with subdir support explicitly disabled';
+ok $template_set_map{subdir_support_not_defined}->subdir_support, 'Template set with subdir support implicitly enabled';
 
 {
     # check template combinations that we should show to the user

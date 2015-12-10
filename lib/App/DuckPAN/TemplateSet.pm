@@ -29,6 +29,14 @@ has description => (
     doc      => 'Description of the template set',
 );
 
+has subdir_support => (
+    is       => 'ro',
+    default  => 1,
+    doc      => 'Does this template set support creation of Instant Answers inside sub-directories? ' .
+                'For example, Cheat Sheet Instant Answers do not support it, while Standard Goodie ' .
+                'and Spice ones do have support.',
+);
+
 has required_templates => (
     is       => 'ro',
     required => 1,

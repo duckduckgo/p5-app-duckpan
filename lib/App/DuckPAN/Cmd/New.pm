@@ -132,7 +132,18 @@ sub run {
 
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer: ');
+
+	# Validate the entered name
 	$self->app->emit_and_exit(-1, "Must supply a name for your Instant Answer.") unless $entered_name;
+	$self->app->emit_and_exit(-1,
+		"'$entered_name' is not a valid name for an Instant Answer. " .
+		"Please run the program again and provide a valid name."
+	) unless $entered_name =~ m!^[/a-zA-Z0-9\s]+$!;
+	$self->app->emit_and_exit(-1,
+		"The name for this type of Instant Answer cannot contain path separators. " .
+		"Please run the program again and provide a valid name."
+	) if !$template_set->subdir_support && $entered_name =~ m!/!;
+
 	$entered_name =~ s/\//::/g;    #change "/" to "::" for easier handling
 
 	my $package_name = $self->app->phrase_to_camel($entered_name);
@@ -189,7 +200,7 @@ sub run {
 		$self->app->emit_and_exit(-1, $error)
 	}
 
-	$self->app->emit_info("Successfully created " . $type->{name} . ": $package_name");
+	$self->app->emit_info("Success!");
 }
 
 # Ask the user for which optional templates they want to use and return a list
