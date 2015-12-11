@@ -110,7 +110,7 @@ sub request {
 				$remainder =~ s|//|/|;
 				$remainder =~ s|^/\d{3,4}||;
 
-				$filename = $remainder . $filename if $remainder;
+				$filename = $remainder if $remainder;
 
 				if (my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename)) {
 
