@@ -102,7 +102,7 @@ sub request {
 		for (keys %{$self->_share_dir_hash}) {
 			if ($request->path =~ m|^/$_/|g) {
 
-                $share_dir = $_;
+                 $share_dir = $_;
                 # Get filename from path and url unescape
                 my $filename = uri_unescape( pop @path_parts );
                 # Trim path from left to right to find parent dir of filename
