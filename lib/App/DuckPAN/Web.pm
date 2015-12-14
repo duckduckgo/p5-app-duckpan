@@ -102,17 +102,19 @@ sub request {
 		for (keys %{$self->_share_dir_hash}) {
 			if ($request->path =~ m|^/$_/|g) {
 
-				$share_dir = $_;
-				my $filename = pop @path_parts;
-				my $remainder = $request->path;
-				$remainder =~ s|$share_dir||;
-				$remainder =~ s|$filename||;
-				$remainder =~ s|//|/|;
-				$remainder =~ s|^/\d{3,4}||;
+                $share_dir = $_;
+                # Get filename from path and url unescape
+                my $filename = uri_unescape( pop @path_parts );
+                # Trim path from left to right to find parent dir of filename
+                # e.g /share/goodie/foo/foo_imgs/image.png -> "foo_imgs"
+                my $remainder = $request->path_info;
+                $remainder =~ s|$share_dir||;
+                $remainder =~ s|$filename||;
+                $remainder =~ s|//|/|;
+                $remainder =~ s|^/\d{3,4}||;
 
-				if (length($remainder) > 1) {
-					$filename = $remainder;
-				}
+                # if valid remainder exists, prepend to filename
+                $filename = "$remainder$filename" if $remainder ne $filename;
                 
 				if (my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename)) {
 
