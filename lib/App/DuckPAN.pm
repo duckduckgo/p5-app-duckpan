@@ -207,6 +207,12 @@ sub get_reply {
 	return $return;
 }
 
+sub ask_yn {
+	my ( $self, $prompt, %params ) = @_;
+
+	return $self->term->ask_yn( prompt => $prompt, %params );
+}
+
 has http => (
 	is => 'ro',
 	builder => '_build_http',

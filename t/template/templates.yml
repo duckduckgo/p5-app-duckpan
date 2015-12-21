@@ -1,0 +1,65 @@
+---
+templates:
+    pm:
+        label:  Perl Module
+        input:  lib/DDG/Default.pm
+        output: t/out/lib/DDG/<:$package_name:>.pm
+        needs_restart: true
+
+    test:
+        label:  Perl Module Test
+        # don't use a '.t' extension so as not to interfere with actual tests
+        # in the distribution
+        input:  t/Example.test
+        output: t/out/t/<:$package_name:>.test
+
+    js:
+        label:  Javascript
+        input:  share/javascript/default.js
+        output: t/out/share/javascript/<:$lia_name:>.js
+
+    css:
+        label:  Javascript
+        input:  share/css/default.css
+        output: t/out/share/css/<:$lia_name:>.css
+
+    complex_out_dir:
+        label:  README file
+        input:  share/text/README
+        output: t/out/share/text/<:$lia_name:>/docs/README
+
+    no_input:
+        label:  File with non-existent input
+        input:  share/text/does_not_exist.txt
+        output: t/out/share/text/<:$lia_name:>.txt
+
+    no_write_perm:
+        label:  Output directory is not writeable
+        input:  share/text/README
+        output: t/out/readonly/<:$lia_name:>.txt
+
+template_sets:
+    all_optional:
+        description: Template set with all optional templates
+        optional:    [ js, pm, test ]
+
+    required_and_optional:
+        description: Template set with required and optional templates
+        required:    [ pm, test ]
+        optional:    [ js, css ]
+
+    errors:
+        description: Template set with templates that can produce errors
+        required:    [ pm ]
+        optional:    [ no_input ]
+
+    subdir_support_specified:
+        description: Template which will not work if IAs are created inside a subdirectory
+        required:    [ pm ]
+        subdir_support: false
+
+    subdir_support_not_defined:
+        description: Template which will work if IAs are created inside a subdirectory
+        required:    [ pm ]
+...
+
