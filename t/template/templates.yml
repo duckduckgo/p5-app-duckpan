@@ -16,27 +16,27 @@ templates:
     js:
         label:  Javascript
         input:  share/javascript/default.js
-        output: t/out/share/javascript/<:$lia_name:>.js
+        output: t/out/share/javascript/<:$ia_id:>.js
 
     css:
         label:  Javascript
         input:  share/css/default.css
-        output: t/out/share/css/<:$lia_name:>.css
+        output: t/out/share/css/<:$ia_id:>.css
 
     complex_out_dir:
         label:  README file
         input:  share/text/README
-        output: t/out/share/text/<:$lia_name:>/docs/README
+        output: t/out/share/text/<:$ia_id:>/docs/README
 
     no_input:
         label:  File with non-existent input
         input:  share/text/does_not_exist.txt
-        output: t/out/share/text/<:$lia_name:>.txt
+        output: t/out/share/text/<:$ia_id:>.txt
 
     no_write_perm:
         label:  Output directory is not writeable
         input:  share/text/README
-        output: t/out/readonly/<:$lia_name:>.txt
+        output: t/out/readonly/<:$ia_id:>.txt
 
 template_sets:
     all_optional:
