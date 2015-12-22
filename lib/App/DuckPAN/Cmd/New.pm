@@ -18,15 +18,29 @@ use App::DuckPAN::TemplateDefinitions;
 
 # A 'template' for the user is equivalent to a 'template-set' for the program
 option template => (
-	is      => 'ro',
+	is      => 'rwp',
 	format  => 's',
 	default => 'default',
+	short   => 't',
 	doc     => 'template used to generate the instant answer skeleton (default: default)',
 );
 
 option list_templates => (
+	is    => 'ro',
+	short => 'l',
+	doc   => 'list the available instant answer templates and exit',
+);
+
+option cheatsheet => (
+	is    => 'ro',
+	short => 'c',
+	doc   => "create a Cheat Sheet (short for `--template cheatsheet'; valid only for Goodies)",
+);
+
+option no_optionals => (
 	is  => 'ro',
-	doc => 'list the available instant answer templates and exit',
+	short => 'N',
+	doc => 'do not create any optional files from the chosen template',
 );
 
 ##############
@@ -114,6 +128,17 @@ sub run {
 	# Check which IA repo we're in...
 	my $type = $self->app->get_ia_type();
 
+	# Process the --cheatsheet option
+	if ($self->cheatsheet) {
+		if ($type->{name} ne 'Goodie') {
+			$self->app->emit_and_exit(-1,
+				"Cheat Sheets can be created only in the Goodie " .
+				"Instant Answer repository.");
+		}
+
+		$self->_set_template("cheatsheet");
+	}
+
 	# Process the --list-templates option: List the template-set names and exit with success
 	$self->app->emit_and_exit(0, $self->_available_templates_message)
 		if $self->list_templates;
@@ -138,11 +163,11 @@ sub run {
 	$self->app->emit_and_exit(-1,
 		"'$entered_name' is not a valid name for an Instant Answer. " .
 		"Please run the program again and provide a valid name."
-	) unless $entered_name =~ m!^[/a-zA-Z0-9\s]+$!;
+	) unless $entered_name =~ m@^( [a-zA-Z0-9\s] | (?<![:/])(::|/)(?![:/]) )+$@x;
 	$self->app->emit_and_exit(-1,
-		"The name for this type of Instant Answer cannot contain path separators. " .
+		"The name for this type of Instant Answer cannot contain package or path separators. " .
 		"Please run the program again and provide a valid name."
-	) if !$template_set->subdir_support && $entered_name =~ m!/!;
+	) if !$template_set->subdir_support && $entered_name =~ m![/:]!;
 
 	$entered_name =~ s/\//::/g;    #change "/" to "::" for easier handling
 
@@ -170,7 +195,8 @@ sub run {
 		$lc_name = $lc_path . "_" . $lc_name;
 	}
 
-	my @optional_templates = $self->_ask_optional_templates;
+	my @optional_templates = $self->_ask_optional_templates
+		unless $self->no_optionals;
 
 	my %vars = (
 		ia_package_name   => $package_name,

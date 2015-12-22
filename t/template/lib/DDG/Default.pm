@@ -1,2 +1,2 @@
 package <:$package_name:>;
-# <:$lia_name:>
+my $id = '<:$ia_id:>';

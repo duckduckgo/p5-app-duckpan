@@ -127,15 +127,15 @@ ok $template_set_map{subdir_support_not_defined}->subdir_support, 'Template set 
 ##################################
 
 my $package_name = 'MyInstantAnswer';
-my $lia_name = 'my_instant_answer';
+my $ia_id = 'my_instant_answer';
 my %vars = (
     package_name => $package_name,
-    lia_name     => $lia_name,
+    ia_id     => $ia_id,
 );
 my $pm_out_file   = "$TEMPLATE_OUT/lib/DDG/$package_name.pm";
 my $test_out_file = "$TEMPLATE_OUT/t/$package_name.test";
-my $js_out_file   = "$TEMPLATE_OUT/share/javascript/$lia_name.js";
-my $css_out_file  = "$TEMPLATE_OUT/share/css/$lia_name.css";
+my $js_out_file   = "$TEMPLATE_OUT/share/javascript/$ia_id.js";
+my $css_out_file  = "$TEMPLATE_OUT/share/css/$ia_id.css";
 
 clear_output_directory();
 
@@ -149,7 +149,7 @@ my $pm_file_content = path($pm_out_file)->slurp;
 # check the content of the output file using all variables
 is $pm_file_content, <<EOT, 'template: generated file content is as expected';
 package $package_name;
-# $lia_name
+my \$id = '$ia_id';
 EOT
 
 #########################################
