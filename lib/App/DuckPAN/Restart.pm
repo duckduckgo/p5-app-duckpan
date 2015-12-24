@@ -5,6 +5,7 @@ use File::Find::Rule;
 use Filesys::Notify::Simple;
 
 use App::DuckPAN::TemplateDefinitions;
+use Try::Tiny;
 
 use strict;
 
@@ -58,31 +59,65 @@ sub run_restarter {
     }
 }
 
+sub _get_directories_to_monitor {
+    my $self = shift;
+    my @output_dirs;
+
+    try {
+        my $template_defs = App::DuckPAN::TemplateDefinitions->new;
+        my @templates = $template_defs->get_templates;
+
+        for my $template (@templates) {
+            push @output_dirs, $template->output_directory
+                if $template->needs_restart;
+        }
+    } catch {
+        if (/template definitions/i) {
+            # There was a problem loading the template definitions file. This
+            # can happen if the instant answer repository is of an older
+            # version and does not have the templates.yml file.
+            #
+            # In this case we use the older method of determining directories
+            # to monitor. This support can be removed sometime in the future.
+            # Note: Cheatsheet directories will not be monitored with this
+            # method.
+
+            $self->app->emit_debug("Instant Answers repository does not have a " .
+                "template definitions file. Some directories may not be monitored " .
+                "for changes.");
+
+            while(my ($type, $io) = each %{$self->app->get_ia_type()->{templates}}){
+                next if $type eq 'test'; # skip the test dir?
+                push @output_dirs, $io->{out};
+            }
+        } else {
+            die $_;
+        }
+    };
+
+    my %distinct_dirs;
+
+    # add all subdirectories
+    for my $dir (@output_dirs) {
+        ++$distinct_dirs{$_} for File::Find::Rule->directory()->in($dir);
+    }
+
+    ++$distinct_dirs{$self->app->get_ia_type()->{dir}};
+
+    return keys %distinct_dirs;
+}
 # Monitors development directories for file changes.  Tries to get the
 # list of directories in a general way.  This subroutine 
 # blocks, so when it returns we know there's been a change
 sub _monitor_directories {
-    my $self  = shift;
+    my $self = shift;
 
     # Find all of the directories that neeed to monitored
     # Note: Could potentially be functionality added to App::DuckPAN
     # which would return the directories involved in an IA
     # (see https://github.com/duckduckgo/p5-app-duckpan/issues/200)
-    my $template_defs = App::DuckPAN::TemplateDefinitions->new;
-    my @templates = $template_defs->get_templates;
-    my %distinct_dirs;
+    my @dirs = $self->_get_directories_to_monitor;
 
-    for my $template (@templates) {
-	next unless $template->needs_restart;
-
-        # Get any subdirectories
-        my @d = File::Find::Rule->directory()->in($template->output_directory);
-        # We don't know what templates will contain, e.g. subdiretories
-        ++$distinct_dirs{$_} for @d;
-    }
-    ++$distinct_dirs{$self->app->get_ia_type()->{dir}};
-    # No dupes
-    my @dirs = keys %distinct_dirs;
     FSMON: while(1){
         # Find all subdirectories
         # Create our watcher with each directory
