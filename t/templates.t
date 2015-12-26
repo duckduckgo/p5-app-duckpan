@@ -75,8 +75,6 @@ is $template_map{pm}->input_file, 't/template/lib/DDG/Default.pm',
     'template defs: set template input field';
 is $template_map{pm}->output_file, 't/out/lib/DDG/<:$package_name:>.pm',
     'template defs: set template output field';
-ok $template_map{pm}->needs_restart,
-    'template defs: set template needs_restart field';
 
 # output directory computation
 is $template_map{pm}->output_directory, 't/out/lib/DDG',

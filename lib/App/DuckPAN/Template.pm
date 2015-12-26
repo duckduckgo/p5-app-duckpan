@@ -57,12 +57,6 @@ sub _build_output_directory {
     return $out_dir;
 }
 
-has needs_restart => (
-    is       => 'ro',
-    required => 1,
-    doc      => 'Does the server need to be restarted when the output file is modified? (boolean)',
-);
-
 # Create the output file from the input file
 sub generate {
     my ($self, $vars) = @_;

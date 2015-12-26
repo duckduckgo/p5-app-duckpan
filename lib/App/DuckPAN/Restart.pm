@@ -69,7 +69,7 @@ sub _get_directories_to_monitor {
 
         for my $template (@templates) {
             push @output_dirs, $template->output_directory
-                if $template->needs_restart;
+                unless $template->name =~ /test/;
         }
     } catch {
         if (/template definitions/i) {

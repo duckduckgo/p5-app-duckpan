@@ -4,7 +4,6 @@ templates:
         label:  Perl Module
         input:  lib/DDG/Default.pm
         output: t/out/lib/DDG/<:$package_name:>.pm
-        needs_restart: true
 
     test:
         label:  Perl Module Test
