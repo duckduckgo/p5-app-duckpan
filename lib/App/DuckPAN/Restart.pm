@@ -71,7 +71,8 @@ sub _get_directories_to_monitor {
             push @output_dirs, $template->output_directory
                 unless $template->name =~ /test/;
         }
-    } catch {
+    }
+    catch {
         if (/template definitions/i) {
             # There was a problem loading the template definitions file. This
             # can happen if the instant answer repository is of an older
@@ -90,7 +91,8 @@ sub _get_directories_to_monitor {
                 next if $type eq 'test'; # skip the test dir?
                 push @output_dirs, $io->{out};
             }
-        } else {
+        }
+        else {
             die $_;
         }
     };
@@ -104,8 +106,9 @@ sub _get_directories_to_monitor {
 
     ++$distinct_dirs{$self->app->get_ia_type()->{dir}};
 
-    return keys %distinct_dirs;
+    return [ keys %distinct_dirs ];
 }
+
 # Monitors development directories for file changes.  Tries to get the
 # list of directories in a general way.  This subroutine 
 # blocks, so when it returns we know there's been a change
@@ -116,12 +119,12 @@ sub _monitor_directories {
     # Note: Could potentially be functionality added to App::DuckPAN
     # which would return the directories involved in an IA
     # (see https://github.com/duckduckgo/p5-app-duckpan/issues/200)
-    my @dirs = $self->_get_directories_to_monitor;
+    my $dirs = $self->_get_directories_to_monitor;
 
     FSMON: while(1){
         # Find all subdirectories
         # Create our watcher with each directory
-        my $watcher = Filesys::Notify::Simple->new(\@dirs);
+        my $watcher = Filesys::Notify::Simple->new($dirs);
         # Wait for something to happen.  This blocks, which is why
         # it's in a wheel.  On detection of update it will fall
         # through; thus the while(1)
