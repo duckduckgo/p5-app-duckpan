@@ -48,7 +48,6 @@ sub _build__template_map {
             label         => $template_data->{label},
             input_file    => path($template_root, $template_data->{input}),
             output_file   => path($template_data->{output}),
-            needs_restart => $template_data->{needs_restart},
         );
 
         $template_map{$name} = $template;
