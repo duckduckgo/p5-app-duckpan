@@ -2,6 +2,8 @@
 # PODNAME: duckpan
 # ABSTRACT: Command line tool for using the DuckPAN of DuckDuckGo
 
+use strict; use warnings;
+
 my @libs;
 
 BEGIN {
