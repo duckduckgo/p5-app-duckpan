@@ -157,12 +157,12 @@ sub request {
 					$to =~ s/\$\{dollar\}/\$/g;
 
 					my ($wrap_jsonp_callback, $callback, $wrap_string_callback, $missing_envs, $accept_header) =
-						($rewrite->wrap_jsonp_callback, $rewrite->callback, $rewrite->wrap_string_callback, $rewrite->missing_envs, $rewrite->accept_header);
+						($rewrite->wrap_jsonp_callback, $rewrite->callback, $rewrite->wrap_string_callback, defined($rewrite->missing_envs), $rewrite->accept_header);
 
 					# Check if environment variables (most likely the API key) is missing.
 					# If it is missing, switch to the DDG endpoint.
 					my ($use_ddh, $request_uri);
-					if(defined $missing_envs) {
+					if($missing_envs) {
 						++$use_ddh;
 						$request_uri = $request->request_uri;
 						 # Display the URL that we used.
@@ -183,13 +183,13 @@ sub request {
 						utf8::encode $body if utf8::is_utf8 $body;
 						warn "Cannot use wrap_jsonp_callback and wrap_string callback at the same time!" if $wrap_jsonp_callback && $wrap_string_callback;
 						if ($wrap_jsonp_callback && $callback) {
-							$body = $callback.'('.$body.');' unless defined $missing_envs;
+							$body = $callback.'('.$body.');' unless $missing_envs;
 						}
 						elsif ($wrap_string_callback && $callback) {
 							$body =~ s/"/\\"/g;
 							$body =~ s/\n/\\n/g;
 							$body =~ s/\R//g;
-							$body = qq{$callback("'.$body.'");} unless defined $missing_envs;
+							$body = qq{$callback("'.$body.'");} unless $missing_envs;
 						}
 						$response->code($res->code);
 						$response->content_type($res->content_type);
