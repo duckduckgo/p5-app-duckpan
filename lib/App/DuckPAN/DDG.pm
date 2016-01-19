@@ -26,7 +26,7 @@ sub show_failed_modules {
         $self->app->emit_notice("These instant answers were not loaded:");
         $self->app->emit_notice(p($failed_to_load, colored => $self->app->colors));
         $self->app->emit_notice(
-            "To learn more about installing Perl dependencies, please read https://duck.co/duckduckhack/faq#how-do-i-install-a-missing-perl-dependency.",
+            "To learn more about installing Perl dependencies, please read http://docs.duckduckhack.com/resources/other-dev-environments.html#dealing-with-installation-issues.",
             "Note: You can ignore these errors if you're not working on these instant answers."
         ) if first { /dependencies/ } values %$failed_to_load;
     }
