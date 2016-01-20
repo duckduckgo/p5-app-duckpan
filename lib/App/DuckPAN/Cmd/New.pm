@@ -9,6 +9,7 @@ with qw( App::DuckPAN::Cmd );
 
 use MooX::Options protect_argv => 0;
 use Try::Tiny;
+use List::MoreUtils 'any';
 
 use App::DuckPAN::TemplateDefinitions;
 
@@ -136,7 +137,7 @@ sub run {
 				"Instant Answer repository.");
 		}
 
-		$self->_set_template("cheatsheet");
+		$self->_set_template('cheatsheet');
 	}
 
 	# Process the --list-templates option: List the template-set names and exit with success
@@ -153,26 +154,26 @@ sub run {
 	# Get the template-set instance based on the command line arguments.
 	my $template_set = $self->_template_set();
 
-	$self->app->emit_info("Creating a new " . $template_set->description . "...");
+	$self->app->emit_info('Creating a new ' . $template_set->description . '...');
 
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer: ');
 
 	# Validate the entered name
-	$self->app->emit_and_exit(-1, "Must supply a name for your Instant Answer.") unless $entered_name;
+	$self->app->emit_and_exit(-1, 'Must supply a name for your Instant Answer.') unless $entered_name;
 	$self->app->emit_and_exit(-1,
 		"'$entered_name' is not a valid name for an Instant Answer. " .
-		"Please run the program again and provide a valid name."
+		'Please run the program again and provide a valid name.'
 	) unless $entered_name =~ m@^( [a-zA-Z0-9\s] | (?<![:/])(::|/)(?![:/]) )+$@x;
 	$self->app->emit_and_exit(-1,
-		"The name for this type of Instant Answer cannot contain package or path separators. " .
-		"Please run the program again and provide a valid name."
+		'The name for this type of Instant Answer cannot contain package or path separators. ' .
+		'Please run the program again and provide a valid name.'
 	) if !$template_set->subdir_support && $entered_name =~ m![/:]!;
 
 	$entered_name =~ s/\//::/g;    #change "/" to "::" for easier handling
 
 	my $package_name = $self->app->phrase_to_camel($entered_name);
-	my ($name, $separated_name, $path, $lc_path) = ($package_name, $package_name, "", "");
+	my ($name, $separated_name, $path, $lc_path) = ($package_name, $package_name, '', '');
 
 	$separated_name =~ s/::/ /g;
 
@@ -180,20 +181,22 @@ sub run {
 		my @path_parts = split(/::/, $package_name);
 		if (scalar @path_parts > 1) {
 			$name    = pop @path_parts;
-			$path    = join("/", @path_parts);
-			$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
+			$path    = join('/', @path_parts);
+			$lc_path = join('/', map { $self->app->camel_to_underscore($_) } @path_parts);
 		} else {
-			$self->app->emit_and_exit(-1, "Malformed input. Please provide a properly formatted package name for your Instant Answer.");
+			$self->app->emit_and_exit(-1, 'Malformed input. Please provide a properly formatted package name for your Instant Answer.');
 		}
 	}
 
 	my $lc_name     = $self->app->camel_to_underscore($name);
-	my $filepath    = ($path eq "") ? $name : "$path/$name";
-	my $lc_filepath = ($lc_path eq "") ? $lc_name : "$lc_path/$lc_name";
+	my $filepath    = $path ? "$path/$name" : $name;
+	my $lc_filepath = $lc_path ? "$lc_path/$lc_name" : $lc_name;
 	if (scalar $lc_path) {
 		$lc_path =~ s/\//_/g;    #safe to modify, we already used this in $lc_filepath
-		$lc_name = $lc_path . "_" . $lc_name;
+		$lc_name = $lc_path . '_' . $lc_name;
 	}
+
+	my $handler = $self->_config_handler;
 
 	my @optional_templates = $self->_ask_optional_templates
 		unless $self->no_optionals;
@@ -204,6 +207,8 @@ sub run {
 		ia_id             => $lc_name,
 		ia_path           => $filepath,
 		ia_path_lc        => $lc_filepath,
+		ia_handler        => $handler->[0],
+		ia_handler_var    => $handler->[1]
 	);
 
 	# Generate the instant answer files. The return value is a hash with
@@ -227,6 +232,38 @@ sub run {
 	}
 
 	$self->app->emit_info("Success!");
+}
+
+# Allow user to choose a handler
+sub _config_handler {
+	my $self = shift;
+
+	my @handlers = (
+		'remainder: (default) The query without the trigger words, spacing and case are preserved.',
+		'query_raw: Like remainder but with trigger words intact',
+		'query: Full query normalized with a single space between terms',
+		'query_lc: Like query but in lowercase',
+		'query_clean: Like query_lc but with non-alphanumeric characters removed',
+		'query_nowhitespace: All whitespace removed',
+		'query_nowhitespace_nodash: All whitespace and hyphens removed',
+		'words: Like query_clean but returns an array of the terms split on whitespace',
+		'query_parts: Like query but returns an array of the terms split on whitespace',
+		'query_raw_parts: Like query_parts but whitespace is returned as separate elements in the array'
+	);
+
+	my $res = $self->app->get_reply(
+		'Which handler would you like to use to process the query?',
+		choices => \@handlers,
+		default => $handlers[0]
+	);
+
+	unless($res =~ /^([^:]+)/){
+		$self->app->emit_and_exit(-1, "Failed to extract handler from response: $res");
+	}
+	my $handler = $1;
+	my $var = (any {$handler eq $_} qw(words query_parts query_raw_parts)) ? '@' : '$';
+
+	return [$handler, $var]
 }
 
 # Ask the user for which optional templates they want to use and return a list
