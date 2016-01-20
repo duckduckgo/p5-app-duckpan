@@ -196,6 +196,8 @@ sub run {
 		$lc_name = $lc_path . '_' . $lc_name;
 	}
 
+	# If the Perl module every becomes optional, this should only run if the user
+	# requests one
 	my $handler = $self->_config_handler;
 
 	my @optional_templates = $self->_ask_optional_templates
@@ -217,9 +219,9 @@ sub run {
 
 	# Show the list of files that were successfully created
 	my @created_files = @{$generate_result{created_files}};
-	$self->app->emit_info("Created files:");
+	$self->app->emit_info('Created files:');
 	$self->app->emit_info("    $_")     for    @created_files;
-	$self->app->emit_info("    (none)") unless @created_files; # possible on error
+	$self->app->emit_info('    (none)') unless @created_files; # possible on error
 
 	if (my $error = $generate_result{error}) {
 		# Remove the line number information if not in verbose mode.
@@ -231,7 +233,7 @@ sub run {
 		$self->app->emit_and_exit(-1, $error)
 	}
 
-	$self->app->emit_info("Success!");
+	$self->app->emit_info('Success!');
 }
 
 # Allow user to choose a handler
