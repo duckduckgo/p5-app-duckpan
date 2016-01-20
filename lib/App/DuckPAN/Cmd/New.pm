@@ -250,7 +250,7 @@ sub _config_handler {
 		'query_nowhitespace_nodash: All whitespace and hyphens removed',
 		'words: Like query_clean but returns an array of the terms split on whitespace',
 		'query_parts: Like query but returns an array of the terms split on whitespace',
-		'query_raw_parts: Like query_parts but whitespace is returned as separate elements in the array'
+		'query_raw_parts: Like query_parts but array contains original whitespace elements'
 	);
 
 	my $res = $self->app->get_reply(
