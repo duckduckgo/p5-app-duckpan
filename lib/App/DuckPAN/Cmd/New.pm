@@ -210,7 +210,8 @@ sub run {
 		ia_path           => $filepath,
 		ia_path_lc        => $lc_filepath,
 		ia_handler        => $handler->[0],
-		ia_handler_var    => $handler->[1]
+		ia_handler_var    => $handler->[1],
+		ia_trigger        => $handler->[2]
 	);
 
 	# Generate the instant answer files. The return value is a hash with
@@ -241,6 +242,7 @@ sub _config_handler {
 	my $self = shift;
 
 	my @handlers = (
+		# Scalar-based
 		'remainder: (default) The query without the trigger words, spacing and case are preserved.',
 		'query_raw: Like remainder but with trigger words intact',
 		'query: Full query normalized with a single space between terms',
@@ -248,6 +250,8 @@ sub _config_handler {
 		'query_clean: Like query_lc but with non-alphanumeric characters removed',
 		'query_nowhitespace: All whitespace removed',
 		'query_nowhitespace_nodash: All whitespace and hyphens removed',
+		# Array-based
+		'matches: Returns an array of captured expression from a regular expression trigger',
 		'words: Like query_clean but returns an array of the terms split on whitespace',
 		'query_parts: Like query but returns an array of the terms split on whitespace',
 		'query_raw_parts: Like query_parts but array contains original whitespace elements'
@@ -263,9 +267,12 @@ sub _config_handler {
 		$self->app->emit_and_exit(-1, "Failed to extract handler from response: $res");
 	}
 	my $handler = $1;
-	my $var = (any {$handler eq $_} qw(words query_parts query_raw_parts)) ? '@' : '$';
+	my $var = (any {$handler eq $_} qw(words query_parts query_raw_parts matches)) ? '@' : '$';
+	my $trigger = $handler eq 'matches'
+		? q{query => qr/trigger regex/}
+		: q{any => 'triggerword', 'trigger phrase'};
 
-	return [$handler, $var]
+	return [$handler, $var, $trigger]
 }
 
 # Ask the user for which optional templates they want to use and return a list
