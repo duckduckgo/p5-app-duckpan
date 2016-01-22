@@ -115,9 +115,9 @@ sub _run_query {
 	catch {
 	    my $error = $_;
 	    if ($error =~ m/Malformed UTF-8 character/) {
-	        $app->emit_info('You got a malformed utf8 error message. Normally' . 
-	            ' it means that you tried to enter a special character at the query' . 
-	            ' prompt but your interface is not properly configured for utf8.' . 
+	        $app->emit_info('You got a malformed utf8 error message. Normally' .
+	            ' it means that you tried to enter a special character at the query' .
+	            ' prompt but your interface is not properly configured for utf8.' .
 	            ' Please check the documentation for your terminal, ssh client' .
 	            ' or other client used to execute duckpan.'
 	        );
@@ -128,5 +128,5 @@ sub _run_query {
 	# Enqueue input event
 	$k->yield('_get_user_input');
 }
- 
+
 1;

@@ -318,7 +318,7 @@ sub execute {
 				push @modules, 'App::DuckPAN';
 				if($all_modules){
 					push @modules, 'DDG';
-					unshift @modules, $reinstall_latest if $reinstall_latest; 
+					unshift @modules, $reinstall_latest if $reinstall_latest;
 				}
 			}
 			else {

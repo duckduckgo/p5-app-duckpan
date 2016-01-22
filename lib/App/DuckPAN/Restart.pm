@@ -110,7 +110,7 @@ sub _get_directories_to_monitor {
 }
 
 # Monitors development directories for file changes.  Tries to get the
-# list of directories in a general way.  This subroutine 
+# list of directories in a general way.  This subroutine
 # blocks, so when it returns we know there's been a change
 sub _monitor_directories {
 	my $self = shift;
@@ -132,7 +132,7 @@ sub _monitor_directories {
 	    $watcher->wait(sub {
 	        for my $event (@_) {
 	            my $file = $event->{path};
-	            # if it's a newly created directory, dot file, or pulled 
+	            # if it's a newly created directory, dot file, or pulled
 	            # in dynamically there shouldn't be a need to reload.
 	            # This will catch directories with files in them properly,
 	            # as each file will be its own event

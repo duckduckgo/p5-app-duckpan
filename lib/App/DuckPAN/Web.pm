@@ -109,7 +109,7 @@ sub request {
 
 	                           # if valid remainder exists, prepend to filename
 	                           $filename = "$remainder$filename" if $remainder ne $filename;
-	            
+
 				if (my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename)) {
 
 					my $content_type = Plack::MIME->mime_type($filename);
