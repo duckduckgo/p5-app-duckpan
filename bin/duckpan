@@ -7,21 +7,21 @@ use strict; use warnings;
 my @libs;
 
 BEGIN {
-    use Getopt::Long qw/:config bundling pass_through/;
-    use Path::Tiny;
-    use Try::Tiny;
-    GetOptions 'include|I=s' => \@libs;
-    @libs = split ',', join ',', @libs;
-    if (my @missing = grep { !$_->exists } map { path($_) } @libs) {
-        my $plural = (scalar @missing == 1) ? '' : 's';
-        print STDERR '[FATAL ERROR] Missing include path' . $plural . ': ' . join(', ',
-            map { try { $_->realpath } || $_->absolute } @missing) . "\n";
-        exit 1;
-    }
+	use Getopt::Long qw/:config bundling pass_through/;
+	use Path::Tiny;
+	use Try::Tiny;
+	GetOptions 'include|I=s' => \@libs;
+	@libs = split ',', join ',', @libs;
+	if (my @missing = grep { !$_->exists } map { path($_) } @libs) {
+		my $plural = (scalar @missing == 1) ? '' : 's';
+		print STDERR '[FATAL ERROR] Missing include path' . $plural . ': ' . join(', ',
+			map { try { $_->realpath } || $_->absolute } @missing) . "\n";
+		exit 1;
+	}
 
-    # For other commands, bundling is desirable but pass_through leads to
-    # incomplete validation of command line arguments
-    Getopt::Long::Configure('no_pass_through');
+	# For other commands, bundling is desirable but pass_through leads to
+	# incomplete validation of command line arguments
+	Getopt::Long::Configure('no_pass_through');
 }
 use lib @libs;
 
@@ -51,22 +51,22 @@ duckpan [-I=<path>] [-v|--verbose] <command> [<args>]
 
 Commands include:
 
-    check           Check if you fulfill all requirements for the development environment
-    env             Add, remove or retrieve values from DuckPAN's Env.ini
-    help            View more detailed help information
-    installdeps     Install all Perl dependencies
-    new             Generate new Instant Answer skeleton
-    poupload        Upload .po translations file to Duck.co
-    publisher       Start local web server for DuckDuckGo-Publisher static websites
-    query           Test Instant Answer triggers on command line
-    reinstall       Reinstalls installed, pinned, or most recent DuckPAN and DDG Perl modules
-    latest          Like reintall but ignores installed versions
-    release         Pushes a new release of the current project to duckpan.org
-    roadrunner      Same as installdeps, but skips tests (dangerous!)
-    server          Start local web server to test Instant Answer display
-    setup           Configure Duck.co and PAUSE account 'poupload' and 'release'
-    update          Installs newest DuckPAN packages
-    upgrade         Installs newest DuckPAN and DDG packages
+	check           Check if you fulfill all requirements for the development environment
+	env             Add, remove or retrieve values from DuckPAN's Env.ini
+	help            View more detailed help information
+	installdeps     Install all Perl dependencies
+	new             Generate new Instant Answer skeleton
+	poupload        Upload .po translations file to Duck.co
+	publisher       Start local web server for DuckDuckGo-Publisher static websites
+	query           Test Instant Answer triggers on command line
+	reinstall       Reinstalls installed, pinned, or most recent DuckPAN and DDG Perl modules
+	latest          Like reintall but ignores installed versions
+	release         Pushes a new release of the current project to duckpan.org
+	roadrunner      Same as installdeps, but skips tests (dangerous!)
+	server          Start local web server to test Instant Answer display
+	setup           Configure Duck.co and PAUSE account 'poupload' and 'release'
+	update          Installs newest DuckPAN packages
+	upgrade         Installs newest DuckPAN and DDG packages
 
 Use 'duckpan help' or 'man duckpan' for more details.
 

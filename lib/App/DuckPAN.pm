@@ -413,9 +413,9 @@ sub phrase_to_camel {
 
 	$camel =~ s/
 		(?:           # if a character:
-		      \s+     # - follows spaces
-		    | (?<=::) # - or follows ::
-		    | ^       # - or is the first character
+			  \s+     # - follows spaces
+			| (?<=::) # - or follows ::
+			| ^       # - or is the first character
 		)(.)          # (the character)
 		/\U$1/gx;     # then uppercase it (preceding spaces are removed)
 
@@ -426,30 +426,30 @@ sub phrase_to_camel {
 }
 
 sub check_requirements {
-        my ($self) = @_;
+		my ($self) = @_;
 
-        if (!$self->check) {
-                $self->emit_notice("Requirements checking was disabled...");
-                return 1;
-        }
-        my $signal_file = $self->cfg->cache_path->child('perl_checked');
-        my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
-        if ((time - $last_checked_perl) <= $self->cachesec) {
-                $self->emit_debug("Perl module versions recently checked, skipping requirements check...");
-        } else {
-                $self->emit_info("Checking for DuckPAN requirements...");
+		if (!$self->check) {
+				$self->emit_notice("Requirements checking was disabled...");
+				return 1;
+		}
+		my $signal_file = $self->cfg->cache_path->child('perl_checked');
+		my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
+		if ((time - $last_checked_perl) <= $self->cachesec) {
+				$self->emit_debug("Perl module versions recently checked, skipping requirements check...");
+		} else {
+				$self->emit_info("Checking for DuckPAN requirements...");
 
-                $self->emit_and_exit(1, 'Requirements check failed')
-                  unless (
-                        $self->check_perl &&
-                        $self->check_app_duckpan &&
-                        $self->check_ddg &&
-                        $self->check_ssh &&
-                        $self->check_git);
-        }
-        $signal_file->touch;
+				$self->emit_and_exit(1, 'Requirements check failed')
+				  unless (
+						$self->check_perl &&
+						$self->check_app_duckpan &&
+						$self->check_ddg &&
+						$self->check_ssh &&
+						$self->check_git);
+		}
+		$signal_file->touch;
 
-        return 1;
+		return 1;
 }
 
 sub get_local_ddg_version {

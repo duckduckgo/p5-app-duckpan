@@ -1,64 +1,64 @@
 ---
 templates:
-    pm:
-        label:  Perl Module
-        input:  lib/DDG/Default.pm
-        output: t/out/lib/DDG/<:$package_name:>.pm
+	pm:
+		label:  Perl Module
+		input:  lib/DDG/Default.pm
+		output: t/out/lib/DDG/<:$package_name:>.pm
 
-    test:
-        label:  Perl Module Test
-        # don't use a '.t' extension so as not to interfere with actual tests
-        # in the distribution
-        input:  t/Example.test
-        output: t/out/t/<:$package_name:>.test
+	test:
+		label:  Perl Module Test
+		# don't use a '.t' extension so as not to interfere with actual tests
+		# in the distribution
+		input:  t/Example.test
+		output: t/out/t/<:$package_name:>.test
 
-    js:
-        label:  Javascript
-        input:  share/javascript/default.js
-        output: t/out/share/javascript/<:$ia_id:>.js
+	js:
+		label:  Javascript
+		input:  share/javascript/default.js
+		output: t/out/share/javascript/<:$ia_id:>.js
 
-    css:
-        label:  Javascript
-        input:  share/css/default.css
-        output: t/out/share/css/<:$ia_id:>.css
+	css:
+		label:  Javascript
+		input:  share/css/default.css
+		output: t/out/share/css/<:$ia_id:>.css
 
-    complex_out_dir:
-        label:  README file
-        input:  share/text/README
-        output: t/out/share/text/<:$ia_id:>/docs/README
+	complex_out_dir:
+		label:  README file
+		input:  share/text/README
+		output: t/out/share/text/<:$ia_id:>/docs/README
 
-    no_input:
-        label:  File with non-existent input
-        input:  share/text/does_not_exist.txt
-        output: t/out/share/text/<:$ia_id:>.txt
+	no_input:
+		label:  File with non-existent input
+		input:  share/text/does_not_exist.txt
+		output: t/out/share/text/<:$ia_id:>.txt
 
-    no_write_perm:
-        label:  Output directory is not writeable
-        input:  share/text/README
-        output: t/out/readonly/<:$ia_id:>.txt
+	no_write_perm:
+		label:  Output directory is not writeable
+		input:  share/text/README
+		output: t/out/readonly/<:$ia_id:>.txt
 
 template_sets:
-    all_optional:
-        description: Template set with all optional templates
-        optional:    [ js, pm, test ]
+	all_optional:
+		description: Template set with all optional templates
+		optional:	[ js, pm, test ]
 
-    required_and_optional:
-        description: Template set with required and optional templates
-        required:    [ pm, test ]
-        optional:    [ js, css ]
+	required_and_optional:
+		description: Template set with required and optional templates
+		required:	[ pm, test ]
+		optional:	[ js, css ]
 
-    errors:
-        description: Template set with templates that can produce errors
-        required:    [ pm ]
-        optional:    [ no_input ]
+	errors:
+		description: Template set with templates that can produce errors
+		required:	[ pm ]
+		optional:	[ no_input ]
 
-    subdir_support_specified:
-        description: Template which will not work if IAs are created inside a subdirectory
-        required:    [ pm ]
-        subdir_support: false
+	subdir_support_specified:
+		description: Template which will not work if IAs are created inside a subdirectory
+		required:	[ pm ]
+		subdir_support: false
 
-    subdir_support_not_defined:
-        description: Template which will work if IAs are created inside a subdirectory
-        required:    [ pm ]
+	subdir_support_not_defined:
+		description: Template which will work if IAs are created inside a subdirectory
+		required:	[ pm ]
 ...
 

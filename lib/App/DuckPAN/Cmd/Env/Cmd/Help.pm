@@ -7,8 +7,8 @@ with qw( App::DuckPAN::Cmd::Env::Cmd );
 use MooX::Options protect_argv => 0;
 
 sub run {
-    my ( $self ) = @_;
-    $self->env->help();
+	my ( $self ) = @_;
+	$self->env->help();
 }
 
 1;
