@@ -28,6 +28,12 @@ use App::DuckPAN::Cmd::Help;
 
 no warnings 'uninitialized';
 
+option dev_version => (
+	is => 'ro',
+	default => 9.999,
+	doc => 'Version used when using unreleased code, e.g. git repos'
+);
+
 option dukgo_my_account => (
 	is => 'ro',
 	lazy => 1,
@@ -110,7 +116,7 @@ option duckpan => (
 sub _ua_string {
 	my ($self) = @_;
 	my $class   = ref $self || $self;
-	my $version = $class->VERSION || '9.999';
+	my $version = $class->VERSION || $self->dev_version;
 	return "$class/$version";
 }
 
@@ -522,7 +528,7 @@ sub check_app_duckpan {
 	my $ok                = 1;
 	my $pin_version       = $ENV{"DuckPAN"} || undef;
 	my $installed_version = $self->get_local_app_duckpan_version;
-	return $ok if $installed_version && $installed_version == '9.999';
+	return $ok if $installed_version && $installed_version == $self->dev_version;
 	$self->emit_info("Checking for latest App::DuckPAN... ");
 	my $packages = $self->duckpan_packages;
 	my $module   = $packages->package('App::DuckPAN');
@@ -548,7 +554,8 @@ sub check_ddg {
 	my $ok                = 1;
 	my $pin_version       = $ENV{"DDG"} || undef;
 	my $installed_version = $self->get_local_ddg_version;
-	return $ok if $installed_version && $installed_version == '9.999';
+	return $ok if $installed_version && $installed_version == $self->dev_version;
+	warn "installing DDG";
 	$self->emit_info("Checking for latest DDG Perl package...");
 	my $packages = $self->duckpan_packages;
 	my $module   = $packages->package('DDG');

@@ -69,7 +69,7 @@ sub get_local_version {
 			# When executing code in-place, $VERSION will not be defined.
 			# Only the installed package will have a defined version
 			# thanks to Dist::Zilla::Plugin::PkgVersion
-			return '9.999';
+			return $self->app->dev_version;
 		}
 		return;
 	}
@@ -124,6 +124,12 @@ sub duckpan_install {
 		# Remind user about having pinned env variables
 		$self->app->emit_info("$package: $installed_version installed, $pinned_version pinned, $latest_version latest") if $pinned_version;
 
+		# Could be moved up but want dev to see the version installed and available first
+		if($installed_version == $self->app->dev_version){
+			$self->app->emit_notice("Skipping installation of $package.  Development version detected!");
+			next;
+		}
+
 		my ($install_it, $message);
 		if($reinstall || $latest || !$installed_version) {
 			# Prefer versions in the following order when (re)installing: installed, pinned, latest
@@ -131,10 +137,6 @@ sub duckpan_install {
 			my $version;
 			$version = $installed_version unless $latest;
 			$version ||= $pinned_version || $latest_version;
-			if($version == 9.999){
-				$self->app->emit_notice("You appear to be using a GitHub repository for unversioned package $package...skipping");
-				next;
-			}
 			# update the url if not the latest
 			if($version != $latest_version){
 				unless($duckpan_module_url = $self->find_previous_url($module, $version)){
