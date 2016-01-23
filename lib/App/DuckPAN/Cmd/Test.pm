@@ -26,17 +26,15 @@ sub run {
 		$self->app->emit_error("Could not begin testing. Is Dist::Zilla installed?") if $ret = system("dzil test");
 	} else {
 		my @to_test = ("t/*") unless @args;
-		if (@args) {
-			foreach my $ia (@args) {
-				if (path("t/$ia.t")->exists) {
-					push @to_test, "t/$ia.t";
-				} elsif (path("t/$ia/")->exists) {
-					push @to_test, "t/$ia/*";
-				} else {
-					$self->app->emit_error("Could not find any tests for $ia");
-					return 1;
-				};
-			};
+		foreach my $ia (@args) {
+			if (path("t/$ia.t")->exists) {
+				push @to_test, "t/$ia.t";
+			} elsif (path("t/$ia/")->exists) {
+				push @to_test, "t/$ia/*";
+			} else {
+				$self->app->emit_error("Could not find any tests for $ia");
+				return 1;
+			}
 		};
 		$self->app->emit_error("Tests failed! See output above for details") if $ret = system("prove -Ilib @{[join ' ', @to_test]}");
 	}
