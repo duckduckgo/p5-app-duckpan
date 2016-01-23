@@ -20,11 +20,11 @@ sub run {
 	my $ret = 0;
 
 	if ($self->full) {
-		$self->app->emit_error("Could not find dist.ini.") unless -e "dist.ini";
-		$self->app->emit_error("Could not begin testing. Is Dist::Zilla installed?") if $ret = system("dzil test");
+		$self->app->emit_error('Could not find dist.ini.') unless -e 'dist.ini';
+		$self->app->emit_error('Could not begin testing. Is Dist::Zilla installed?') if $ret = system('dzil test');
 	}
 	else {
-		my @to_test = ("t") unless @args;
+		my @to_test = ('t') unless @args;
 		foreach my $ia (@args) {
 			if (-e "t/$ia.t") {
 				push @to_test, "t/$ia.t";
@@ -36,7 +36,7 @@ sub run {
 				$self->app->emit_and_exit(1, "Could not find any tests for $ia");
 			}
 		};
-		$self->app->emit_error("Tests failed! See output above for details") if $ret = system("prove -lr @to_test");
+		$self->app->emit_error('Tests failed! See output above for details') if $ret = system("prove -lr @to_test");
 	}
 
 	return $ret;
