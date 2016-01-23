@@ -6,8 +6,6 @@ with qw( App::DuckPAN::Cmd );
 
 use MooX::Options protect_argv => 0;
 
-use Path::Tiny;
-
 option full => (
 	is      => 'ro',
 	lazy    => 1,
@@ -25,12 +23,12 @@ sub run {
 		$self->app->emit_error("Could not find dist.ini.") unless -e "dist.ini";
 		$self->app->emit_error("Could not begin testing. Is Dist::Zilla installed?") if $ret = system("dzil test");
 	} else {
-		my @to_test = ("t/*") unless @args;
+		my @to_test = ("t") unless @args;
 		foreach my $ia (@args) {
-			if (path("t/$ia.t")->exists) {
+			if (-e "t/$ia.t") {
 				push @to_test, "t/$ia.t";
-			} elsif (path("t/$ia/")->exists) {
-				push @to_test, "t/$ia/*";
+			} elsif (-d "t/$ia") {
+				push @to_test, "t/$ia";
 			} else {
 				$self->app->emit_error("Could not find any tests for $ia");
 				return 1;
