@@ -115,7 +115,8 @@ sub _run_app {
 	foreach my $asset (map { @{$self->page_info->{$_}} } (qw(root spice templates))) {
 		if (defined $asset->{external}) {
 			$self->retrieve_and_cache($asset);
-		} else {
+		}
+		else {
 			# Files without external sources should be copied from the distribution.
 			my $to_file = $asset->{internal};
 			my $from_file = path(dist_dir('App-DuckPAN'), $to_file->basename);
@@ -169,9 +170,11 @@ sub make_source_comment {
 	my $title    = $file_info->{name} || $internal;
 	if ($internal =~ /js$/) {
 		$comment = '// ' . $title;
-	} elsif ($internal =~ /css$/) {
+	}
+	elsif ($internal =~ /css$/) {
 		$comment = '/* ' . $title . '*/';
-	} elsif ($internal =~ /html$/) {
+	}
+	elsif ($internal =~ /html$/) {
 		$comment = '<!-- ' . $title . ' -->';
 	}
 
@@ -222,10 +225,12 @@ sub change_html {
 			unless($has_css) {
 				$_->attr('href','/?duckduckhack_css=1');
 				$has_css = 1;
-			} else {
+			}
+			else {
 				$_->attr('href','/?duckduckhack_ignore=1');
 			}
-		} elsif (defined $_->attr('href') && substr($_->attr('href'),0,1) eq '/') {
+		}
+		elsif (defined $_->attr('href') && substr($_->attr('href'),0,1) eq '/') {
 			$_->attr('href','http://'.$self->hostname.''.$_->attr('href'));
 		}
 	}
@@ -248,25 +253,31 @@ sub change_html {
 			if ($src =~ m/^\/(dpan\d+|duckpan)\.js/) {
 				if ($has_ddh){
 					$_->attr('src','/?duckduckhack_ignore=1');
-				} else {
+				}
+				else {
 					$_->attr('src','/?duckduckhack_js=1');
 					$has_ddh = 1;
 				}
-			} elsif ($src =~ m/^\/(g\d+|serp)\.js/) {
+			}
+			elsif ($src =~ m/^\/(g\d+|serp)\.js/) {
 				$_->attr('src','/?duckduckhack_templates=1');
-			} elsif ($src =~ m/^\/(d\d+|base)\.js/) {
+			}
+			elsif ($src =~ m/^\/(d\d+|base)\.js/) {
 
 				# If dpan.js is not present (ie. homepage)
 				# make sure we serve the js rather than blocking
 				# the call to d.js
 				if ($has_ddh){
 					$_->attr('src','/?duckduckhack_ignore=1');
-				} else {
+				}
+				else {
 					$_->attr('src','/?duckduckhack_js=1');
 				}
-			} elsif ($src =~ /locales/) {
+			}
+			elsif ($src =~ /locales/) {
 				$_->attr('src','/?duckduckhack_locales=1');
-			} elsif (substr($src,0,1) eq '/') {
+			}
+			elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 			}
 		}
@@ -321,14 +332,16 @@ sub get_sub_assets {
 					internal => $cache_path->child($1),
 					external => $1
 				  };
-			} elsif ($src =~ m/^\/((?:g\d+|serp)\.js)/) {
+			}
+			elsif ($src =~ m/^\/((?:g\d+|serp)\.js)/) {
 				unshift @{$self->page_info->{templates}},
 				  {
 					name     => 'Templating JS',
 					internal => $cache_path->child($1),
 					external => $1
 				  };
-			} elsif ($src =~ m/^\/(locales(?:.*)\.js)/) {
+			}
+			elsif ($src =~ m/^\/(locales(?:.*)\.js)/) {
 				my $long_path  = $1;
 				my $cache_name = $long_path;
 				$cache_name =~ s#^.+(\.\d+\.\d+\.js)#locales$1#g;    # Turn long path into cacheable name
@@ -376,7 +389,8 @@ sub retrieve_and_cache {
 	$prefix .= '[' . $asset->{name} . '] ';
 	if ($to_file->exists && (time - $to_file->stat->ctime) < $self->app->cachesec) {
 		$self->app->emit_debug($prefix . $to_file->basename . " recently cached -- no request made.");
-	} else {
+	}
+	else {
 		$self->app->emit_debug($prefix . 'requesting from: ' . $url . '...');
 		$to_file->remove;
 		$to_file->touchpath;
@@ -399,16 +413,19 @@ sub retrieve_and_cache {
 						fh     => \*STDOUT,
 					});
 					$progress->minor(0);
-				} elsif ($progress && $bytes_received > $next_update) {
+				}
+				elsif ($progress && $bytes_received > $next_update) {
 					$next_update = $progress->update($bytes_received);
 				}
 			});
 		if (!$res->is_success) {
 			$self->app->emit_and_exit(-1, qq~$prefix request failed with response: ~ . $res->status_line . "\n");
-		} elsif ($expected_length && $bytes_received < $expected_length) {
+		}
+		elsif ($expected_length && $bytes_received < $expected_length) {
 			$to_file->remove;
 			$self->app->emit_and_exit(-1, qq~$prefix only $bytes_received of $expected_length bytes received~);
-		} else {
+		}
+		else {
 			$progress->update($expected_length) if ($progress && $expected_length);
 			$self->app->emit_debug($prefix . 'written to cache: ' . $to_file);
 		}

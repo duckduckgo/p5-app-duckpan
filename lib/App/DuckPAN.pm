@@ -366,7 +366,8 @@ sub emit_and_exit {
 
 	if ($exit_code == 0) {      # This is just an info message.
 		$self->emit_info(@msg);
-	} else {                    # But if it's an unhappy exit
+	}
+	else {                    # But if it's an unhappy exit
 		$self->_print_msg(*STDERR, $prefix, @msg);
 	}
 
@@ -436,7 +437,8 @@ sub check_requirements {
 		my $last_checked_perl = ($signal_file->exists) ? $signal_file->stat->mtime : 0;
 		if ((time - $last_checked_perl) <= $self->cachesec) {
 				$self->emit_debug("Perl module versions recently checked, skipping requirements check...");
-		} else {
+		}
+		else {
 				$self->emit_info("Checking for DuckPAN requirements...");
 
 				$self->emit_and_exit(1, 'Requirements check failed')
@@ -472,14 +474,17 @@ sub check_git {
 		if ($version_string =~ m/git version (\d+)\.(\d+)/) {
 			if ($1 <= 1 && $2 < 7) {
 				$self->emit_error("require minimum git 1.7");
-			} else {
+			}
+			else {
 				$self->emit_debug($git);
 				$ok = 1;
 			}
-		} else {
+		}
+		else {
 			$self->emit_error("Unknown git version!");
 		}
-	} else {
+	}
+	else {
 		$self->emit_error("git not found");
 	}
 	return $ok;
@@ -492,7 +497,8 @@ sub check_ssh {
 	if (my $ssh = which('ssh')) {
 		$self->emit_debug($ssh);
 		$ok = 1;
-	} else {
+	}
+	else {
 		$self->emit_error('ssh not found');
 	}
 	return $ok;
@@ -513,10 +519,12 @@ sub check_perl {
 	if ($installed_version->vcmp($perl_versions{required}) < 0) {
 		$self->emit_error('perl ' . $perl_versions{required}->normal . ' or higher is required. ', $installed_version->normal . ' is installed.');
 		$ok = 0;
-	} elsif ($installed_version->vcmp($perl_versions{recommended}) < 0) {
+	}
+	elsif ($installed_version->vcmp($perl_versions{recommended}) < 0) {
 		$self->emit_notice('perl ' . $perl_versions{recommended}->normal . ' or higher is recommended. ',
 			$installed_version->normal . " is installed.");
-	} else {
+	}
+	else {
 		$self->emit_debug($installed_version->normal);
 	}
 
@@ -539,7 +547,8 @@ sub check_app_duckpan {
 		my $msg = "App::DuckPAN version: $installed_version";
 		$msg .= " (duckpan has " . $module->version . ")" if $installed_version ne $module->version;
 		$self->emit_debug($msg);
-	} else {
+	}
+	else {
 		my @msg = (
 			"You have version $installed_version, latest is " . $module->version . "!",
 			"Please install the latest App::DuckPAN package with: duckpan upgrade"
@@ -566,20 +575,23 @@ sub check_ddg {
 		my $msg = "DDG version: $installed_version";
 		$msg .= " (duckpan has $latest_version )" if $installed_version ne $latest_version;
 		$self->emit_debug($msg);
-	} elsif ($pin_version && $pin_version < $latest_version){
+	}
+	elsif ($pin_version && $pin_version < $latest_version){
 			my @msg = (
 				"A newer version of DDG exists: $latest_version.",
 				"You have the version pinned to: $pin_version. Please update your version pin!"
 			);
 			$self->emit_notice(@msg);
-	} else {
+	}
+	else {
 		if ($installed_version) {
 			my @msg = (
 				"You have version $installed_version, latest is " . $module->version . "!",
 				"Please install the latest DDG package with: duckpan DDG"
 			);
 			$self->emit_notice(@msg);
-		} else {
+		}
+		else {
 			$self->perl->duckpan_install('DDG');
 		}
 	}

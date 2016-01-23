@@ -74,13 +74,15 @@ sub request {
 		$body = path($site->{urls}->{$request->request_uri}->{$locale})->slurp_utf8;
 		$response->code("200");
 		$response->content_type('text/html');
-	} else {
+	}
+	else {
 		my $res = $self->ua->request(HTTP::Request->new(GET => $site->{base_url}.$request->request_uri));
 		if ($res->is_success) {
 			$body = $res->decoded_content;
 			$response->code($res->code);
 			$response->content_type($res->content_type);
-		} else {
+		}
+		else {
 			warn $res->status_line, "\n";
 			$body = "";
 		}

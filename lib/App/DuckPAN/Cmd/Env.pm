@@ -24,7 +24,8 @@ sub load_env_ini {
 	if ($self->env_ini->is_file) {
 		my $data = Config::INI::Reader->read_file($self->env_ini)->{_};
 		defined $data ? $data : {}
-	} else {
+	}
+	else {
 		{}
 	}
 }

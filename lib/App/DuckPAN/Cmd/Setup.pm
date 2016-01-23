@@ -105,11 +105,13 @@ sub setup_name {
 	my $name = $self->get_name;
 	if ($name) {
 		$self->name($name);
-	} else {
+	}
+	else {
 		$self->app->emit_info("We need some kind of name!");
 		if ($self->app->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->setup_name;
-		} else {
+		}
+		else {
 			$self->app->emit_and_exit(1, "A name is required to work with DuckPAN");
 		}
 	}
@@ -120,11 +122,13 @@ sub setup_email {
 	my $email = $self->get_email;
 	if (Email::Valid->address($email)) {
 		$self->email($email);
-	} else {
+	}
+	else {
 		$self->app->emit_info("No valid email given!");
 		if ($self->app->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->setup_email;
-		} else {
+		}
+		else {
 			$self->app->emit_and_exit(1, "An email is required to work with DuckPAN");
 		}
 	}
@@ -138,12 +142,14 @@ sub setup_dukgo {
 	if ($self->app->checking_dukgo_user($user,$pass)) {
 		$self->user($user);
 		$self->pass($pass);
-	} else {
+	}
+	else {
 		$self->app->emit_info("Account lookup failed!");
 		if ($self->app->term->ask_yn( prompt => 'Wanna try again? ', default => 'y' )) {
 			$self->clear_user if $self->has_user;
 			$self->setup_dukgo;
-		} else {
+		}
+		else {
 			$self->app->emit_and_exit(1, "A login to https://duck.co/ is required to work with DuckPAN");
 		}
 	}
