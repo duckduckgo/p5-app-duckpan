@@ -36,7 +36,7 @@ sub run {
 				return 1;
 			}
 		};
-		$self->app->emit_error("Tests failed! See output above for details") if $ret = system("prove -Ilib @{[join ' ', @to_test]}");
+		$self->app->emit_error("Tests failed! See output above for details") if $ret = system("prove -lr @to_test");
 	}
 
 	return $ret;
