@@ -30,8 +30,7 @@ sub run {
 			} elsif (-d "t/$ia") {
 				push @to_test, "t/$ia";
 			} else {
-				$self->app->emit_error("Could not find any tests for $ia");
-				return 1;
+				$self->app->emit_and_exit(1, "Could not find any tests for $ia");
 			}
 		};
 		$self->app->emit_error("Tests failed! See output above for details") if $ret = system("prove -lr @to_test");
