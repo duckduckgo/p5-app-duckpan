@@ -22,14 +22,17 @@ sub run {
 	if ($self->full) {
 		$self->app->emit_error("Could not find dist.ini.") unless -e "dist.ini";
 		$self->app->emit_error("Could not begin testing. Is Dist::Zilla installed?") if $ret = system("dzil test");
-	} else {
+	}
+	else {
 		my @to_test = ("t") unless @args;
 		foreach my $ia (@args) {
 			if (-e "t/$ia.t") {
 				push @to_test, "t/$ia.t";
-			} elsif (-d "t/$ia") {
+			}
+			elsif (-d "t/$ia") {
 				push @to_test, "t/$ia";
-			} else {
+			}
+			else {
 				$self->app->emit_and_exit(1, "Could not find any tests for $ia");
 			}
 		};
