@@ -399,7 +399,7 @@ sub _print_msg {
 }
 
 sub camel_to_underscore {
- my ($self, $name) = @_;
+	my ($self, $name) = @_;
 	# Replace first capital by lowercase
 	# if followed my lowercase.
 	$name =~ s/^([A-Z])([a-z])/lc($1).$2/ge;
