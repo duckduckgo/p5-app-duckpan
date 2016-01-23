@@ -23,7 +23,7 @@ sub run {
 		$self->app->emit_error("Could not find dist.ini.") unless -e "dist.ini";
 		$self->app->emit_error("Could not begin testing. Is Dist::Zilla installed?") if $ret = system("dzil test");
 	} else {
-		$self->app->emit_error("Tests failed! See output above for details") if $ret = system("prove -Ilib");
+		$self->app->emit_error("Tests failed! See output above for details") if $ret = system("prove -lr t");
 	}
 
 	return $ret;
