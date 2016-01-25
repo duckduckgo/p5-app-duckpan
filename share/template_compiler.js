@@ -37,9 +37,10 @@ $(document).ready(function() {
 
 	// array of IA template <script>
 	var hb_templates = $('script.duckduckhack_ia_template'),
+		goodie_scripts = $('.duckpan-run-on-ready'),
 		toCall = [];
 
-	// Check for any spice templates
+	// Check for any IA templates
 	// grab their contents and name
 	// compile and add named template
 	// to global Handlebars obj
@@ -66,6 +67,9 @@ $(document).ready(function() {
 
 		console.log('Finished compiling templates')
 		console.log('Now DDH obj: ', DDH);
+	}
+
+	if (hb_templates.length || goodie_scripts.length) {
 
 		// Need to wait a little for page JS to finish
 		// modifying the DOM
@@ -77,15 +81,15 @@ $(document).ready(function() {
 					window[cbName]();
 				}
 			});
-		}, 100);
 
-		// Execute JavaScript Goodies
-		var $scripts = $('script.duckpan-run-on-ready');
-		for (var i=0; i<$scripts.length; i++) {
-			var s = $scripts[i].innerHTML.replace(/\/\*|\*\/$/g,'');
-			console.log("Adding Goodie: " + $($scripts[i]).attr('ia-id'));
-			eval(s);
-		}
+			// Execute JavaScript Goodies
+			console.log("Executing Goodies");
+			for (var i=0; i<goodie_scripts.length; i++) {
+				var s = goodie_scripts[i].innerHTML.replace(/\/\*|\*\/$/g,'');
+				console.log("Adding Goodie: " + $(goodie_scripts[i]).attr('ia-id'));
+				eval(s);
+			}
+		}, 100);
 
 		return;
 	}
