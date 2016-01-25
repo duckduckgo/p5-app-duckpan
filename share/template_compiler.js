@@ -35,8 +35,8 @@ $(document).ready(function() {
 
 	DDG.duckpan = true;
 
-	// array of spice template <script>
-	var hb_templates = $('script.duckduckhack_spice_template'),
+	// array of IA template <script>
+	var hb_templates = $('script.duckduckhack_ia_template'),
 		toCall = [];
 
 	// Check for any spice templates
@@ -44,27 +44,28 @@ $(document).ready(function() {
 	// compile and add named template
 	// to global Handlebars obj
 	if (hb_templates.length) {
-		console.log('Compiling Spice Templates')
+		console.log('Compiling IA Templates');
 		hb_templates.each(function() {
-			$script = $(this);
-			content = $script.html();
-			spiceName = $script.attr('spice-name');
-			templateName = $script.attr('template-name');
+			var $script = $(this),
+				content = $script.html(),
+				iaName = $script.attr('ia-name'),
+				templateName = $script.attr('template-name');
+
 			if ($script.attr('is-ct-self') === '1'){
-				toCall.push(spiceName);
+				toCall.push(iaName);
 			}
 
-			if (!Spice.hasOwnProperty(spiceName)) {
-				Spice[spiceName] = {};
+			if (!DDH.hasOwnProperty(iaName)) {
+				DDH[iaName] = {};
 			}
 
-			Spice[spiceName][templateName] = Handlebars.compile(content);
+			DDH[iaName][templateName] = Handlebars.compile(content);
 
-			console.log('Compiled template: ', spiceName + '_' + templateName);
+			console.log('Compiled template: ', iaName + '_' + templateName);
 		});
 
 		console.log('Finished compiling templates')
-		console.log('Now Spice obj: ', Spice);
+		console.log('Now DDH obj: ', DDH);
 
 		// Need to wait a little for page JS to finish
 		// modifying the DOM
@@ -77,6 +78,14 @@ $(document).ready(function() {
 				}
 			});
 		}, 100);
+
+		// Execute JavaScript Goodies
+		var $scripts = $('script.duckpan-run-on-ready');
+		for (var i=0; i<$scripts.length; i++) {
+			var s = $scripts[i].innerHTML.replace(/\/\*|\*\/$/g,'');
+			console.log("Adding Goodie: " + $($scripts[i]).attr('ia-id'));
+			eval(s);
+		}
 
 		return;
 	}

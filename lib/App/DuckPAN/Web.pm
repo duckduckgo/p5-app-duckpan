@@ -109,7 +109,7 @@ sub request {
 
                                # if valid remainder exists, prepend to filename
                                $filename = "$remainder$filename" if $remainder ne $filename;
-                
+
 				if (my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename)) {
 
 					my $content_type = Plack::MIME->mime_type($filename);
@@ -326,7 +326,7 @@ sub request {
 					} elsif ($name =~ /handlebars$/){
 						$name =~ s/\.handlebars//;
 						$calls_template{$ia_name}{$name}{"content"} = $_;
-						$calls_template{$ia_name}{$name}{"is_ct_self"} = $is_goodie ? 1 : $result->call_type eq 'self';
+						$calls_template{$ia_name}{$name}{"is_ct_self"} = $is_goodie ? 0 : $result->call_type eq 'self';
 					}
 				}
 				push (@calls_nrj, $result->call_path) if ($result->can('call_path'));
@@ -426,9 +426,7 @@ sub request {
 		if(@calls_goodie){
 			my $goodie = shift @calls_goodie;
 			$calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
-			# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
-			# $calls_script = q|<script type="text/JavaScript" class="script-run-on-ready">/*DDH.add(| . encode_json($goodie) . q|);*/</script>|;
-			$calls_script .= q|<script type="text/JavaScript" class="script-run-on-ready">/*window.setTimeout(DDH.add.bind(DDH, | . encode_json($goodie) . q|), 100);*/</script>|;
+			$calls_script = "<script type=\"text/JavaScript\" class=\"duckpan-run-on-ready\" ia-id=\"$goodie->{id}\">/*DDH.add(" . encode_json($goodie) . ");*/</script>";
 		}
 		else{
 			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
@@ -436,14 +434,13 @@ sub request {
 		my $calls_nrc = @calls_nrc ? join(';', map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
 
 		if (%calls_template) {
-			foreach my $spice_name ( keys %calls_template ){
+			foreach my $ia_name ( keys %calls_template ){
 				$calls_script .= join("",map {
 					my $template_name = $_;
-					my $is_ct_self = $calls_template{$spice_name}{$template_name}{"is_ct_self"};
-					my $template_content = $calls_template{$spice_name}{$template_name}{"content"}->slurp;
-					"<script class='duckduckhack_spice_template' spice-name='$spice_name' template-name='$template_name' is-ct-self='$is_ct_self' type='text/plain'>$template_content</script>"
-
-				} keys %{ $calls_template{$spice_name} });
+					my $is_ct_self = $calls_template{$ia_name}{$template_name}{"is_ct_self"};
+					my $template_content = $calls_template{$ia_name}{$template_name}{"content"}->slurp;
+					"<script class='duckduckhack_ia_template' ia-name='$ia_name' template-name='$template_name' is-ct-self='$is_ct_self' type='text/plain'>$template_content</script>"
+				} keys %{ $calls_template{$ia_name} });
 			}
 		}
 
