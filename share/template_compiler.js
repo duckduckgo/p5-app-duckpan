@@ -47,9 +47,9 @@ $(document).ready(function() {
 	if (hb_templates.length) {
 		console.log('Compiling IA Templates');
 		hb_templates.each(function() {
-			var $script = $(this),
-				content = $script.html(),
-				iaName = $script.attr('ia-name'),
+			$script = $(this);
+			content = $script.html();
+			var iaName = $script.attr('ia-name'),
 				templateName = $script.attr('template-name');
 
 			if ($script.attr('is-ct-self') === '1'){
