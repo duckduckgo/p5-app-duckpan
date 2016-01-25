@@ -426,7 +426,7 @@ sub request {
 		if(@calls_goodie){
 			my $goodie = shift @calls_goodie;
 			$calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
-			$calls_script = "<script type=\"text/JavaScript\" class=\"duckpan-run-on-ready\" ia-id=\"$goodie->{id}\">/*DDH.add(" . encode_json($goodie) . ");*/</script>";
+			$calls_script .= "<script type=\"text/JavaScript\" class=\"duckpan-run-on-ready\" ia-id=\"$goodie->{id}\">/*DDH.add.bind(DDH, " . encode_json($goodie) . ");*/</script>";
 		}
 		else{
 			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
