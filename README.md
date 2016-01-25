@@ -75,7 +75,7 @@ After installing DuckPAN, be sure to checkout the [Using DuckPAN](#using-duckpan
 2. Go to https://codio.com/duckduckgo/duckduckhack and fork the project. Make sure to fork the project and the box.
     ![Codio Fork](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_fork.png)
     ![Codio Fork Both](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_fork_both.png)
-3. Visit one of our Instant Answer repositories (such as https://github.com/duckduckgo/zeroclickinfo-spice), and follow GitHub's instructions to first [fork](https://help.github.com/articles/fork-a-repo/) the repository. You can then clone the repo into your Codio machine (You need to open the Terminal for this).  
+3. Visit one of our Instant Answer repositories (such as https://github.com/duckduckgo/zeroclickinfo-spice), and follow GitHub's instructions to first [fork](https://help.github.com/articles/fork-a-repo/) the repository. You can then clone the repo into your Codio machine (You need to open the Terminal for this).
     ![Codio Terminal](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_terminal.png)
 4. Go into the directory (by typing in `cd zeroclickinfo-spice`) and run `duckpan server`. Click on "DuckPAN Server" to view the webpage.
     ![Codio Server](https://raw.githubusercontent.com/duckduckgo/duckduckgo-documentation/master/duckpan/assets/codio_server.png)
