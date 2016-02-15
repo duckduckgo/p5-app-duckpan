@@ -17,11 +17,13 @@ sub run {
 		$self->app->perl->cpanminus_install_error
 			if (system("dzil listdeps --missing 2>/dev/null | grep -ve '^\\W' | cpanm --quiet --notest --skip-satisfied"));
 		$self->app->emit_info("Everything fine!");
-	} elsif (-f 'Makefile.PL') {
+	}
+	elsif (-f 'Makefile.PL') {
 		$self->app->emit_info("Found a Makefile.PL");
 		$self->app->perl->cpanminus_install_error
 			if (system("cpanm --quiet --notest --skip-satisfied --installdeps ."));
-	} elsif (-f 'Build.PL') {
+	}
+	elsif (-f 'Build.PL') {
 		$self->app->emit_info("Found a Build.PL");
 		$self->app->perl->cpanminus_install_error
 			if (system("cpanm --quiet --notest --skip-satisfied --installdeps ."));

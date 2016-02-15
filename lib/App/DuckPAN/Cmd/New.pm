@@ -76,7 +76,8 @@ sub _build__template_defs {
 				"Template definitions file not found for " . $type->{name} .
 				" Instant Answers. You may need to pull the latest version " .
 				"of this repository.");
-		} else {
+		}
+		else {
 			$self->app->emit_and_exit(-1, $error);
 		}
 	};
@@ -181,10 +182,11 @@ sub run {
 		my @path_parts = split(/::/, $package_name);
 		if (scalar @path_parts > 1) {
 			$name    = pop @path_parts;
-			$path    = join('/', @path_parts);
-			$lc_path = join('/', map { $self->app->camel_to_underscore($_) } @path_parts);
-		} else {
-			$self->app->emit_and_exit(-1, 'Malformed input. Please provide a properly formatted package name for your Instant Answer.');
+			$path    = join("/", @path_parts);
+			$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
+		}
+		else {
+			$self->app->emit_and_exit(-1, "Malformed input. Please provide a properly formatted package name for your Instant Answer.");
 		}
 	}
 
