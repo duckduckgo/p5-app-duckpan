@@ -130,6 +130,7 @@ sub run {
 	# Check which IA repo we're in...
 	my $type = $self->app->get_ia_type();
 
+	my $no_handler = 0;
 	# Process the --cheatsheet option
 	if ($self->cheatsheet) {
 		if ($type->{name} ne 'Goodie') {
@@ -139,6 +140,7 @@ sub run {
 		}
 
 		$self->_set_template('cheatsheet');
+		$no_handler = 1;
 	}
 
 	# Process the --list-templates option: List the template-set names and exit with success
@@ -198,10 +200,6 @@ sub run {
 		$lc_name = $lc_path . '_' . $lc_name;
 	}
 
-	# If the Perl module every becomes optional, this should only run if the user
-	# requests one
-	my $handler = $self->_config_handler;
-
 	my @optional_templates = $self->_ask_optional_templates
 		unless $self->no_optionals;
 
@@ -211,10 +209,13 @@ sub run {
 		ia_id             => $lc_name,
 		ia_path           => $filepath,
 		ia_path_lc        => $lc_filepath,
-		ia_handler        => $handler->[0],
-		ia_handler_var    => $handler->[1],
-		ia_trigger        => $handler->[2]
 	);
+
+	# If the Perl module every becomes optional, this should only run if the user
+	# requests one
+	unless($no_handler){
+		%vars = (%vars, %{$self->_config_handler});
+	}
 
 	# Generate the instant answer files. The return value is a hash with
 	# information about the created files and any error that was encountered.
@@ -274,7 +275,11 @@ sub _config_handler {
 		? q{query => qr/trigger regex/}
 		: q{any => 'triggerword', 'trigger phrase'};
 
-	return [$handler, $var, $trigger]
+	return {
+		ia_handler => $handler,
+		ia_handler_var => $var,
+		ia_trigger => $trigger
+	};
 }
 
 # Ask the user for which optional templates they want to use and return a list
