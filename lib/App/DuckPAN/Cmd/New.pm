@@ -132,7 +132,7 @@ sub run {
 
 	my $no_handler = 0;
 	# Process the --cheatsheet option
-	if ($self->cheatsheet) {
+	if ($self->cheatsheet || $self->template && $self->template eq "cheatsheet") {
 		if ($type->{name} ne 'Goodie') {
 			$self->app->emit_and_exit(-1,
 				"Cheat Sheets can be created only in the Goodie " .
