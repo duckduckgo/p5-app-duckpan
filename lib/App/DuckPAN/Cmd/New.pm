@@ -4,6 +4,8 @@ package App::DuckPAN::Cmd::New;
 # See the template/templates.yml file in the Goodie or Spice repository for the
 # list of template-sets and files generated for them
 
+no warnings 'uninitialized'
+
 use Moo;
 with qw( App::DuckPAN::Cmd );
 
@@ -132,7 +134,7 @@ sub run {
 
 	my $no_handler = 0;
 	# Process the --cheatsheet option
-	if ($self->cheatsheet || $self->template && $self->template eq "cheatsheet") {
+	if ($self->cheatsheet || $self->template eq "cheatsheet") {
 		if ($type->{name} ne 'Goodie') {
 			$self->app->emit_and_exit(-1,
 				"Cheat Sheets can be created only in the Goodie " .
