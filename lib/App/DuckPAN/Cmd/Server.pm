@@ -355,21 +355,26 @@ sub get_sub_assets {
 		}
 	}
 
+    	my @cssfile;
 	for (grep { $_->attr('type') && $_->attr('type') eq 'text/css' } @link) {
 		if (my $href = $_->attr('href')) {
 			# We're looking for txxx.css and sxxx.css.
 			# style.css and static.css are for development mode.
 			if ($href =~ m/^\/((?:[str]\d+|style|static|serp)\.css)/) {
 				my $name = $1;
-				unshift @{$self->page_info->{css}},
-				  {
-					name     => $name . ' CSS',
-					internal => $cache_path->child($name),
-					external => $name
-				  };
+				push @cssfile, $name;
 			}
 		}
 	}
+    	foreach (sort @cssfile) {
+    		my $name = $_;
+		unshift @{$self->page_info->{css}},
+		  {
+			name     => $name . ' CSS',
+			internal => $cache_path->child($name),
+			external => $name
+		  };
+    	}
 
 	# Check if we need to request any new assets from hostname, otherwise use cached copies
 	foreach my $curr_asset (grep { defined $_ && $_->{internal} } map { @{$self->page_info->{$_}} } (qw(js templates css locales))) {
