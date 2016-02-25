@@ -367,7 +367,7 @@ sub get_sub_assets {
 		}
 	}
     	foreach (sort @cssfile) {
-        my $name = $_;
+    		my $name = $_;
 		unshift @{$self->page_info->{css}},
 		  {
 			name     => $name . ' CSS',
