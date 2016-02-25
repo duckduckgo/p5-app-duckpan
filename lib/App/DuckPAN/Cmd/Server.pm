@@ -355,7 +355,7 @@ sub get_sub_assets {
 		}
 	}
 
-    my @cssfile;
+    	my @cssfile;
 	for (grep { $_->attr('type') && $_->attr('type') eq 'text/css' } @link) {
 		if (my $href = $_->attr('href')) {
 			# We're looking for txxx.css and sxxx.css.
@@ -366,7 +366,7 @@ sub get_sub_assets {
 			}
 		}
 	}
-    foreach (sort @cssfile) {
+    	foreach (sort @cssfile) {
         my $name = $_;
 		unshift @{$self->page_info->{css}},
 		  {
@@ -374,7 +374,7 @@ sub get_sub_assets {
 			internal => $cache_path->child($name),
 			external => $name
 		  };
-    }
+    	}
 
 	# Check if we need to request any new assets from hostname, otherwise use cached copies
 	foreach my $curr_asset (grep { defined $_ && $_->{internal} } map { @{$self->page_info->{$_}} } (qw(js templates css locales))) {
