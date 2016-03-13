@@ -25,7 +25,15 @@ sub run {
 	}
 	else {
 		my @to_test = ('t') unless @args;
+		my @test_paths = map { $_ =~ s#t/([^\.]+)(?:\.t)?+#$1#r } glob "t/*";
 		foreach my $ia (@args) {
+			if ($ia =~ /_|^[a-z]+$/) {
+				$ia =~ s/_//g;
+				$ia = lc $ia;
+				if (my @f = grep { lc $_ eq $ia } @test_paths) {
+					$ia = "@f";
+				}
+			}
 			if (-e "t/$ia.t") {
 				push @to_test, "t/$ia.t";
 			}
