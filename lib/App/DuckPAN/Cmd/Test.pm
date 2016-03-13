@@ -35,9 +35,8 @@ sub run {
 				next;
 			}
 			if ($ia =~ /_|^[a-z]+$/) {
-				$ia =~ s/_//g;
-				$ia = lc $ia;
-				if (my @f = grep { lc $_ eq $ia } @test_paths) {
+				my $name = lc $ia =~ s/_//gr;
+				if (my @f = grep { lc $_ eq $name } @test_paths) {
 					$ia = "@f";
 				}
 			}
