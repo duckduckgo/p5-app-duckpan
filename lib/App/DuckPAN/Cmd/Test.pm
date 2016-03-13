@@ -26,7 +26,14 @@ sub run {
 	else {
 		my @to_test = ('t') unless @args;
 		my @test_paths = map { $_ =~ s#t/([^\.]+)(?:\.t)?+#$1#r } glob "t/*";
+		my @cheat_sheet_tests;
 		foreach my $ia (@args) {
+			if ($ia =~ /_cheat_sheet$/ && -d 't/CheatSheets') {
+				$ia =~ s/_cheat_sheet$//;
+				$ia =~ s/_/-/g;
+				push @cheat_sheet_tests, $ia;
+				next;
+			}
 			if ($ia =~ /_|^[a-z]+$/) {
 				$ia =~ s/_//g;
 				$ia = lc $ia;
@@ -44,7 +51,8 @@ sub run {
 				$self->app->emit_and_exit(1, "Could not find any tests for $ia");
 			}
 		};
-		$self->app->emit_error('Tests failed! See output above for details') if $ret = system("prove -lr @to_test");
+		$self->app->emit_error('Tests failed! See output above for details') if @to_test           and $ret = system("prove -lr @to_test");
+		$self->app->emit_error('Tests failed! See output above for details') if @cheat_sheet_tests and $ret = system("prove -lr t/CheatSheets/CheatSheetsJSON.t :: @cheat_sheet_tests");
 	}
 
 	return $ret;
