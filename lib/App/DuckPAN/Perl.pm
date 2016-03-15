@@ -191,16 +191,42 @@ sub duckpan_install {
 	}
 }
 
+my @POTENTIAL_AUTHORS = qw|
+    ALOHAAS
+    ANDREY_P
+    BRAD
+    BRIANS
+    CAINE
+    CRAZEDPSYC
+    DDGC
+    DYLANLL
+    GETTY
+    JAG
+    JBARRETT
+    JDORW
+    MGA
+    MOOLLAZA
+    RSSSSL
+    SDOUGBROWN
+    TOMMYTOMMYTOMMY
+    YEGG
+    ZT
+|;
+
 # We need to derive URLs because duckpan.org doesn't understand module@0.147 syntax
 sub find_previous_url {
 	my ($self, $module, $desired_version) = @_;
 
 	# Shaky premise #1: the author of our previous version is a current author.
+    my @cpanids = uniq($self->authors_of_latest_dists, @POTENTIAL_AUTHORS);
 	# Shaky premise #2: the directory structure is always like this.
-	my @cpan_dirs = map { join('/', substr($_, 0, 1), substr($_, 0, 2), $_) } uniq map { $_->cpanid } ($self->app->duckpan_packages->distributions);
+    my @cpan_dirs = map { join('/', substr($_, 0, 1), substr($_, 0, 2), $_) } @cpanids;
 	# Shaky premise #3: things never change distributions.
 	my $dist     = $module->distribution;
 	my $filename = $dist->filename;
+    # CPAN::DistnameInfo parses the filename incorrectly because PAUSE ids can only
+    # contain [-A-Z0-9] whereas duckpan allows other characters like _
+    $filename =~ s|^[A-Z]/[A-Z]{2}/.*?/||;
 	# Shaky premise #4: the distribution version will match package version.
 	my $version = $dist->version;
 	# Shaky premise #5: the version for which they are asking is well-formed.
@@ -214,6 +240,15 @@ sub find_previous_url {
 		requests_redirectable => []);
 
 	return first { $ua->head($_)->is_success } @urls;
+}
+
+sub authors_of_latest_dists {
+    my ( $self ) = @_;
+    my @dists = $self->app->duckpan_packages->distributions;
+    # CPAN::DistnameInfo can parse the cpanid incorrectly because PAUSE ids can
+    # only contain [-A-Z0-9] whereas duckpan allows other characters like _.
+    # When this happens cpanid is undefined.  Thats why we grep for defined.
+    return grep { defined $_ } map { $_->cpanid } @dists;
 }
 
 sub set_dzil_config {
