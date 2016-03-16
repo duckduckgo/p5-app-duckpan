@@ -266,6 +266,24 @@ cpanm App::DuckPAN
 App::DuckPAN is up to date.
 ```
 
+### Additional Dependencies
+
+DuckPAN requires a few other packages that are **not** hosted on CPAN. These are private DuckDuckGo packages hosted on DuckPAN.org.
+
+You will need to run the following command from the root of the IA Repo (i.e. Goodie or Spice) to install these additional dependencies:
+
+```shell
+dzil authordeps | cpanm --mirror http://duckpan.org
+```
+
+#### SSL (for OSX)
+
+Additionally you may run into issues with SSL Verification. In this case installing Mozilla::CA should solve your problems:
+
+```shell
+cpamn Mozilla::CA
+```
+
 ### Optional Dependencies (for Staff and Maintainers)
 
 DuckPAN now uses [**Node.js**](https://nodejs.org/), [**Handlebars.js**](http://handlebarsjs.com/), and [**Uglify.js**]() to build releases of the ZeroClickInfo repositories. Releases are only created and used by DuckDuckGo Staff and so these dependencies are **only required for DuckDuckGo Staff**. If you execute `dzil build`, `dzil install` or `dzil test` without these dependencies you will see errors.
