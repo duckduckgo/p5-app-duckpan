@@ -281,7 +281,7 @@ dzil authordeps | cpanm --mirror http://duckpan.org
 Additionally you may run into issues with SSL Verification. In this case installing Mozilla::CA should solve your problems:
 
 ```shell
-cpamn Mozilla::CA
+cpanm Mozilla::CA
 ```
 
 ### Optional Dependencies (for Staff and Maintainers)
