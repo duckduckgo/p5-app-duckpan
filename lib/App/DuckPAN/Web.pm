@@ -302,9 +302,13 @@ sub request {
 		foreach my $result (@results) {
 
 			my $caller = $result->caller;
+			my $id;
 			#exlude parent/child IAs like CheatSheets
 			if(my $ia = DDG::Meta::Data->get_ia(module => $caller)){
-				push @ids, $ia->[0]{id} if @$ia == 1;
+				if (@$ia == 1) {
+					$id = $ia->[0]{id};
+					push @ids, $id;
+				}
 			}
 
 			# Info for terminal.
@@ -353,6 +357,7 @@ sub request {
 					my $structured = $result->structured_answer;
 					push @ids, $structured->{dynamic_id} if exists $structured->{dynamic_id};
 					if(exists $structured->{templates}){ # user-specified templates
+						$structured->{id} = $id if $id;
 						push @calls_goodie, $structured;
 						last;
 					}
