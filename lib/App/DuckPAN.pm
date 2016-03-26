@@ -9,6 +9,7 @@ use MooX::Options;
 use App::DuckPAN::Config;
 use File::Which;
 use File::Basename;
+use File::Find::Rule;
 use Class::Load ':all';
 use HTTP::Request::Common qw( GET POST );
 use HTTP::Status;
