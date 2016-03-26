@@ -17,6 +17,8 @@ option full => (
 sub run {
 	my ($self, @args) = @_;
 
+	my $ia_type = $self->app->get_ia_type->{name};
+
 	my $ret = 0;
 
 	if ($self->full) {
@@ -28,7 +30,9 @@ sub run {
 		my @test_paths = map { $_ =~ s#t/([^\.]+)(?:\.t)?+#$1#r } glob "t/*";
 		my @cheat_sheet_tests;
 		foreach my $ia (@args) {
-			if ($ia =~ /_cheat_sheet$/ && -d 't/CheatSheets') {
+			if ($ia =~ /_cheat_sheet$/) {
+				$self->app->emit_and_exit(1, 'Cheat sheets can only be tested in Goodies')
+					unless $ia_type eq 'Goodie';
 				$ia =~ s/_cheat_sheet$//;
 				$ia =~ s/_/-/g;
 				push @cheat_sheet_tests, $ia;
