@@ -8,6 +8,7 @@ use MooX::Cmd;
 use MooX::Options;
 use App::DuckPAN::Config;
 use File::Which;
+use File::Basename;
 use Class::Load ':all';
 use HTTP::Request::Common qw( GET POST );
 use HTTP::Status;
@@ -424,6 +425,23 @@ sub phrase_to_camel {
 	$camel =~ s/\s+$//;
 
 	return $camel;
+}
+
+sub _ia_names {
+	my $self = shift;
+	my @test_paths = File::Find::Rule->name('*.t')->in('t');
+	my @names = map { scalar(fileparse($_, qr/\.[^.]*/)) } @test_paths;
+	return @names;
+}
+
+# Normalize an Instant Answer name to a standard form.
+# Returns undef if an IA matching the given name cannot be found.
+sub normalize_ia_name {
+	my ($self, $name) = @_;
+	$name =~ s/_//g;
+	$name = lc $self->phrase_to_camel($name);
+	my @known_ias = $self->_ia_names();
+	return first { lc $_ eq $name } @known_ias;
 }
 
 sub check_requirements {
