@@ -427,11 +427,17 @@ sub phrase_to_camel {
 	return $camel;
 }
 
-sub _ia_names {
+has _ia_names => (
+	is      => 'ro',
+	lazy    => 1,
+	builder => '_build_ia_names',
+);
+
+sub _build_ia_names {
 	my $self = shift;
 	my @test_paths = File::Find::Rule->name('*.t')->in('t');
 	my @names = map { scalar(fileparse($_, qr/\.[^.]*/)) } @test_paths;
-	return @names;
+	return \@names;
 }
 
 # Normalize an Instant Answer name to a standard form.
@@ -440,8 +446,8 @@ sub normalize_ia_name {
 	my ($self, $name) = @_;
 	$name =~ s/_//g;
 	$name = lc $self->phrase_to_camel($name);
-	my @known_ias = $self->_ia_names();
-	return first { lc $_ eq $name } @known_ias;
+	my $known_ias = $self->_ia_names();
+	return first { lc $_ eq $name } @$known_ias;
 }
 
 sub check_requirements {
