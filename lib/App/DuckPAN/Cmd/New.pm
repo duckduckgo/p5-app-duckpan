@@ -163,6 +163,10 @@ sub run {
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer: ');
 
+	if (my $normalized = $self->app->normalize_ia_name($entered_name)) {
+		$self->app->emit_and_exit(-1, "An instant answer with the name '$normalized' already exists");
+	}
+
 	# Validate the entered name
 	$self->app->emit_and_exit(-1, 'Must supply a name for your Instant Answer.') unless $entered_name;
 	$self->app->emit_and_exit(-1,
