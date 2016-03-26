@@ -4,6 +4,8 @@ package App::DuckPAN::Cmd::Test;
 use MooX;
 with qw( App::DuckPAN::Cmd );
 
+use File::Find::Rule;
+
 use MooX::Options protect_argv => 0;
 
 option full => (
@@ -27,7 +29,6 @@ sub run {
 	}
 	else {
 		my @to_test = ('t') unless @args;
-		my @test_paths = map { $_ =~ s#t/([^\.]+)(?:\.t)?+#$1#r } glob "t/*";
 		my @cheat_sheet_tests;
 		foreach my $ia (@args) {
 			if ($ia =~ /_cheat_sheet$/) {
@@ -38,17 +39,13 @@ sub run {
 				push @cheat_sheet_tests, $ia;
 				next;
 			}
-			if ($ia =~ /_|^[a-z]+$/) {
-				my $name = lc $ia =~ s/_//gr;
-				if (my @f = grep { lc $_ eq $name } @test_paths) {
-					$ia = "@f";
-				}
-			}
-			if (-e "t/$ia.t") {
-				push @to_test, "t/$ia.t";
-			}
-			elsif (-d "t/$ia") {
+			my $name = $self->app->normalize_ia_name($ia);
+			$ia = $name if $name;
+			if (-d "t/$ia") {
 				push @to_test, "t/$ia";
+			}
+			elsif (my @test_file = File::Find::Rule->name("$ia.t")->in('t')) {
+				push @to_test, "@test_file";
 			}
 			else {
 				$self->app->emit_and_exit(1, "Could not find any tests for $ia");
