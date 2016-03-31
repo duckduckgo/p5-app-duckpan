@@ -100,7 +100,9 @@ option production_versions => (
 			DuckPAN 0.204
 		)};
 	},
-	doc => 'Production or pinned versions.  Should ultimately be downloaded via DDG::Meta::Data or something similar. Hardcoded for testing'
+	doc => 'Production or pinned versions.  Should ultimately be
+	        downloaded via DDG::Meta::Data or something similar.
+			Hardcoded for testing'
 );
 
 has duckpan_packages => (
