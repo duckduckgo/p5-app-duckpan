@@ -25,6 +25,8 @@ use Perl::Version;
 use Path::Tiny;
 use open qw/:std :utf8/;
 use App::DuckPAN::Cmd::Help;
+use LWP::Simple 'mirror';
+use JSON::XS 'decode_json';
 
 no warnings 'uninitialized';
 
@@ -90,15 +92,17 @@ option production_versions => (
 	is => 'ro',
 	lazy => 1,
 	default => sub {
-		return {qw(
-			DDG_SpiceBundle_OpenSourceDuckDuckGo 1199
-			DDG_GoodieBundle_OpenSourceDuckDuckGo 1125
-			DDG_FatheadBundle_OpenSourceDuckDuckGo 0.020
-			DDG_LongtailBundle_OpenSourceDuckDuckGo 0.009
-			DDG_Publisher 1115
-			DDG 0.168
-			DuckPAN 0.204
-		)};
+		my $file = "/var/tmp/ddg-metadata-$>/production_version.json";
+		mirror('http://127.0.0.1:3000/production_versions?select=package,version', $file);
+		open my $fh, $file or die "Error opening file: $file";
+		my $json = do { local $/;  <$fh> };
+		my $pv = decode_json($json);
+		my %pv;
+		for my $p (@$pv){
+			$pv{$p->{package}} = $p->{version}
+		}
+
+		return \%pv
 	},
 	doc => 'Production or pinned versions.  Should ultimately be
 	        downloaded via DDG::Meta::Data or something similar.
