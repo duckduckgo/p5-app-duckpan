@@ -86,6 +86,23 @@ option verbose => (
 	doc     => 'provide expanded output during operation',
 );
 
+option production_versions => (
+	is => 'ro',
+	lazy => 1,
+	default => sub {
+		return {qw(
+			DDG_SpiceBundle_OpenSourceDuckDuckGo 1199
+			DDG_GoodieBundle_OpenSourceDuckDuckGo 1125
+			DDG_FatheadBundle_OpenSourceDuckDuckGo 0.020
+			DDG_LongtailBundle_OpenSourceDuckDuckGo 0.009
+			DDG_Publisher 1115
+			DDG 0.168
+			DuckPAN 0.204
+		)};
+	},
+	doc => 'Production or pinned versions.  Should ultimately be downloaded via DDG::Meta::Data or something similar. Hardcoded for testing'
+);
+
 has duckpan_packages => (
 	is => 'ro',
 	lazy => 1,
@@ -534,7 +551,7 @@ sub check_perl {
 sub check_app_duckpan {
 	my ($self) = @_;
 	my $ok                = 1;
-	my $pin_version       = $ENV{"DuckPAN"} || undef;
+	my $pin_version       = $ENV{DuckPAN} || $self->production_versions->{DuckPAN};
 	my $installed_version = $self->get_local_app_duckpan_version;
 	return $ok if $installed_version && $installed_version == $self->dev_version;
 	$self->emit_info("Checking for latest App::DuckPAN... ");
@@ -561,7 +578,7 @@ sub check_app_duckpan {
 sub check_ddg {
 	my ($self) = @_;
 	my $ok                = 1;
-	my $pin_version       = $ENV{"DDG"} || undef;
+	my $pin_version       = $ENV{DDG} || $self->production_versions->{DDG};
 	my $installed_version = $self->get_local_ddg_version;
 	return $ok if $installed_version && $installed_version == $self->dev_version;
 	warn "installing DDG";

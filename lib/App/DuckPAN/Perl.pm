@@ -103,11 +103,14 @@ sub duckpan_install {
 		$latest = 1;
 		shift @modules;
 	}
-	my $packages = $self->app->duckpan_packages;
+
+	my $app = $self->app;
+	my $packages = $app->duckpan_packages;
+	my $production_versions = $app->production_versions;
 	my @to_install;
 	for (@modules) {
 		my $module = $packages->package($_);
-		$self->app->emit_and_exit(1, "Can't find package " . $_ . " on " . $self->app->duckpan) unless $module;
+		$app->emit_and_exit(1, "Can't find package " . $_ . " on " . $app->duckpan) unless $module;
 
 		my $package = $module->package;    # Probably $_, but maybe they'll normalize or something someday.
 
@@ -116,17 +119,17 @@ sub duckpan_install {
 		$sp =~ s/\:\:/_/g;
 
 		# special case: check for a pinned verison number
-		my $pinned_version      = $ENV{$sp};
+		my $pinned_version      = $ENV{$sp} || $production_versions->{$sp};
 		my $installed_version   = $self->get_local_version($package);
 		my $latest_version      = version->parse($module->version);
-		my $duckpan_module_url  = $self->app->duckpan . 'authors/id/' . $module->distribution->pathname;
+		my $duckpan_module_url  = $app->duckpan . 'authors/id/' . $module->distribution->pathname;
 
 		# Remind user about having pinned env variables
-		$self->app->emit_info("$package: $installed_version installed, $pinned_version pinned, $latest_version latest") if $pinned_version;
+		$app->emit_info("$package: $installed_version installed, $pinned_version pinned, $latest_version latest") if $pinned_version;
 
 		# Could be moved up but want dev to see the version installed and available first
-		if($installed_version == $self->app->dev_version){
-			$self->app->emit_notice("Skipping installation of $package.  Development version detected!");
+		if($installed_version == $app->dev_version){
+			$app->emit_notice("Skipping installation of $package.  Development version detected!");
 			next;
 		}
 
@@ -140,7 +143,7 @@ sub duckpan_install {
 			# update the url if not the latest
 			if($version != $latest_version){
 				unless($duckpan_module_url = $self->find_previous_url($module, $version)){
-					$self->app->emit_and_exit(-1, "Failed to find version $version of $package");
+					$app->emit_and_exit(-1, "Failed to find version $version of $package");
 				}
 			}
 			$message = $reinstall ?
@@ -157,7 +160,7 @@ sub duckpan_install {
 				}
 				else{
 					$message = "Could not locate version $pinned_version of '$package'";
-					$self->app->emit_and_exit(-1, $message);
+					$app->emit_and_exit(-1, $message);
 				}
 			}
 			else{
@@ -177,7 +180,7 @@ sub duckpan_install {
 			$message = "You have an older version ($installed_version) of $package than duckpan.org. Installing latest version ($latest_version)";
 			$install_it = 1;
 		}
-		$self->app->emit_notice($message);
+		$app->emit_notice($message);
 		push @to_install, $duckpan_module_url if ($install_it && !(first { $_ eq $duckpan_module_url } @to_install));
 	}
 
@@ -186,7 +189,7 @@ sub duckpan_install {
 		if(system "cpanm @to_install"){
 			my $err = "cpanm failed (err $?) to (re)install the following modules:\n\n\t" .
 				join("\n\t", @to_install);
-			$self->app->emit_and_exit(-1, $err);
+			$app->emit_and_exit(-1, $err);
 		}
 	}
 }
