@@ -27,6 +27,7 @@ use Perl::Version;
 use Path::Tiny;
 use open qw/:std :utf8/;
 use App::DuckPAN::Cmd::Help;
+use DDG::Meta::Data;
 
 no warnings 'uninitialized';
 
@@ -428,27 +429,18 @@ sub phrase_to_camel {
 	return $camel;
 }
 
-has _ia_names => (
-	is      => 'ro',
-	lazy    => 1,
-	builder => '_build_ia_names',
-);
-
-sub _build_ia_names {
-	my $self = shift;
-	my @test_paths = File::Find::Rule->name('*.t')->in('t');
-	my @names = map { scalar(fileparse($_, qr/\.[^.]*/)) } @test_paths;
-	return \@names;
-}
-
 # Normalize an Instant Answer name to a standard form.
 # Returns undef if an IA matching the given name cannot be found.
 sub normalize_ia_name {
 	my ($self, $name) = @_;
-	$name =~ s/_//g;
-	$name = lc $self->phrase_to_camel($name);
-	my $known_ias = $self->_ia_names();
-	return first { lc $_ eq $name } @$known_ias;
+	my $ia = $name =~ /_/
+		? DDG::Meta::Data->get_ia(id => $name)
+		: DDG::Meta::Data->get_ia(id => $self->camel_to_underscore($name))
+		or $self->emit_and_exit(1, "No Instant Answer found with name '$name'");
+	my $mod_name = $ia->{perl_module};
+	$mod_name =~ /^DDG::(?:Goodie|Spice)(?:::[^:]+)*::([^:]+)$/
+		or $self->emit_and_exit(1, "Must be in the root of a checked-out Instant Answer repository to run DuckPAN");
+	return $1;
 }
 
 sub check_requirements {
