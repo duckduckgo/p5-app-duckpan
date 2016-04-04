@@ -9,9 +9,11 @@ with qw( App::DuckPAN::Cmd );
 
 use MooX::Options protect_argv => 0;
 use Try::Tiny;
+use List::MoreUtils 'any';
 
 use App::DuckPAN::TemplateDefinitions;
 
+no warnings 'uninitialized';
 ##########################
 # Command line arguments #
 ##########################
@@ -75,7 +77,8 @@ sub _build__template_defs {
 				"Template definitions file not found for " . $type->{name} .
 				" Instant Answers. You may need to pull the latest version " .
 				"of this repository.");
-		} else {
+		}
+		else {
 			$self->app->emit_and_exit(-1, $error);
 		}
 	};
@@ -128,15 +131,17 @@ sub run {
 	# Check which IA repo we're in...
 	my $type = $self->app->get_ia_type();
 
+	my $no_handler = 0;
 	# Process the --cheatsheet option
-	if ($self->cheatsheet) {
+	if ($self->cheatsheet || $self->template eq 'cheatsheet') {
 		if ($type->{name} ne 'Goodie') {
 			$self->app->emit_and_exit(-1,
 				"Cheat Sheets can be created only in the Goodie " .
 				"Instant Answer repository.");
 		}
 
-		$self->_set_template("cheatsheet");
+		$self->_set_template('cheatsheet');
+		$no_handler = 1;
 	}
 
 	# Process the --list-templates option: List the template-set names and exit with success
@@ -153,26 +158,26 @@ sub run {
 	# Get the template-set instance based on the command line arguments.
 	my $template_set = $self->_template_set();
 
-	$self->app->emit_info("Creating a new " . $template_set->description . "...");
+	$self->app->emit_info('Creating a new ' . $template_set->description . '...');
 
 	# Instant Answer name as parameter
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer: ');
 
 	# Validate the entered name
-	$self->app->emit_and_exit(-1, "Must supply a name for your Instant Answer.") unless $entered_name;
+	$self->app->emit_and_exit(-1, 'Must supply a name for your Instant Answer.') unless $entered_name;
 	$self->app->emit_and_exit(-1,
 		"'$entered_name' is not a valid name for an Instant Answer. " .
-		"Please run the program again and provide a valid name."
+		'Please run the program again and provide a valid name.'
 	) unless $entered_name =~ m@^( [a-zA-Z0-9\s] | (?<![:/])(::|/)(?![:/]) )+$@x;
 	$self->app->emit_and_exit(-1,
-		"The name for this type of Instant Answer cannot contain package or path separators. " .
-		"Please run the program again and provide a valid name."
+		'The name for this type of Instant Answer cannot contain package or path separators. ' .
+		'Please run the program again and provide a valid name.'
 	) if !$template_set->subdir_support && $entered_name =~ m![/:]!;
 
 	$entered_name =~ s/\//::/g;    #change "/" to "::" for easier handling
 
 	my $package_name = $self->app->phrase_to_camel($entered_name);
-	my ($name, $separated_name, $path, $lc_path) = ($package_name, $package_name, "", "");
+	my ($name, $separated_name, $path, $lc_path) = ($package_name, $package_name, '', '');
 
 	$separated_name =~ s/::/ /g;
 
@@ -182,17 +187,18 @@ sub run {
 			$name    = pop @path_parts;
 			$path    = join("/", @path_parts);
 			$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
-		} else {
+		}
+		else {
 			$self->app->emit_and_exit(-1, "Malformed input. Please provide a properly formatted package name for your Instant Answer.");
 		}
 	}
 
 	my $lc_name     = $self->app->camel_to_underscore($name);
-	my $filepath    = ($path eq "") ? $name : "$path/$name";
-	my $lc_filepath = ($lc_path eq "") ? $lc_name : "$lc_path/$lc_name";
+	my $filepath    = $path ? "$path/$name" : $name;
+	my $lc_filepath = $lc_path ? "$lc_path/$lc_name" : $lc_name;
 	if (scalar $lc_path) {
 		$lc_path =~ s/\//_/g;    #safe to modify, we already used this in $lc_filepath
-		$lc_name = $lc_path . "_" . $lc_name;
+		$lc_name = $lc_path . '_' . $lc_name;
 	}
 
 	my @optional_templates = $self->_ask_optional_templates
@@ -206,15 +212,21 @@ sub run {
 		ia_path_lc        => $lc_filepath,
 	);
 
+	# If the Perl module every becomes optional, this should only run if the user
+	# requests one
+	unless($no_handler){
+		%vars = (%vars, %{$self->_config_handler});
+	}
+
 	# Generate the instant answer files. The return value is a hash with
 	# information about the created files and any error that was encountered.
 	my %generate_result = $template_set->generate(\%vars, \@optional_templates);
 
 	# Show the list of files that were successfully created
 	my @created_files = @{$generate_result{created_files}};
-	$self->app->emit_info("Created files:");
+	$self->app->emit_info('Created files:');
 	$self->app->emit_info("    $_")     for    @created_files;
-	$self->app->emit_info("    (none)") unless @created_files; # possible on error
+	$self->app->emit_info('    (none)') unless @created_files; # possible on error
 
 	if (my $error = $generate_result{error}) {
 		# Remove the line number information if not in verbose mode.
@@ -226,7 +238,49 @@ sub run {
 		$self->app->emit_and_exit(-1, $error)
 	}
 
-	$self->app->emit_info("Success!");
+	$self->app->emit_info('Success!');
+}
+
+# Allow user to choose a handler
+sub _config_handler {
+	my $self = shift;
+
+	my @handlers = (
+		# Scalar-based
+		'remainder: (default) The query without the trigger words, spacing and case are preserved.',
+		'query_raw: Like remainder but with trigger words intact',
+		'query: Full query normalized with a single space between terms',
+		'query_lc: Like query but in lowercase',
+		'query_clean: Like query_lc but with non-alphanumeric characters removed',
+		'query_nowhitespace: All whitespace removed',
+		'query_nowhitespace_nodash: All whitespace and hyphens removed',
+		# Array-based
+		'matches: Returns an array of captured expression from a regular expression trigger',
+		'words: Like query_clean but returns an array of the terms split on whitespace',
+		'query_parts: Like query but returns an array of the terms split on whitespace',
+		'query_raw_parts: Like query_parts but array contains original whitespace elements'
+	);
+
+	my $res = $self->app->get_reply(
+		'Which handler would you like to use to process the query?',
+		choices => \@handlers,
+		default => $handlers[0]
+	);
+
+	unless($res =~ /^([^:]+)/){
+		$self->app->emit_and_exit(-1, "Failed to extract handler from response: $res");
+	}
+	my $handler = $1;
+	my $var = (any {$handler eq $_} qw(words query_parts query_raw_parts matches)) ? '@' : '$';
+	my $trigger = $handler eq 'matches'
+		? q{query => qr/trigger regex/}
+		: q{any => 'triggerword', 'trigger phrase'};
+
+	return {
+		ia_handler => $handler,
+		ia_handler_var => $var,
+		ia_trigger => $trigger
+	};
 }
 
 # Ask the user for which optional templates they want to use and return a list

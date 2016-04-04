@@ -6,7 +6,7 @@ use DDG::Goodie;
 triggers start => //;
 
 handle remainder => sub {
-    return;
+	return;
 };
 
 1;

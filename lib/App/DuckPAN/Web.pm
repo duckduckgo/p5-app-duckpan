@@ -91,25 +91,26 @@ sub request {
 	if ($request->request_uri eq "/"){
 		$response->content_type("text/html");
 		$body = $self->page_root;
-	} elsif (@path_parts && $path_parts[0] eq 'share') {
+	}
+	elsif (@path_parts && $path_parts[0] eq 'share') {
 		my $share_dir;
 		for (keys %{$self->_share_dir_hash}) {
 			if ($request->path =~ m|^/$_/|g) {
 
-                               $share_dir = $_;
-                               # Get filename from path and url unescape
-                               my $filename = uri_unescape( pop @path_parts );
-                               # Trim path from left to right to find parent dir of filename
-                               # e.g /share/goodie/foo/foo_imgs/image.png -> "foo_imgs"
-                               my $remainder = $request->path_info;
-                               $remainder =~ s|$share_dir||;
-                               $remainder =~ s|$filename||;
-                               $remainder =~ s|//|/|;
-                               $remainder =~ s|^/\d{3,4}||;
+	                           $share_dir = $_;
+	                           # Get filename from path and url unescape
+	                           my $filename = uri_unescape( pop @path_parts );
+	                           # Trim path from left to right to find parent dir of filename
+	                           # e.g /share/goodie/foo/foo_imgs/image.png -> "foo_imgs"
+	                           my $remainder = $request->path_info;
+	                           $remainder =~ s|$share_dir||;
+	                           $remainder =~ s|$filename||;
+	                           $remainder =~ s|//|/|;
+	                           $remainder =~ s|^/\d{3,4}||;
 
-                               # if valid remainder exists, prepend to filename
-                               $filename = "$remainder$filename" if $remainder ne $filename;
-                
+	                           # if valid remainder exists, prepend to filename
+	                           $filename = "$remainder$filename" if $remainder ne $filename;
+
 				if (my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename)) {
 
 					my $content_type = Plack::MIME->mime_type($filename);
@@ -127,7 +128,8 @@ sub request {
 					}
 
 					$body .= path($filename_path)->slurp;
-				} else {
+				}
+				else {
 					$share_dir = undef;
 				}
 			}
@@ -139,7 +141,8 @@ sub request {
 			print "\n" . $errormsg . "\n";
 			$body = $errormsg;
 		}
-	} elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
+	}
+	elsif (@path_parts && $path_parts[0] eq 'js' && $path_parts[1] eq 'spice') {
 		my $rewrite;
 		for (keys %{$self->_path_hash}) {
 			if ($request->request_uri =~ m/^$_/g) {
@@ -160,7 +163,8 @@ sub request {
 						my $cap_to = $captures[$index];
 						if (defined $cap_to) {
 							$to =~ s/$cap_from/$cap_to/g;
-						} else {
+						}
+						else {
 							$to =~ s/$cap_from//g;
 						}
 					}
@@ -220,22 +224,28 @@ sub request {
 			print "\n" . $errormsg . "\n";
 			$body = $errormsg;
 		}
-	} elsif ($request->param('duckduckhack_ignore')) {
+	}
+	elsif ($request->param('duckduckhack_ignore')) {
 		$response->status(204);
 		$body = "";
-	} elsif ($request->param('duckduckhack_css')) {
+	}
+	elsif ($request->param('duckduckhack_css')) {
 		$response->content_type('text/css');
 		$body = $self->page_css;
-	} elsif ($request->param('duckduckhack_js')) {
+	}
+	elsif ($request->param('duckduckhack_js')) {
 		$response->content_type('text/javascript');
 		$body = $self->page_js;
-	} elsif ($request->param('duckduckhack_locales')) {
+	}
+	elsif ($request->param('duckduckhack_locales')) {
 		$response->content_type('text/javascript');
 		$body = $self->page_locales;
-	} elsif ($request->param('duckduckhack_templates')) {
+	}
+	elsif ($request->param('duckduckhack_templates')) {
 		$response->content_type('text/javascript');
 		$body = $self->page_templates;
-	} elsif ($request->param('q') && $request->path_info eq '/') {
+	}
+	elsif ($request->param('q') && $request->path_info eq '/') {
 		my $query = $request->param('q');
 		$query =~ s/^\s+|\s+$//g; # strip leading & trailing whitespace
 		Encode::_utf8_on($query);
@@ -292,9 +302,13 @@ sub request {
 		foreach my $result (@results) {
 
 			my $caller = $result->caller;
+			my $id;
 			#exlude parent/child IAs like CheatSheets
 			if(my $ia = DDG::Meta::Data->get_ia(module => $caller)){
-				push @ids, $ia->[0]{id} if @$ia == 1;
+				if (@$ia == 1) {
+					$id = $ia->[0]{id};
+					push @ids, $id;
+				}
 			}
 
 			# Info for terminal.
@@ -320,10 +334,12 @@ sub request {
 					if ($name =~ /$ia_name\.js$/){
 						push (@calls_script, $_);
 
-					} elsif ($name =~ /$ia_name\.css$/){
+					}
+					elsif ($name =~ /$ia_name\.css$/){
 						push (@calls_nrc, $_);
 
-					} elsif ($name =~ /handlebars$/){
+					}
+					elsif ($name =~ /handlebars$/){
 						$name =~ s/\.handlebars//;
 						$calls_template{$ia_name}{$name}{"content"} = $_;
 						$calls_template{$ia_name}{$name}{"is_ct_self"} = $is_goodie ? 1 : $result->call_type eq 'self';
@@ -341,6 +357,7 @@ sub request {
 					my $structured = $result->structured_answer;
 					push @ids, $structured->{dynamic_id} if exists $structured->{dynamic_id};
 					if(exists $structured->{templates}){ # user-specified templates
+						$structured->{id} = $id if $id;
 						push @calls_goodie, $structured;
 						last;
 					}
@@ -354,7 +371,8 @@ sub request {
 							. "document.getElementById('zci-answer').innerHTML = DDG.exec_template('$template_name', $json_string);"
 							. "});</script>")->guts);
 					}
-				} else {
+				}
+				else {
 					$zci_container->push_content(
 						HTML::TreeBuilder->new_from_content(
 							q(<div class="cw">
@@ -459,13 +477,15 @@ sub request {
 		$response->content_type('text/html');
 		$body = $page;
 
-	} else {
+	}
+	else {
 		my $res = $self->ua->request(HTTP::Request->new(GET => "http://".$hostname.$request->request_uri));
 		if ($res->is_success) {
 			$body = $res->decoded_content;
 			$response->code($res->code);
 			$response->content_type($res->content_type);
-		} else {
+		}
+		else {
 			p($res->status_line, color => { string => 'red' });
 			$body = "";
 		}

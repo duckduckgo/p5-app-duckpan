@@ -75,13 +75,15 @@ sub request {
 		$body = $site->fullpath_files->{$file}->uncached_content;
 		$response->code("200");
 		$response->content_type('text/html; charset=utf-8');
-	} else {
+	}
+	else {
 		my $res = $self->app->http->request(HTTP::Request->new(GET => $url.$request->request_uri));
 		if ($res->is_success) {
 			$body = $res->decoded_content;
 			$response->code($res->code);
 			$response->content_type($res->content_type);
-		} else {
+		}
+		else {
 			$body = "GET ".$url.$request->request_uri.": ".$res->status_line;
 			warn $body, "\n";
 		}

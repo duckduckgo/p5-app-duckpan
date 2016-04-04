@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/duckduckgo/p5-app-duckpan.png?branch=master)](https://travis-ci.org/duckduckgo/p5-app-duckpan)
 
-DuckPAN is an application built to aid DuckDuckHack developers. It is mainly used to generate the required files for new Instant Answers (the devloper must implement functionality) and also test both the triggering and visual display of Instant Answers.
+DuckPAN is an application built to aid DuckDuckHack developers. It is mainly used to generate the required files for new Instant Answers (the developer must implement functionality) and also test both the triggering and visual display of Instant Answers.
 
 Below are instructions to set up DuckPAN on various development environments.
 
@@ -207,7 +207,7 @@ destroy  - Stop the currently running VM and blow everything away.
 
 Run these commands from the directory containing your `Vagrantfile`.
 
-For more information, please see the (excellent) [Vagrant docs](http://docs.vagrantup.com/).
+For more information, please see the (excellent) [Vagrant docs](https://www.vagrantup.com/docs/).
 
 ------
 
@@ -222,7 +222,7 @@ To install DuckPAN, open your terminal and run:
 curl http://duckpan.org/install.pl | perl
 ```
 
-[This script](https://github.com/duckduckgo/p5-duckpan-installer) will setup [local::lib](https://metacpan.org/module/local::lib), which is a way to install Perl modules without changing your base Perl installation. If you already use `local::lib` or [perlbrew](https://metacpan.org/module/perlbrew), don't worry, this script will intelligently use what you already have.
+[This script](https://github.com/duckduckgo/p5-duckpan-installer) will setup [local::lib](https://metacpan.org/pod/local::lib), which is a way to install Perl modules without changing your base Perl installation. If you already use `local::lib` or [perlbrew](https://metacpan.org/pod/perlbrew), don't worry, this script will intelligently use what you already have.
 
 If you didn't have a `local::lib` before running the install script, you will need to run the script twice. It should tell you when like this:
 
@@ -236,11 +236,29 @@ If everything works, you should see this at the end:
 EVERYTHING OK! You can now go hacking! :)
 ```
 
-Note that with `local::lib` now installed, you can easily install [Perl modules](http://search.cpan.org/) with [cpanm](https://metacpan.org/module/cpanm).
+Note that with `local::lib` now installed, you can easily install [Perl modules](http://search.cpan.org/) with [cpanm](https://metacpan.org/pod/cpanm).
 
 ```
 cpanm App::DuckPAN
 App::DuckPAN is up to date.
+```
+
+### Additional Dependencies
+
+DuckPAN requires a few other packages that are **not** hosted on CPAN. These are private DuckDuckGo packages hosted on DuckPAN.org.
+
+You will need to run the following command from the root of the IA Repo (i.e. Goodie or Spice) to install these additional dependencies:
+
+```shell
+dzil authordeps | cpanm --mirror http://duckpan.org
+```
+
+#### SSL (for OSX)
+
+Additionally you may run into issues with SSL Verification. In this case installing Mozilla::CA should solve your problems:
+
+```shell
+cpanm Mozilla::CA
 ```
 
 ### Optional Dependencies (for Staff and Maintainers)
