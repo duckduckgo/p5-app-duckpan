@@ -266,6 +266,20 @@ sub request {
 		for (@{$self->blocks}) {
 			push(@results,$_->request($ddg_request));
 		}
+		if ($request->param('format') && $request->param('format') eq 'json') {
+				$response->content_type('application/x-javascript');
+				my %flattened = ();
+				if (defined $results[0]) {
+						my %result = %{$results[0]};
+						my $sa = delete $result{structured_answer};
+						%flattened = (%result, %{$sa});
+						$flattened{from} = $sa->{id};
+				};
+				my $result = %flattened ? \%flattened : '';
+				$body = to_json({ 'Answer' => $result }, { ascii => 1 });
+				$response->body($body);
+				return $response;
+		}
 
 		my $page = $self->page_spice;
 		my $uri_encoded_query = uri_escape_utf8($query, "^A-Za-z");
