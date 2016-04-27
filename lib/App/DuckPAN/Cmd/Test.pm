@@ -39,8 +39,7 @@ sub run {
 				push @cheat_sheet_tests, $ia;
 				next;
 			}
-			my $name = $self->app->normalize_ia_name($ia);
-			$ia = $name if $name;
+			$ia = $self->app->get_ia_by_name($ia)->{name};
 			if (-d "t/$ia") {
 				push @to_test, "t/$ia";
 			}

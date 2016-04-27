@@ -431,16 +431,21 @@ sub phrase_to_camel {
 
 # Normalize an Instant Answer name to a standard form.
 # Returns undef if an IA matching the given name cannot be found.
-sub normalize_ia_name {
+sub get_ia_by_name {
 	my ($self, $name) = @_;
-	my $ia = $name =~ /_/
-		? DDG::Meta::Data->get_ia(id => $name)
-		: DDG::Meta::Data->get_ia(id => $self->camel_to_underscore($name))
-		or $self->emit_and_exit(1, "No Instant Answer found with name '$name'");
-	my $mod_name = $ia->{perl_module};
-	$mod_name =~ /^DDG::(?:Goodie|Spice)(?:::[^:]+)*::([^:]+)$/
-		or $self->emit_and_exit(1, "Must be in the root of a checked-out Instant Answer repository to run DuckPAN");
-	return $1;
+	my $ia;
+	if ($name =~ /^DDG::/) {
+		$ia = DDG::Meta::Data->get_ia(module => $name);
+		$ia = $ia->[0] if $ia;
+	}
+	else {
+		$ia = $name =~ /_/
+			? DDG::Meta::Data->get_ia(id => $name)
+			: DDG::Meta::Data->get_ia(id => $self->camel_to_underscore($name));
+	}
+	$self->emit_and_exit(1, "No Instant Answer found with name '$name'")
+		unless defined $ia;
+	return $ia;
 }
 
 sub check_requirements {

@@ -54,9 +54,7 @@ sub get_blocks_from_current_dir {
 	}
 	else {
 	    @args = map {
-				my $camel_name = $self->app->normalize_ia_name($_) || $_;
-				$camel_name =~ m,^lib(::|/)DDG, ? $camel_name
-					: 'DDG::' . $type->{name} . "::$camel_name";
+				my $camel_name = $self->app->get_ia_by_name($_)->{perl_module};
 			} @args;
 	}
 	require lib;
