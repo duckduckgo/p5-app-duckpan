@@ -39,7 +39,10 @@ sub run {
 				push @cheat_sheet_tests, $ia;
 				next;
 			}
-			$ia = $self->app->get_ia_by_name($ia)->{name};
+			# Unfortunately we can't just use the name, because some have
+			# spaces - thus we grab the end of the package name.
+			$ia = $self->app->get_ia_by_name($ia)->{perl_module} =~ /::(\w+)$/;
+			$ia = $1;
 			if (-d "t/$ia") {
 				push @to_test, "t/$ia";
 			}
