@@ -116,50 +116,79 @@ sub _build__template_set {
 	return $template_set;
 }
 
-my %config_types = (
-	Goodie => ['Instant Answer', 'Cheat Sheet'],
-	Spice  => ['Instant Answer'],
+sub _ask_ia {
+	my $self = shift;
+	my $ia;
+	my $check = sub {
+		my $name = shift;
+		$ia = $self->app->get_ia_by_name($name, no_fail => 1);
+		return 1 if defined $ia;
+	};
+	$self->app->get_reply("Enter Name", allow => $check);
+	return $ia;
+}
+
+my @cheat_sheet_templates = (
+	'code', 'keyboard', 'language', 'link', 'reference', 'terminal',
 );
 
-sub _get_template_type {
-	my $self = shift;
-	my $ia_type = $self->app->get_ia_type()->{name};
-	my @types = @{$config_types{$ia_type}};
-	return $types[0] unless @types > 1;
-	return $self->app->get_reply("What do you want to create?: ",
-		choices => \@types,
-		default => $types[0],
+sub _get_config_cheat_sheet {
+	my ($self, %vars) = @_;
+	my $ia = $vars{ia};
+	my $name = $vars{ia_name} =~ s/\s*cheat\s*sheet\s*$//ri;
+	my $id = $vars{ia_id};
+	my $fname = $id =~ s/_cheat_sheet$//r;
+	$fname =~ s/_/-/g;
+	$fname .= '.json';
+	my $cheat_sheet_template = $self->app->get_reply(
+		"Template type", choices => \@cheat_sheet_templates,
+	);
+	$self->_set_template('cheatsheet');
+	return (%vars,
+		ia_name_normalized  => $name,
+		template_type => $cheat_sheet_template,
+		file_name => $fname,
 	);
 }
 
-###########
-# Methods #
-###########
+sub _get_config_generic_vars {
+	my $self = shift;
+	unless ($self->app->ask_yn(
+			'Have you already created an Instant Answer page?',
+			default => 'y')
+	) {
+		$self->app->emit_and_exit(-1,
+			"Please create an Instant Answer page before running duckpan new");
+	}
+	my $ia = $self->_ask_ia();
+	return (
+		ia => $ia,
+		ia_id => $ia->{id},
+		ia_description => $ia->{description},
+		ia_name  => $ia->{name},
+		ia_src_url => $ia->{src_url},
+		ia_src_name => $ia->{src_name},
+	);
+}
+
+sub _get_config_user {
+	my ($self, @args) = @_;
+	my %vars = $self->_get_config_generic_vars();
+	my $ia = $vars{ia};
+	if ($ia->{id} =~ /_cheat_sheet$/) {
+		return $self->_get_config_cheat_sheet(%vars);
+	} else {
+		return $self->_get_config_instant_answer(\%vars, @args);
+	}
+}
 
 # Copy of @ARGV before MooX::Options processes it
 my @ORIG_ARGV;
 
 before new_with_options => sub { @ORIG_ARGV = @ARGV };
 
-sub run {
+sub _get_config_instant_answer {
 	my ($self, @args) = @_;
-
-	# Check which IA repo we're in...
-	my $type = $self->app->get_ia_type();
-
-	my $no_handler = 0;
-	# Process the --cheatsheet option
-	if ($self->cheatsheet || $self->template eq 'cheatsheet') {
-		if ($type->{name} ne 'Goodie') {
-			$self->app->emit_and_exit(-1,
-				"Cheat Sheets can be created only in the Goodie " .
-				"Instant Answer repository.");
-		}
-
-		$self->_set_template('cheatsheet');
-		$no_handler = 1;
-	}
-
 	# Process the --list-templates option: List the template-set names and exit with success
 	$self->app->emit_and_exit(0, $self->_available_templates_message)
 		if $self->list_templates;
@@ -228,11 +257,26 @@ sub run {
 		ia_path_lc        => $lc_filepath,
 	);
 
-	# If the Perl module every becomes optional, this should only run if the user
-	# requests one
-	unless($no_handler){
-		%vars = (%vars, %{$self->_config_handler});
-	}
+	return %vars;
+}
+
+###########
+# Methods #
+###########
+
+sub run {
+	my ($self, @args) = @_;
+
+	my $no_handler = 0;
+	my %vars = $self->_get_config_user(@args);
+
+	# Get the template-set instance based on the command line arguments.
+	my $template_set = $self->_template_set();
+
+	$self->app->emit_info('Creating a new ' . $template_set->description . '...');
+
+	my @optional_templates = $self->_ask_optional_templates
+		unless $self->no_optionals;
 
 	# Generate the instant answer files. The return value is a hash with
 	# information about the created files and any error that was encountered.
