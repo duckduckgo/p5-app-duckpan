@@ -1,2 +1,2 @@
-package <:$package_name:>;
-my $id = '<:$ia_id:>';
+package <: $ia.perl_module :>;
+my $id = '<:$ia.id:>';

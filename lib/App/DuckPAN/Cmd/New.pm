@@ -10,6 +10,7 @@ with qw( App::DuckPAN::Cmd App::DuckPAN::Option::Tell );
 use MooX::Options protect_argv => 0;
 use Try::Tiny;
 use List::MoreUtils 'any';
+use Path::Tiny;
 
 use App::DuckPAN::TemplateDefinitions;
 
@@ -63,8 +64,13 @@ sub _build__template_defs {
 
 	# Read the templates.yml file
 	try {
+		my $dir = path(
+			$INC{'App/DuckPAN.pm'} =~ s/\.pm$//r,
+			'template',
+			lc $self->app->get_ia_type->{name},
+		);
 		$template_defs = App::DuckPAN::TemplateDefinitions->new(
-			template_type => lc $self->app->get_ia_type->{name},
+			template_directory => $dir,
 		);
 	} catch {
 		my $error = $_;

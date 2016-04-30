@@ -25,7 +25,7 @@ BEGIN {
 
 my $template_defs =
 	new_ok 'App::DuckPAN::TemplateDefinitions',
-		[ templates_yml => 't/template/templates.yml' ];
+		[ template_directory => "$ENV{PWD}/t/template/" ];
 
 # check templates
 my @templates = $template_defs->get_templates;
@@ -59,9 +59,9 @@ is_deeply [ sort map { $_->name } @template_sets ],
 
 throws_ok {
 		my $templates_defs = App::DuckPAN::TemplateDefinitions->new(
-			templates_yml => 't/template/templates-nonexistent.yml'
+			template_directory => 't/template/non-existant',
 		);
-	} qr/Error loading/,
+	} qr/Cannot find/,
 	'template defs: non-existent template definitions file throws error';
 
 ########################
@@ -71,13 +71,13 @@ throws_ok {
 # check if all fields of a template are read
 is $template_map{pm}->label, 'Perl Module',
 	'template defs: set template label field';
-is $template_map{pm}->input_file, 't/template/lib/DDG/Default.pm',
+is $template_map{pm}->input_file, "$ENV{PWD}/t/template/lib/DDG/Default.pm",
 	'template defs: set template input field';
-is $template_map{pm}->output_file, 't/out/lib/DDG/<:$package_name:>.pm',
+is $template_map{pm}->output_file, 't/out/lib/<:$ia_lib_path:>.pm',
 	'template defs: set template output field';
 
 # output directory computation
-is $template_map{pm}->output_directory, 't/out/lib/DDG',
+is $template_map{pm}->output_directory, 't/out/lib',
 	'template: output directory generated';
 is $template_map{complex_out_dir}->output_directory, 't/out/share/text',
 	'template: output directory generated (complex)';
@@ -128,7 +128,12 @@ my $package_name = 'MyInstantAnswer';
 my $ia_id = 'my_instant_answer';
 my %vars = (
 	package_name => $package_name,
-	ia_id	 => $ia_id,
+	ia => {
+		perl_module => 'MyInstantAnswer',
+		id => $ia_id,
+	},
+	ia_lib_path => 'DDG/MyInstantAnswer',
+	ia_package_base_path => 'MyInstantAnswer',
 );
 my $pm_out_file   = "$TEMPLATE_OUT/lib/DDG/$package_name.pm";
 my $test_out_file = "$TEMPLATE_OUT/t/$package_name.test";
