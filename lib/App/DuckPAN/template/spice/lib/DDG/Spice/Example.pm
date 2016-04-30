@@ -1,6 +1,6 @@
-package DDG::Spice::<: $ia_package_name :>;
+package <: $ia.perl_module :>;
 
-# ABSTRACT: Write an abstract here
+# ABSTRACT: <: $ia.description :>
 
 # Start at http://docs.duckduckhack.com/walkthroughs/forum-lookup.html if you are new
 # to instant answer development

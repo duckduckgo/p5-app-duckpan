@@ -124,8 +124,8 @@ my @cheat_sheet_templates = (
 sub _get_config_cheat_sheet {
 	my ($self, %vars) = @_;
 	my $ia = $vars{ia};
-	my $name = $vars{ia_name} =~ s/\s*cheat\s*sheet\s*$//ri;
-	my $id = $vars{ia_id};
+	my $name = $ia->{name} =~ s/\s*cheat\s*sheet\s*$//ri;
+	my $id = $ia->{id};
 	my $fname = $id =~ s/_cheat_sheet$//r;
 	$fname =~ s/_/-/g;
 	$fname .= '.json';
@@ -162,11 +162,6 @@ sub _get_config_generic_vars {
 	}
 	return (
 		ia => $ia,
-		ia_id => $ia->{id},
-		ia_description => $ia->{description},
-		ia_name  => $ia->{name},
-		ia_src_url => $ia->{src_url},
-		ia_src_name => $ia->{src_name},
 	);
 }
 

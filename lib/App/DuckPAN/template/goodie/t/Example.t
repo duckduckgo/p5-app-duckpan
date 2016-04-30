@@ -6,7 +6,7 @@ use Test::More;
 use Test::Deep;
 use DDG::Test::Goodie;
 
-zci answer_type => "<: $ia_id :>";
+zci answer_type => "<: $ia.id :>";
 zci is_cached   => 1;
 
 # Build a structured answer that should match the response from the
@@ -36,11 +36,11 @@ sub build_structured_answer {
 sub build_test { test_zci(build_structured_answer(@_)) }
 
 ddg_goodie_test(
-    [qw( DDG::Goodie::<: $ia_package_name :> )],
+    [qw( <: $ia.perl_module :> )],
     # At a minimum, be sure to include tests for all:
     # - primary_example_queries
     # - secondary_example_queries
-    'example query' => build_test('query'),
+    '<: $ia.example_query :>' => build_test('query'),
     # Try to include some examples of queries on which it might
     # appear that your answer will trigger, but does not.
     'bad example query' => undef,

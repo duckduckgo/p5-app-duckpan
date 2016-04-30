@@ -1,5 +1,5 @@
-package DDG::Goodie::<: $ia_package_name :>;
-# ABSTRACT: Write an abstract here
+package <: $ia.perl_module :>;
+# ABSTRACT: <: $ia.description :>
 
 # Start at http://docs.duckduckhack.com/walkthroughs/calculation.html if
 # you are new to instant answer development
@@ -7,7 +7,7 @@ package DDG::Goodie::<: $ia_package_name :>;
 use DDG::Goodie;
 use strict;
 
-zci answer_type => '<: $ia_id :>';
+zci answer_type => '<: $ia.id :>';
 
 # Caching - http://docs.duckduckhack.com/backend-reference/api-reference.html#caching`
 zci is_cached => 1;

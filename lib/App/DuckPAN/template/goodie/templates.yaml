@@ -21,17 +21,17 @@ templates:
     js:
         label:  Javascript
         input:  share/goodie/example/example.js
-        output: <:$ia_share_path:>/<:$ia_id:>.js
+        output: <:$ia_share_path:>/<:$ia.id:>.js
 
     css:
         label:  CSS
         input:  share/goodie/example/example.css
-        output: <:$ia_share_path:>/<:$ia_id:>.css
+        output: <:$ia_share_path:>/<:$ia.id:>.css
 
     handlebars:
         label:  Handlebars
         input:  share/goodie/example/example.handlebars
-        output: <:$ia_share_path:>/<:$ia_id:>.handlebars
+        output: <:$ia_share_path:>/<:$ia.id:>.handlebars
 
     cheatsheet_json:
         label:  CheatSheet JSON
