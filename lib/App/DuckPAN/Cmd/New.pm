@@ -172,13 +172,13 @@ sub _get_config_generic_vars {
 }
 
 sub _get_config_user {
-	my ($self, @args) = @_;
+	my ($self) = @_;
 	my %vars = $self->_get_config_generic_vars();
 	my $ia = $vars{ia};
 	if ($ia->{id} =~ /_cheat_sheet$/) {
 		return $self->_get_config_cheat_sheet(%vars);
 	} else {
-		return $self->_get_config_instant_answer(\%vars, @args);
+		return $self->_get_config_instant_answer(%vars);
 	}
 }
 
@@ -188,76 +188,30 @@ my @ORIG_ARGV;
 before new_with_options => sub { @ORIG_ARGV = @ARGV };
 
 sub _get_config_instant_answer {
-	my ($self, @args) = @_;
+	my ($self, %vars) = @_;
 	# Process the --list-templates option: List the template-set names and exit with success
 	$self->app->emit_and_exit(0, $self->_available_templates_message)
 		if $self->list_templates;
 
-	# Gracefully handle the case where '--template' is the last argument
-	$self->app->emit_and_exit(
-		1,
-		"Please specify the template for your Instant Answer.\n" .
-		$self->_available_templates_message
-	) if ($ORIG_ARGV[$#ORIG_ARGV] // '') eq '--template';
+	my $ia = $vars{ia};
 
-	# Get the template-set instance based on the command line arguments.
-	my $template_set = $self->_template_set();
+	my $package_name = $ia->{perl_module};
+	my @separated_package = split '::', $package_name;
+	my @base_parts = @separated_package[2..$#separated_package];
+	my $ia_lib_path = join '/', @separated_package;
+	my $ia_package_base_path = join '/', @base_parts;
 
-	$self->app->emit_info('Creating a new ' . $template_set->description . '...');
+	my $ia_share_path = join '/',
+		('share', $ia->{blockgroup}, $ia->{id});
 
-	# Instant Answer name as parameter
-	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer: ');
+	my %handler_config = $self->_config_handler();
 
-	# Validate the entered name
-	$self->app->emit_and_exit(-1, 'Must supply a name for your Instant Answer.') unless $entered_name;
-	$self->app->emit_and_exit(-1,
-		"'$entered_name' is not a valid name for an Instant Answer. " .
-		'Please run the program again and provide a valid name.'
-	) unless $entered_name =~ m@^( [a-zA-Z0-9\s] | (?<![:/])(::|/)(?![:/]) )+$@x;
-	$self->app->emit_and_exit(-1,
-		'The name for this type of Instant Answer cannot contain package or path separators. ' .
-		'Please run the program again and provide a valid name.'
-	) if !$template_set->subdir_support && $entered_name =~ m![/:]!;
-
-	$entered_name =~ s/\//::/g;    #change "/" to "::" for easier handling
-
-	my $package_name = $self->app->phrase_to_camel($entered_name);
-	my ($name, $separated_name, $path, $lc_path) = ($package_name, $package_name, '', '');
-
-	$separated_name =~ s/::/ /g;
-
-	if ($package_name =~ m/::/) {
-		my @path_parts = split(/::/, $package_name);
-		if (scalar @path_parts > 1) {
-			$name    = pop @path_parts;
-			$path    = join("/", @path_parts);
-			$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
-		}
-		else {
-			$self->app->emit_and_exit(-1, "Malformed input. Please provide a properly formatted package name for your Instant Answer.");
-		}
-	}
-
-	my $lc_name     = $self->app->camel_to_underscore($name);
-	my $filepath    = $path ? "$path/$name" : $name;
-	my $lc_filepath = $lc_path ? "$lc_path/$lc_name" : $lc_name;
-	if (scalar $lc_path) {
-		$lc_path =~ s/\//_/g;    #safe to modify, we already used this in $lc_filepath
-		$lc_name = $lc_path . '_' . $lc_name;
-	}
-
-	my @optional_templates = $self->_ask_optional_templates
-		unless $self->no_optionals;
-
-	my %vars = (
-		ia_package_name   => $package_name,
-		ia_name_separated => $separated_name,
-		ia_id             => $lc_name,
-		ia_path           => $filepath,
-		ia_path_lc        => $lc_filepath,
+	return (%vars, %handler_config,
+		ia_lib_path          => $ia_lib_path,
+		ia_package_base_path => $ia_package_base_path,
+		ia_share_path        => $ia_share_path,
+		ia_package_name      => $package_name,
 	);
-
-	return %vars;
 }
 
 ###########
@@ -268,7 +222,7 @@ sub run {
 	my ($self, @args) = @_;
 
 	my $no_handler = 0;
-	my %vars = $self->_get_config_user(@args);
+	my %vars = $self->_get_config_user();
 
 	# Get the template-set instance based on the command line arguments.
 	my $template_set = $self->_template_set();
@@ -336,11 +290,11 @@ sub _config_handler {
 		? q{query => qr/trigger regex/}
 		: q{any => 'triggerword', 'trigger phrase'};
 
-	return {
+	return (
 		ia_handler => $handler,
 		ia_handler_var => $var,
 		ia_trigger => $trigger
-	};
+	);
 }
 
 # Ask the user for which optional templates they want to use and return a list
