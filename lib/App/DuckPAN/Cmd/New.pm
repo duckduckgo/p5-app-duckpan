@@ -39,12 +39,6 @@ option list_templates => (
 	doc   => 'list the available instant answer templates and exit',
 );
 
-option cheatsheet => (
-	is    => 'ro',
-	short => 'c',
-	doc   => "create a Cheat Sheet (short for `--template cheatsheet'; valid only for Goodies)",
-);
-
 option no_optionals => (
 	is  => 'ro',
 	short => 'N',
@@ -69,24 +63,13 @@ sub _build__template_defs {
 
 	# Read the templates.yml file
 	try {
-		$template_defs = App::DuckPAN::TemplateDefinitions->new;
+		$template_defs = App::DuckPAN::TemplateDefinitions->new(
+			template_type => lc $self->app->get_ia_type->{name},
+		);
 	} catch {
 		my $error = $_;
-
-		if ($error =~ /no such file/i) {
-			# Handle the 'no such file or directory' exception
-			# specially to show more information since it can be a
-			# common error for users with an older IA repository
-			my $type = $self->app->get_ia_type();
-
-			$self->app->emit_and_exit(-1,
-				"Template definitions file not found for " . $type->{name} .
-				" Instant Answers. You may need to pull the latest version " .
-				"of this repository.");
-		}
-		else {
-			$self->app->emit_and_exit(-1, $error);
-		}
+		$self->app->emit_and_exit(-1, $error);
+#		}
 	};
 
 	return $template_defs;

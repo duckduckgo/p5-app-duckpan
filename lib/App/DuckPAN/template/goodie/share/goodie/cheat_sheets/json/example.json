@@ -1,0 +1,48 @@
+{
+    "id": "<: $ia.id :>",
+    "name": "<: $ia_name_normalized :>",
+    "description": "<: $ia.description :>",
+
+    "metadata": {
+        "sourceName": "<: $ia.src_name :>",
+        "sourceUrl" : "<: $ia.src_url :>"
+    },
+
+    "aliases": [
+        "first alias", "second alias", "etc"
+    ],
+
+    "template_type": "<: $template_type :>",
+
+    "section_order": [
+        "First Section",
+        "Second Section"
+    ],
+
+    "sections": {
+        "First Section": [
+            {
+                "key": "Key 1.1",
+             : given $template_type {
+             :  when "language" {
+                "val": "Value 1.1",
+                "trn": "Translation 1.1"
+             :  }
+             :  default {
+                 "val": "Value 1.1"
+             :  }
+             : }
+            }
+        ],
+        "Second Section": [
+            {
+                "key": "Key 2.1",
+                "val": "Value 2.2"
+            },
+            {
+                "key": "Key 2.2",
+                "val": "Value 2.2"
+            }
+        ]
+    }
+}

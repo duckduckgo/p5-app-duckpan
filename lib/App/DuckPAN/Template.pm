@@ -63,7 +63,10 @@ sub generate {
 	my ($self, $vars) = @_;
 
 	# Increased verbosity to help while writing templates
-	my $tx = Text::Xslate->new(type => 'text', verbose => 2);
+	my $tx = Text::Xslate->new(
+		path => '/', type => 'text', verbose => 2,
+	);
+
 	my $input_file = path($self->input_file);
 
 	# (should not occur for users)

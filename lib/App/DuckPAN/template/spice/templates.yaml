@@ -1,0 +1,46 @@
+---
+# Template definitions for Spice IAs.
+
+# Each template represents one input and one output file.
+templates:
+    pm:
+        label:  Perl Module
+        input:  lib/DDG/Spice/Example.pm
+        output: lib/<:$ia_lib_path:>.pm
+
+    test:
+        label:  Perl Module Test
+        input:  t/Example.t
+        output: t/<:$ia_package_base_path:>.t
+
+    js:
+        label:  Javascript
+        input:  share/spice/example/example.js
+        output: <:$ia_share_path:>/<:$ia.id:>.js
+
+    css:
+        label:  CSS
+        input:  share/spice/example/example.css
+        output: <:$ia_share_path:>/<:$ia.id:>.css
+
+    handlebars:
+        label:  Handlebars
+        input:  share/spice/example/example.handlebars
+        output: <:$ia_share_path:>/<:$ia.id:>.handlebars
+
+
+# A template set is a collection of templates used to generate all files of a
+# sub-type of an Instant Answer type. Each set can have some 'required'
+# templates (which are always applied) and some 'optional' templates (which are
+# applied after asking the user).
+template_sets:
+    default:
+        description: Standard Spice Instant Answer
+        required: [ pm, test, js ]
+        optional: [ css, handlebars  ]
+
+    all:
+        description: Spice with all backend and frontend files
+        required: [ pm, test, js, css, handlebars ]
+...
+

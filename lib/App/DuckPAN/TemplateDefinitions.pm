@@ -12,12 +12,34 @@ use App::DuckPAN::TemplateSet;
 
 use namespace::clean;
 
-has templates_yml => (
+has template_type => (
 	is       => 'ro',
 	required => 1,
-	default  => sub { path('template', 'templates.yml') },
+	doc      => 'Type of template to use (Goodie, Spice etc.)',
+);
+
+has _templates_yml => (
+	is       => 'ro',
+	lazy     => 1,
+	builder  => 1,
 	doc      => 'Path to the YAML file with template definitions',
 );
+
+has _template_dir => (
+    is      => 'ro',
+    lazy    => 1,
+    builder => 1,
+);
+
+sub _build__template_dir {
+    my $self = shift;
+    return path(($INC{'App/DuckPAN.pm'} =~ s/\.pm$//r),
+								'template', $self->template_type);
+}
+sub _build__templates_yml {
+	my $self = shift;
+	return path($self->_template_dir, 'templates.yaml');
+}
 
 has _templates_data => (
 	is       => 'rwp',
@@ -36,7 +58,7 @@ has _template_map => (
 
 sub _build__template_map {
 	my $self = shift;
-	my $template_root = path($self->templates_yml)->parent;
+	my $template_root = path($self->_templates_yml)->parent;
 	my $data = $self->_templates_data->{templates};
 	my %template_map;
 
@@ -77,7 +99,7 @@ sub _build__template_sets {
 
 	    # check if all templates in this set are defined
 	    for my $template_name (@required, @optional) {
-	        die "Template '$template_name' not defined in " . $self->templates_yml
+	        die "Template '$template_name' not defined in " . $self->_templates_yml
 	            unless $self->_template_map->{$template_name};
 	    }
 
@@ -120,9 +142,9 @@ sub BUILD {
 	my $self = shift;
 
 	try {
-	    $self->_set__templates_data(LoadFile($self->templates_yml));
+	    $self->_set__templates_data(LoadFile($self->_templates_yml));
 	} catch {
-	    die "Error loading template definitions file " . $self->templates_yml . ": $_";
+	    die "Error loading template definitions file " . $self->_templates_yml . ": $_";
 	};
 }
 
