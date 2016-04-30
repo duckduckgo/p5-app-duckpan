@@ -434,7 +434,8 @@ sub phrase_to_camel {
 # Normalize an Instant Answer name to a standard form.
 # Returns undef if an IA matching the given name cannot be found.
 sub get_ia_by_name {
-	my ($self, $name) = @_;
+	my ($self, $name, %options) = @_;
+	my $no_fail = $options{no_fail} // 0;
 	my $ia;
 	if ($name =~ /^DDG::/) {
 		$ia = DDG::Meta::Data->get_ia(module => $name);
@@ -446,7 +447,7 @@ sub get_ia_by_name {
 			: DDG::Meta::Data->get_ia(id => $self->camel_to_underscore($name));
 	}
 	$self->emit_and_exit(1, "No Instant Answer found with name '$name'")
-		unless defined $ia;
+		unless defined $ia || $no_fail;
 	return $ia;
 }
 
