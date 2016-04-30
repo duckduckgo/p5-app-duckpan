@@ -116,6 +116,22 @@ sub _build__template_set {
 	return $template_set;
 }
 
+my %config_types = (
+	Goodie => ['Instant Answer', 'Cheat Sheet'],
+	Spice  => ['Instant Answer'],
+);
+
+sub _get_template_type {
+	my $self = shift;
+	my $ia_type = $self->app->get_ia_type()->{name};
+	my @types = @{$config_types{$ia_type}};
+	return $types[0] unless @types > 1;
+	return $self->app->get_reply("What do you want to create?: ",
+		choices => \@types,
+		default => $types[0],
+	);
+}
+
 ###########
 # Methods #
 ###########
