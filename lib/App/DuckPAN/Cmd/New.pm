@@ -27,6 +27,12 @@ option template => (
 	doc     => 'template used to generate the instant answer skeleton (default: default)',
 );
 
+option id => (
+	is     => 'ro',
+	format => 's',
+	doc    => 'ID of Instant Answer to configure',
+);
+
 option list_templates => (
 	is    => 'ro',
 	short => 'l',
@@ -153,14 +159,19 @@ sub _get_config_cheat_sheet {
 
 sub _get_config_generic_vars {
 	my $self = shift;
-	unless ($self->app->ask_yn(
-			'Have you already created an Instant Answer page?',
-			default => 'y')
-	) {
-		$self->app->emit_and_exit(-1,
-			"Please create an Instant Answer page before running duckpan new");
+	my $ia;
+	if ($self->id) {
+		$ia = $self->app->get_ia_by_name($self->id);
+	} else {
+		unless ($self->app->ask_yn(
+				'Have you already created an Instant Answer page?',
+				default => 'y')
+		) {
+			$self->app->emit_and_exit(-1,
+				"Please create an Instant Answer page before running duckpan new");
+		}
+		$ia = $self->_ask_ia();
 	}
-	my $ia = $self->_ask_ia();
 	return (
 		ia => $ia,
 		ia_id => $ia->{id},
