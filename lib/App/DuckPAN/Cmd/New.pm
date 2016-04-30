@@ -217,8 +217,9 @@ sub _get_config_instant_answer {
 	my $ia_lib_path = join '/', @separated_package;
 	my $ia_package_base_path = join '/', @base_parts;
 
+	my $type = $self->app->get_ia_type();
 	my $ia_share_path = join '/',
-		('share', $ia->{blockgroup}, $ia->{id});
+		('share', lc $type->{name}, $ia->{id});
 
 	my %handler_config = $self->_config_handler();
 
