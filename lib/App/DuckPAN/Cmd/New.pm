@@ -172,11 +172,10 @@ sub _get_config_generic_vars {
 		}
 		$ia = $self->_ask_ia();
 	}
-	$ia->{perl_module} =~ /^DDG::(\w+)/;
-	my $required_repo = $1;
-	unless (lc $required_repo eq lc $self->app->get_ia_type->{name}) {
+	my $required_repo = $ia->{repo};
+	unless ($required_repo eq $self->app->get_ia_type->{repo}) {
 		$self->app->emit_and_exit(-1,
-			"Wrong repository for $ia->{name}, expecting '$required_repo'");
+			"Wrong repository for $ia->{id}, expecting '$required_repo'");
 	}
 	return (
 		ia => $ia,

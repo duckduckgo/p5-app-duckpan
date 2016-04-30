@@ -161,6 +161,7 @@ sub _build_ia_types {
 			dir           => $ddg_path->child('Goodie'),
 			supported     => 1,
 			path_basename => 'zeroclickinfo-goodies',
+			repo          => 'goodies',
 			templates     => {
 				code => {
 					in  => path('template', 'lib', 'DDG', 'Goodie', 'Example.pm'),
@@ -177,6 +178,7 @@ sub _build_ia_types {
 			dir           => $ddg_path->child('Spice'),
 			supported     => 1,
 			path_basename => 'zeroclickinfo-spice',
+			repo          => 'spice',
 			templates     => {
 				code => {
 					in  => path('template', 'lib', 'DDG', 'Spice', 'Example.pm'),
@@ -201,12 +203,14 @@ sub _build_ia_types {
 			dir           => $ddg_path->child('Fathead'),
 			supported     => 0,
 			path_basename => 'zeroclickinfo-fathead',
+			repo          => 'fathead',
 		},
 		{
 			name          => 'Longtail',
 			dir           => $ddg_path->child('Longtail'),
 			supported     => 0,
 			path_basename => 'zeroclickinfo-longtail',
+			repo          => 'longtail',
 		},
 	];
 }
