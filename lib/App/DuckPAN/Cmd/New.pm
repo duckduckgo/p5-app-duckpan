@@ -5,7 +5,11 @@ package App::DuckPAN::Cmd::New;
 # list of template-sets and files generated for them
 
 use Moo;
-with qw( App::DuckPAN::Cmd App::DuckPAN::Option::Tell );
+with qw(
+	App::DuckPAN::Cmd
+	App::DuckPAN::InstantAnswer::Cmd
+	App::DuckPAN::Option::Tell
+);
 
 use MooX::Options protect_argv => 0;
 use Try::Tiny;
@@ -26,12 +30,6 @@ option template => (
 	default => 'default',
 	short   => 't',
 	doc     => 'template used to generate the instant answer skeleton (default: default)',
-);
-
-option id => (
-	is     => 'ro',
-	format => 's',
-	doc    => 'ID of Instant Answer to configure',
 );
 
 option list_templates => (
@@ -111,18 +109,6 @@ sub _build__template_set {
 	return $template_set;
 }
 
-sub _ask_ia {
-	my $self = shift;
-	my $ia;
-	my $check = sub {
-		my $name = shift;
-		$ia = $self->app->get_ia_by_name($name, no_fail => 1);
-		return 1 if defined $ia;
-	};
-	$self->app->get_reply("Enter Name", allow => $check);
-	return $ia;
-}
-
 my @cheat_sheet_templates = (
 	'code', 'keyboard', 'language', 'link', 'reference', 'terminal',
 );
@@ -146,35 +132,10 @@ sub _get_config_cheat_sheet {
 	);
 }
 
-sub _get_config_generic_vars {
-	my $self = shift;
-	my $ia;
-	if ($self->id) {
-		$ia = $self->app->get_ia_by_name($self->id);
-	} else {
-		unless ($self->app->ask_yn(
-				'Have you already created an Instant Answer page?',
-				default => 'y')
-		) {
-			$self->app->emit_and_exit(-1,
-				"Please create an Instant Answer page before running duckpan new");
-		}
-		$ia = $self->_ask_ia();
-	}
-	my $required_repo = $ia->{repo};
-	unless ($required_repo eq $self->app->get_ia_type->{repo}) {
-		$self->app->emit_and_exit(-1,
-			"Wrong repository for $ia->{id}, expecting '$required_repo'");
-	}
-	return (
-		ia => $ia,
-	);
-}
-
 sub _get_config_user {
 	my ($self) = @_;
-	my %vars = $self->_get_config_generic_vars();
-	my $ia = $vars{ia};
+	my $ia = $self->_ask_ia_check();
+	my %vars = (ia => $ia);
 	if ($ia->{id} =~ /_cheat_sheet$/) {
 		return $self->_get_config_cheat_sheet(%vars);
 	} else {
