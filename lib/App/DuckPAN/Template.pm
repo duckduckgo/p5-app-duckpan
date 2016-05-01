@@ -46,6 +46,20 @@ has output_directory => (
 	doc      => 'Directory known to contain all of the generated template output files and subdirectories',
 );
 
+has _template_dir_top => (
+	is	     => 'ro',
+	required => 1,
+	doc      => 'Top-level directory containing all templates.',
+	init_arg => 'template_directory',
+);
+
+has _template_subdir => (
+	is       => 'ro',
+	required => 1,
+	doc      => 'Name of directory containing templates specific to this type.',
+	init_arg => 'template_subdir',
+);
+
 sub _build_output_directory {
 	my ($self) = @_;
 	my $out_dir = path($self->output_file);
@@ -58,19 +72,30 @@ sub _build_output_directory {
 	return $out_dir;
 }
 
+sub indent {
+	my $prefix = shift;
+	$prefix = ' ' x $prefix if $prefix =~ /^\d+$/;
+	return sub {
+		my $text = shift;
+		join "\n", map { "$prefix$_" } split "\n", $text;
+	};
+}
+
 # Create the output file from the input file
 sub generate {
 	my ($self, $vars) = @_;
 
 	# Increased verbosity to help while writing templates
 	my $tx = Text::Xslate->new(
-		path => '/', type => 'text', verbose => 2,
+		path    => $self->_template_dir_top,
+		type    => 'text',
+		verbose => 2,
+		function => {
+			indent => \&indent,
+		},
 	);
 
-	my $input_file = path($self->input_file);
-
-	# (should not occur for users)
-	die "Template input file '$input_file' not found" unless $input_file->exists;
+	my $input_file = path($self->_template_subdir, $self->input_file);
 
 	# The output file path is a Text::Xslate template, so we generate the
 	# actual path here

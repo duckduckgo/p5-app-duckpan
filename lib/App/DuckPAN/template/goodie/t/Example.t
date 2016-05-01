@@ -1,10 +1,6 @@
 #!/usr/bin/env perl
 
-use strict;
-use warnings;
-use Test::More;
-use Test::Deep;
-use DDG::Test::Goodie;
+: include shared::perl_standard_imports_tests { repo => 'Goodie' };
 
 zci answer_type => "<: $ia.id :>";
 zci is_cached   => 1;
@@ -15,21 +11,8 @@ sub build_structured_answer {
     my @test_params = @_;
 
     return "plain text response",
-        structured_answer => {
+    : include shared::perl_structured_answer_text { indent => 8 };
 
-            data => {
-                title    => "My Instant Answer Title",
-                subtitle => "My Subtitle",
-                # image => "http://website.com/image.png",
-            },
-
-            templates => {
-                group => "text",
-                # options => {
-                #
-                # }
-            }
-        };
 }
 
 # Use this to build expected results for your tests.

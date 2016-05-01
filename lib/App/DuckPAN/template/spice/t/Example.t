@@ -1,9 +1,6 @@
 #!/usr/bin/env perl
 
-use strict;
-use warnings;
-use Test::More;
-use DDG::Test::Spice;
+: include shared::perl_standard_imports_tests { repo => 'Spice' }
 
 spice is_cached => 1;
 

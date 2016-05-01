@@ -1,11 +1,9 @@
-package <: $ia.perl_module :>;
-# ABSTRACT: <: $ia.description :>
+: include shared::perl_package_header {ia => $ia};
 
 # Start at http://docs.duckduckhack.com/walkthroughs/calculation.html if
 # you are new to instant answer development
 
-use DDG::Goodie;
-use strict;
+: include shared::perl_standard_imports {repo => 'Goodie'};
 
 zci answer_type => '<: $ia.id :>';
 
@@ -32,21 +30,8 @@ handle <: $ia_handler :> => sub {
     # return unless qr/^\w+|\d{5}$/;
 
     return "plain text response",
-        structured_answer => {
+: include shared::perl_structured_answer_text { indent => 8 };
 
-            data => {
-                title    => "My Instant Answer Title",
-                subtitle => "My Subtitle",
-                # image => "http://website.com/image.png",
-            },
-
-            templates => {
-                group => "text",
-                # options => {
-                #
-                # }
-            }
-        };
 };
 
 1;

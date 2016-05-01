@@ -12,6 +12,11 @@ use App::DuckPAN::TemplateSet;
 
 use namespace::clean;
 
+has template_type => (
+	is       => 'ro',
+	required => 1,
+	doc      => 'Type of template to use (Goodie, Spice etc.)',
+);
 
 has _templates_yml => (
 	is       => 'ro',
@@ -28,7 +33,7 @@ has _template_dir => (
 
 sub _build__templates_yml {
 	my $self = shift;
-	my $template_dir = $self->_template_dir;
+	my $template_dir = path($self->_template_dir, $self->template_type);
 	die "Cannot find directory for templates: $template_dir\n"
 		unless -d $template_dir;
 	return path($template_dir, 'templates.yaml');
@@ -61,8 +66,10 @@ sub _build__template_map {
 	    my $template = App::DuckPAN::Template->new(
 	        name          => $name,
 	        label         => $template_data->{label},
-	        input_file    => path($template_root, $template_data->{input}),
+	        input_file    => path($template_data->{input}),
 	        output_file   => path($template_data->{output}),
+	        template_directory => $self->_template_dir,
+	        template_subdir    => $self->template_type,
 	    );
 
 	    $template_map{$name} = $template;

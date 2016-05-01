@@ -1,11 +1,9 @@
-package <: $ia.perl_module :>;
-# ABSTRACT: <: $ia.description :>
+: include shared::perl_package_header { ia => $ia };
 
 # Start at https://duck.co/duckduckhack/goodie_overview if you are new
 # to instant answer development
 
-use DDG::Goodie;
-use strict;
+: include shared::perl_standard_imports { repo => 'Goodie' };
 
 zci answer_type => '<: $ia.id :>';
 

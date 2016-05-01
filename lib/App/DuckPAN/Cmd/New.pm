@@ -67,10 +67,10 @@ sub _build__template_defs {
 		my $dir = path(
 			$INC{'App/DuckPAN.pm'} =~ s/\.pm$//r,
 			'template',
-			lc $self->app->get_ia_type->{name},
 		);
 		$template_defs = App::DuckPAN::TemplateDefinitions->new(
 			template_directory => $dir,
+			template_type      => lc $self->app->get_ia_type->{name},
 		);
 	} catch {
 		my $error = $_;
