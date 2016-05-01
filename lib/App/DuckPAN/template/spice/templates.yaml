@@ -5,27 +5,27 @@
 templates:
     pm:
         label:  Perl Module
-        input:  lib/DDG/Spice/Example.pm
+        input:  perl_main.tx
         output: lib/<:$ia_lib_path:>.pm
 
     test:
         label:  Perl Module Test
-        input:  t/Example.t
+        input:  test.tx
         output: t/<:$ia_package_base_path:>.t
 
     js:
         label:  Javascript
-        input:  share/spice/example/example.js
+        input:  js.tx
         output: <:$ia_share_path:>/<:$ia.id:>.js
 
     css:
         label:  CSS
-        input:  share/spice/example/example.css
+        input:  css.tx
         output: <:$ia_share_path:>/<:$ia.id:>.css
 
     handlebars:
         label:  Handlebars
-        input:  share/spice/example/example.handlebars
+        input:  handlebars.tx
         output: <:$ia_share_path:>/<:$ia.id:>.handlebars
 
 

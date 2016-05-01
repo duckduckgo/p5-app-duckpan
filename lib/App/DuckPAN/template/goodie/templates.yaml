@@ -5,37 +5,37 @@
 templates:
     pm:
         label:  Perl Module
-        input:  lib/DDG/Goodie/Example.pm
+        input:  perl_main.tx
         output: lib/<:$ia_lib_path:>.pm
 
     min-pm:
         label:  Minimal Perl Module
-        input:  lib/DDG/Goodie/Minimal.pm
+        input:  perl_main_basic.tx
         output: lib/<:$ia_lib_path:>.pm
 
     test:
         label:  Perl Module Test
-        input:  t/Example.t
+        input:  test.tx
         output: t/<:$ia_package_base_path:>.t
 
     js:
         label:  Javascript
-        input:  share/goodie/example/example.js
+        input:  js.tx
         output: <:$ia_share_path:>/<:$ia.id:>.js
 
     css:
         label:  CSS
-        input:  share/goodie/example/example.css
+        input:  css.tx
         output: <:$ia_share_path:>/<:$ia.id:>.css
 
     handlebars:
         label:  Handlebars
-        input:  share/goodie/example/example.handlebars
+        input:  handlebars.tx
         output: <:$ia_share_path:>/<:$ia.id:>.handlebars
 
     cheatsheet_json:
         label:  CheatSheet JSON
-        input:  share/goodie/cheat_sheets/json/example.json
+        input:  cheat_sheet.tx
         output: share/goodie/cheat_sheets/json/<:$file_name:>
 
 # A template set is a collection of templates used to generate all files of a
