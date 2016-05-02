@@ -45,20 +45,49 @@ sub _get_menu_choice {
 	return $response;
 }
 
+sub _display_list {
+	my ($self, @items) = @_;
+	map { $self->app->emit_info($_) } @items;
+}
+
 sub _configure_list {
-	my ($self, $list) = @_;
+	my ($self, $list, %options) = @_;
 	my @items = @$list;
-	my $i = -1;
-	my %members = map { do { $i++; $_ => $i } } @items;
-	my $action = $self->_get_menu_choice(
-		prompt  => "What do you want to do?",
-		choices => ['Delete Item', 'Add Item'],
-	);
-	if ($action eq 'Add Item') {
+	my @display = map { $self->ia->for_display($_) } @$list;
+	my $adder = $options{add} // sub {
+		my ($self, @items) = @_;
 		my $item = $self->_get_menu_choice(
 			prompt => "Enter Item"
 		);
 		push @items, $item;
+		return @items;
+	};
+	my $i = -1;
+	my %members = map { do { $i++; $_ => $i } } @display;
+	if (@items < 20) {
+		$self->_display_list(@display);
+	} else {
+		$self->_display_list(@display[1..19]);
+		$self->app->emit_info('Large number of items detected; showing first 20');
+	}
+	my $action = $self->_get_menu_choice(
+		prompt  => "What do you want to do?",
+		choices => [
+			'List Items', 'Configure Item', 'Delete Item', 'Add Item'
+		],
+	);
+	if ($action eq 'List Items') {
+		$self->_display_list(@display);
+	} elsif ($action eq 'Configure Item') {
+		my $item = $self->_get_menu_choice(
+			prompt => "What do you want to configure?",
+			choices => \@display,
+		);
+		my $pos = $members{$item};
+		my $configured = $self->_configure_item($items[$pos]);
+		$items[$pos] = $configured;
+	} elsif ($action eq 'Add Item') {
+		@items = $adder->($self, @items);
 	} elsif ($action eq 'Delete Item') {
 		my @to_delete = $self->_get_menu_choice(
 			prompt  => "Which Items?",
@@ -99,6 +128,8 @@ sub _configure_item {
 	my ($self, $item) = @_;
 	if (ref $item eq 'ARRAY') {
 		return $self->_configure_list($item);
+	} elsif (ref $item eq 'HASH') {
+		return $self->_configure_hash($item);
 	} else {
 		return $self->_configure_scalar($item);
 	}
