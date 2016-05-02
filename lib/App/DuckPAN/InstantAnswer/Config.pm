@@ -4,7 +4,9 @@ package App::DuckPAN::InstantAnswer::Config;
 
 use Moo;
 
-use App::DuckPAN::InstantAnswer::Util qw(find_ia_files);
+use App::DuckPAN::InstantAnswer::Util qw(find_ia_files is_cheat_sheet);
+
+use Data::Dumper;
 
 has ia => (
 	is       => 'ro',
@@ -22,6 +24,12 @@ sub _build_files {
 	my $self = shift;
 	my %files = find_ia_files($self->ia);
 	return \%files;
+}
+
+$Data::Dumper::Terse = 1;
+sub for_display {
+	my ($self, $item) = @_;
+	return Dumper($item);
 }
 
 1;
