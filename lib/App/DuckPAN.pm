@@ -20,7 +20,6 @@ use Term::ANSIColor;
 use Term::UI;
 use Term::ReadLine;
 use Carp;
-use Encode;
 use Perl::Version;
 use Path::Tiny;
 use open qw/:std :utf8/;
@@ -217,9 +216,7 @@ sub _build_ia_types {
 
 sub get_reply {
 	my ( $self, $prompt, %params ) = @_;
-	my $return = $self->term->get_reply( prompt => $prompt, %params );
-	Encode::_utf8_on($return);
-	return $return;
+	$self->term->get_reply( prompt => $prompt, %params );
 }
 
 sub ask_yn {
