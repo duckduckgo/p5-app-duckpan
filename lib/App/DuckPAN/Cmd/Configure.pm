@@ -11,16 +11,38 @@ use List::MoreUtils 'any';
 use Path::Tiny;
 use JSON::MaybeXS qw(decode_json);
 
-no warnings 'uninitialized';
+use App::DuckPAN::InstantAnswer::Util qw(is_cheat_sheet);
+use App::DuckPAN::InstantAnswer::Config;
 
-sub is_cheat_sheet {
-	my $ia = shift;
-	return $ia->{id} =~ /_cheat_sheet$/;
-}
+has ia => (
+	is => 'rwp',
+);
 
-# TODO: Make this work with other cheat sheets.
-sub _get_cheat_sheet_file {
-	return path('share/goodie/cheat_sheets/json/vim.json');
+has _prev_menu => (
+	is => 'rwp',
+	doc => 'CODE reference representing the previous menu. ' .
+	       'The previous menu should not require reconfirmation.',
+);
+
+sub _get_menu_choice {
+	my ($self, %options) = @_;
+	my $back = delete $options{menu_back};
+	my $prompt = delete $options{prompt};
+	unless (%options) {
+		return $self->app->get_reply($prompt);
+	}
+	if ($options{multi}) {
+		return $self->app->get_reply($prompt, %options);
+	}
+	my @choices = @{$options{choices}};
+	push @choices, 'Go Back' if $back;
+	my $response = $self->app->get_reply($prompt,
+		%options, choices => \@choices,
+	);
+	if ($response eq 'Go Back') {
+		$self->$back();
+	}
+	return $response;
 }
 
 sub _configure_list {
@@ -28,14 +50,18 @@ sub _configure_list {
 	my @items = @$list;
 	my $i = -1;
 	my %members = map { do { $i++; $_ => $i } } @items;
-	my $action = $self->app->get_reply("What do you want to do?",
+	my $action = $self->_get_menu_choice(
+		prompt  => "What do you want to do?",
 		choices => ['Delete Item', 'Add Item'],
 	);
 	if ($action eq 'Add Item') {
-		my $item = $self->app->get_reply("Enter Item");
+		my $item = $self->_get_menu_choice(
+			prompt => "Enter Item"
+		);
 		push @items, $item;
 	} elsif ($action eq 'Delete Item') {
-		my @to_delete = $self->app->get_reply("Which Items?",
+		my @to_delete = $self->_get_menu_choice(
+			prompt  => "Which Items?",
 			choices => \@items, multi => 1,
 		);
 		foreach my $item (@to_delete) {
@@ -50,7 +76,23 @@ sub _configure_list {
 sub _configure_scalar {
 	my ($self, $item) = @_;
 	$self->app->emit_info("Current Value: $item");
-	return $self->app->get_reply("Enter new value");
+	return $self->_get_menu_choice(
+		prompt => "Enter new value"
+	);
+}
+
+sub _configure_hash {
+	my ($self, $hash) = @_;
+	my %hash = %$hash;
+	my @choices = sort keys %hash;
+	my $to_configure = $self->_get_menu_choice(
+		prompt  => "What would you like to configure?",
+		choices => \@choices,
+	);
+	my $current = $hash{$to_configure};
+	my $new_val = $self->_configure_item($current);
+	$hash{$to_configure} = $new_val;
+	return \%hash;
 }
 
 sub _configure_item {
@@ -63,18 +105,17 @@ sub _configure_item {
 }
 
 sub _configure_cheat_sheet {
-	my ($self, $ia) = @_;
+	my $self = shift;
+	my $ia = $self->ia->ia;
+	my $cheat_file;
+	unless ($cheat_file = $self->ia->files->{named}{cheat_sheet}) {
+		$self->app->emit_info("Could not find an appropriate file to configure");
+		return;
+	}
 	my $json = JSON::MaybeXS->new(utf8 => 1, pretty => 1);
-	my $cheat_file = $self->_get_cheat_sheet_file($ia);
 	my $data = decode_json($cheat_file->slurp())
 		or $self->app->emit_and_exit(-1, "Invalid JSON");
-	my @choices = sort keys %$data;
-	my $to_configure = $self->app->get_reply("What would you like to configure?",
-		choices => \@choices,
-	);
-	my $current = $data->{$to_configure};
-	my $new_val = $self->_configure_item($current);
-	$data->{$to_configure} = $new_val;
+	$data = $self->_configure_hash($data);
 	my $encoded = $json->encode($data);
 	$cheat_file->spew_utf8($encoded);
 }
@@ -82,11 +123,58 @@ sub _configure_cheat_sheet {
 sub run {
 	my ($self, @args) = @_;
 	my $ia = $self->_ask_ia_check();
-	$self->app->emit_and_exit(-1,
-		"Currently do not support non-cheat-sheet Instant Answers")
-		unless is_cheat_sheet($ia);
 	$self->app->emit_info('Configuring ' . $ia->{id});
-	$self->_configure_cheat_sheet($ia);
+	$self->_set_ia(App::DuckPAN::InstantAnswer::Config->new(ia => $ia));
+	$self->_run_configure();
 }
 
+sub _exit {
+	my $self = shift;
+	$self->app->emit_and_exit(0, 'Goodbye!');
+}
+
+sub _run_configure {
+	my $self = shift;
+	my $to_do = $self->_get_main_option();
+	my $resp = $self->$to_do();
+	$self->_run_configure();
+}
+
+sub _display_files {
+	my $self = shift;
+	my @files = @{$self->ia->files->{all}};
+	foreach my $file (sort @files) {
+		$self->app->emit_info($file);
+	}
+}
+
+sub _configure_ia {
+	my $self = shift;
+	if (is_cheat_sheet($self->ia->ia)) {
+		$self->_configure_cheat_sheet();
+	} else {
+		$self->app->emit_info("Nothing to configure");
+	}
+}
+
+my %main_options = (
+	'Display Files' => \&_display_files,
+	'Exit'          => \&_exit,
+	'Configure'     => \&_configure_ia,
+);
+
+my @option_order = (
+	'Display Files',
+	'Configure',
+	'Exit',
+);
+
+sub _get_main_option {
+	my $self = shift;
+	my $opt = $self->_get_menu_choice(
+		prompt  => "What do you want to do?",
+		choices => \@option_order,
+	);
+	return $main_options{$opt};
+}
 1;
