@@ -90,10 +90,10 @@ sub find_ia_files {
 		push @other, File::Find::Rule->name('*')
 			->in($meta_paths{local_share});
 	}
-	%named = map { $_ => $named{$_} } grep { $named{$_} } (keys %named);
-	@other = grep { $_ } @other;
+	%named = map { $_ => path($named{$_}) } grep { $named{$_} } (keys %named);
+	@other = map { path($_) } grep { $_ } @other;
 	my %n = map { $_ => 1 } grep { $_ } (@other, values %named);
-	@all = keys %n;
+	@all = map { path($_) } keys %n;
 	return (
 		named => \%named,
 		all   => \@all,
