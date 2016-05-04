@@ -6,7 +6,10 @@ BEGIN {
 
 	our @ISA = qw(Exporter);
 
-	our @EXPORT_OK = qw(find_ia_files is_cheat_sheet);
+	our %EXPORT_TAGS = (
+		predicate => [qw(is_cheat_sheet is_spice is_goodie)],
+	);
+	our @EXPORT_OK = (qw(find_ia_files), map { @$_ } values %EXPORT_TAGS);
 }
 
 use Path::Tiny;
@@ -47,6 +50,16 @@ sub repo_paths {
 sub is_cheat_sheet {
 	my $ia = shift;
 	return $ia->{id} =~ /_cheat_sheet$/;
+}
+
+sub is_goodie {
+	my $ia = shift;
+	return $ia->{repo} eq 'goodies';
+}
+
+sub is_spice {
+	my $ia = shift;
+	return $ia->{repo} eq 'spice';
 }
 
 # Find the file for a cheat sheet given the metadata.
