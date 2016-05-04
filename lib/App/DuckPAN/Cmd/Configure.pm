@@ -197,7 +197,7 @@ sub _configure_templates {
 		return;
 	}
 	my %template_map = map { $_->label => $_ } @templates;
-	my @labels = keys %template_map;
+	my @labels = sort keys %template_map;
 	my $to_configure = $self->_get_menu_choice(
 		prompt => 'Which template to configure?',
 		choices => \@labels,
