@@ -188,15 +188,40 @@ sub _configure_ia {
 	}
 }
 
+sub _configure_templates {
+	my $self = shift;
+	my $ia = $self->ia;
+	my @templates = $ia->get_available_templates();
+	unless (@templates) {
+		$self->app->emit_info('No templates available');
+		return;
+	}
+	my %template_map = map { $_->label => $_ } @templates;
+	my @labels = keys %template_map;
+	my $to_configure = $self->_get_menu_choice(
+		prompt => 'Which template to configure?',
+		choices => \@labels,
+	);
+	my $template = $template_map{$to_configure};
+	$template->configure(
+		app => $self->app,
+		ia  => $self->ia->ia,
+	);
+	$self->ia->refresh();
+	return;
+}
+
 my %main_options = (
 	'Display Files' => \&_display_files,
 	'Exit'          => \&_exit,
 	'Configure'     => \&_configure_ia,
+	'Configure Templates' => \&_configure_templates,
 );
 
 my @option_order = (
 	'Display Files',
 	'Configure',
+	'Configure Templates',
 	'Exit',
 );
 
