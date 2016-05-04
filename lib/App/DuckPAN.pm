@@ -156,10 +156,11 @@ sub _build_ia_types {
 	my $ddg_path = path('lib', 'DDG');
 	my $t_dir = path('t');
 	return [{
-			name      => 'Goodie',
-			dir       => $ddg_path->child('Goodie'),
-			supported => 1,
-			templates => {
+			name          => 'Goodie',
+			dir           => $ddg_path->child('Goodie'),
+			supported     => 1,
+			path_basename => 'zeroclickinfo-goodies',
+			templates     => {
 				code => {
 					in  => path('template', 'lib', 'DDG', 'Goodie', 'Example.pm'),
 					out => $ddg_path->child('Goodie')
@@ -171,10 +172,11 @@ sub _build_ia_types {
 			},
 		},
 		{
-			name      => 'Spice',
-			dir       => $ddg_path->child('Spice'),
-			supported => 1,
-			templates => {
+			name          => 'Spice',
+			dir           => $ddg_path->child('Spice'),
+			supported     => 1,
+			path_basename => 'zeroclickinfo-spice',
+			templates     => {
 				code => {
 					in  => path('template', 'lib', 'DDG', 'Spice', 'Example.pm'),
 					out => $ddg_path->child('Spice')
@@ -194,14 +196,16 @@ sub _build_ia_types {
 			},
 		},
 		{
-			name      => 'Fathead',
-			dir       => $ddg_path->child('Fathead'),
-			supported => 0
+			name          => 'Fathead',
+			dir           => $ddg_path->child('Fathead'),
+			supported     => 0,
+			path_basename => 'zeroclickinfo-fathead',
 		},
 		{
-			name      => 'Longtail',
-			dir       => $ddg_path->child('Longtail'),
-			supported => 0
+			name          => 'Longtail',
+			dir           => $ddg_path->child('Longtail'),
+			supported     => 0,
+			path_basename => 'zeroclickinfo-longtail',
 		},
 	];
 }
@@ -624,6 +628,51 @@ sub empty_cache {
 	$self->emit_info("Emptying DuckPAN cache...");
 	$cache->remove_tree({keep_root => 1});
 	$self->emit_info("DuckPAN cache emptied");
+}
+
+has repository => (
+	is  => 'rwp',
+	doc => 'Instant Answer repository from which DuckPAN was run.',
+	trigger => \&_check_repository,
+);
+
+sub _get_repository_config {
+	my ($self, $by, $lookup, $single) = @_;
+	$single //= 0;
+	my @repos = grep { $_->{$by} eq $lookup } @{$self->ia_types};
+	$single ? (@repos > 1 ? undef : $repos[0]) : @repos;
+}
+
+sub _check_repository {
+	my ($self, $repo) = @_;
+	my $path_basename = $repo->{path_basename};
+	$self->emit_and_exit(-1,
+		"'$path_basename' is currently not supported by DuckPAN."
+	) unless $repo->{supported};
+}
+
+# Ensure further commands are run from the 'root' of the Instant
+# Answer repository.
+sub initialize_working_directory {
+	my $self = shift;
+	my $check_path = Path::Tiny::cwd;
+	while (!$check_path->is_rootdir()) {
+		if (my $repo = $self->_get_repository_config(
+				path_basename => $check_path->basename, 1
+			)) {
+			$self->_set_repository($repo);
+			chdir $check_path->stringify;
+			last;
+		}
+	}
+	continue {
+		$check_path = $check_path->parent;
+	}
+	unless ($self->repository) {
+		$self->emit_and_exit(-1,
+			'Must be run from within an Instant Answer repository'
+		);
+	}
 }
 
 sub BUILD {
