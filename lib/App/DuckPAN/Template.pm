@@ -35,7 +35,9 @@ has output_file => (
 	is       => 'ro',
 	required => 1,
 	doc      => 'Path of the output file for the template. ' .
-	            'This string is rendered through Text::Xslate to get the final path.',
+	            'This string is rendered through Text::Xslate to get the final path. ' .
+	            'If a CODE reference is provided, then it is used to generate the output ' .
+	            'file - it is passed the same arguments as XSlate would receive.',
 );
 
 has output_directory => (
@@ -53,12 +55,35 @@ has _template_dir_top => (
 	init_arg => 'template_directory',
 );
 
-has _template_subdir => (
-	is       => 'ro',
+has allow => (
+	is => 'rwp',
 	required => 1,
-	doc      => 'Name of directory containing templates specific to this type.',
-	init_arg => 'template_subdir',
+	doc => 'CODE reference that indicates whether a particular ' .
+					'Instant Answer is supported by the template.',
+	trigger => \&_normalize_allow_to_sub,
 );
+
+sub _normalize_allow_to_sub {
+	my ($self, $allow) = @_;
+	if (ref $allow eq 'CODE') {
+		return $allow;
+	}
+	elsif (ref $allow eq 'ARRAY') {
+		$self->_set_allow(sub {
+			my $vars = shift;
+			return 1 if grep { $_->($vars) } @$allow;
+			return 0;
+		});
+	}
+	else {
+		croak("Cannot use @{[ref $allow]} as a predicate");
+	}
+}
+
+sub supports {
+	my ($self, $what) = @_;
+	return $self->allow->($what);
+}
 
 sub _build_output_directory {
 	my ($self) = @_;
@@ -72,6 +97,23 @@ sub _build_output_directory {
 	return $out_dir;
 }
 
+has _configure => (
+	is => 'ro',
+	default => sub { sub { {} } },
+	init_arg => 'configure',
+);
+
+sub configure {
+	my ($self, %options) = @_;
+	my $additional = $self->_configure->(%options);
+	my $vars = {
+		ia   => $options{ia},
+		repo => $options{app}->repository,
+		%$additional,
+	};
+	$self->generate($options{app}, $vars);
+}
+
 sub indent {
 	my $prefix = shift;
 	$prefix = ' ' x $prefix if $prefix =~ /^\d+$/;
@@ -83,7 +125,7 @@ sub indent {
 
 # Create the output file from the input file
 sub generate {
-	my ($self, $vars) = @_;
+	my ($self, $app, $vars) = @_;
 
 	# Increased verbosity to help while writing templates
 	my $tx = Text::Xslate->new(
@@ -95,11 +137,13 @@ sub generate {
 		},
 	);
 
-	my $input_file = path($self->_template_subdir, $self->input_file);
+	my $input_file = ref $self->input_file eq 'CODE'
+		? $self->input_file->($vars)
+		: path($tx->render_string($self->input_file, $vars));
 
-	# The output file path is a Text::Xslate template, so we generate the
-	# actual path here
-	my $output_file = path($tx->render_string($self->output_file, $vars));
+	my $output_file = ref $self->output_file eq 'CODE'
+		? $self->output_file->($vars)
+		: path($tx->render_string($self->output_file, $vars));
 
 	croak("Template output file $output_file already exists") and return if $output_file->exists;
 

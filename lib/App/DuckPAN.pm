@@ -159,7 +159,9 @@ sub _build_ia_types {
 			name          => 'Goodie',
 			dir           => $ddg_path->child('Goodie'),
 			supported     => 1,
+			template_dir  => path('goodie'),
 			path_basename => 'zeroclickinfo-goodies',
+			share_name    => 'goodie',
 			repo          => 'goodies',
 			templates     => {
 				code => {
@@ -177,6 +179,8 @@ sub _build_ia_types {
 			dir           => $ddg_path->child('Spice'),
 			supported     => 1,
 			path_basename => 'zeroclickinfo-spice',
+			template_dir  => path('spice'),
+			share_name    => 'spice',
 			repo          => 'spice',
 			templates     => {
 				code => {
