@@ -25,9 +25,9 @@ has _template_dir => (
 
 my %templates = (
 	cheat_sheet => {
-		label => 'Cheat Sheet',
-		input_file => 'goodie/cheat_sheet.tx',
-		allow => \&is_cheat_sheet,
+		label       => 'Cheat Sheet',
+		input_file  => 'goodie/cheat_sheet.tx',
+		allow       => \&is_cheat_sheet,
 		output_file => sub {
 			my $vars = shift;
 			my $fname = $vars->{ia}{id} =~ s/_cheat_sheet$//r;
@@ -38,16 +38,41 @@ my %templates = (
 				. $fname;
 		}
 	},
-	js => {
-		label => 'JavaScript',
-		input_file => '<:$repo.template_dir:>/js.tx',
-		allow => [\&is_spice, \&is_goodie],
-		output_file => 'share/<:$repo.share_name:>/<:$ia.id:>/js.tx',
-	},
 	pm => {
-		label => 'Perl Module',
-		input_file => '<:$repo.template_dir:>/perl_main.tx',
-		output_file => '<:$paths.back_end_module:>',
+		label       => 'Perl Module',
+		allow       => [\&is_goodie, \&is_spice],
+		input_file  => '<:$repo.template_dir:>/perl_main.tx',
+		output_file => 'lib/<:$package_separated:>.pm',
+	},
+	min_pm => {
+		label       => 'Minimal Perl Module',
+		allow       => \&is_goodie,
+		input_file  => '<:$repo.template_dir:>/perl_main_basic.tx',
+		output_file => 'lib/<:$package_separated:>.pm',
+	},
+	test => {
+		label       => 'Perl Module Test',
+		allow       => [\&is_goodie, \&is_spice],
+		input_file  => '<:$repo.template_dir:>/test.tx',
+		output_file => 't/<:$package_base_separated:>.t',
+	},
+	js => {
+		label       => 'JavaScript',
+		allow       => [\&is_goodie, \&is_goodie],
+		input_file  => '<:$repo.template_dir:>/js.tx',
+		output_file => 'share/<:$repo.share_name:>/<:$ia.id:>/<:$ia.id:>.js',
+	},
+	css => {
+		label       => 'CSS',
+		allow       => [\&is_goodie, \&is_spice],
+		input_file  => '<:$repo.template_dir:>/css.tx',
+		output_file => 'share/<:$repo.share_name:>/<:$ia.id:>/<:$ia.id:>.css',
+	},
+	handlebars => {
+		label       => 'Handlebars',
+		allow       => [\&is_goodie, \&is_spice],
+		input_file  => '<:$repo.template_dir:>/handlebars.tx',
+		output_file => 'share/<:$repo.share_name:>/<:$ia.id:>/<:$ia.id:>.handlebars',
 	},
 );
 

@@ -1,34 +1,6 @@
 ---
 # Template definitions for Spice IAs.
 
-# Each template represents one input and one output file.
-templates:
-    pm:
-        label:  Perl Module
-        input:  perl_main.tx
-        output: lib/<:$ia_lib_path:>.pm
-
-    test:
-        label:  Perl Module Test
-        input:  test.tx
-        output: t/<:$ia_package_base_path:>.t
-
-    js:
-        label:  Javascript
-        input:  js.tx
-        output: <:$ia_share_path:>/<:$ia.id:>.js
-
-    css:
-        label:  CSS
-        input:  css.tx
-        output: <:$ia_share_path:>/<:$ia.id:>.css
-
-    handlebars:
-        label:  Handlebars
-        input:  handlebars.tx
-        output: <:$ia_share_path:>/<:$ia.id:>.handlebars
-
-
 # A template set is a collection of templates used to generate all files of a
 # sub-type of an Instant Answer type. Each set can have some 'required'
 # templates (which are always applied) and some 'optional' templates (which are

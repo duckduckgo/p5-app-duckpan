@@ -106,9 +106,13 @@ has _configure => (
 sub configure {
 	my ($self, %options) = @_;
 	my $additional = $self->_configure->(%options);
+	my $separated = $options{ia}->{perl_module} =~ s{::}{/}gr;
+	my $base_separated = $separated =~ s{^DDG/[^/]+/}{}r;
 	my $vars = {
-		ia   => $options{ia},
-		repo => $options{app}->repository,
+		ia                     => $options{ia},
+		repo                   => $options{app}->repository,
+		package_separated      => $separated,
+		package_base_separated => $base_separated,
 		%$additional,
 	};
 	$self->generate($options{app}, $vars);
