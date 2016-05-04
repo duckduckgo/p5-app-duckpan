@@ -6,6 +6,7 @@ use Filesys::Notify::Simple;
 
 use App::DuckPAN::TemplateDefinitions;
 use Try::Tiny;
+use Carp;
 
 use strict;
 
@@ -21,7 +22,7 @@ sub run_restarter {
 
 	# will keep (re)starting the server until the app exits
 	while(1){
-	    defined(my $app = fork) or die 'Failed to fork application';
+	    defined(my $app = fork) or croak('Failed to fork application');
 	    unless($app){ # app kid
 	        $self->_run_app($args);
 	        exit 0;
@@ -33,7 +34,7 @@ sub run_restarter {
 	    unless($fmon){ # file monitor kid
 	        unless(defined $fmon){
 	            kill SIGTERM => $app;
-	            die 'Failed to fork file monitor';
+	            croak('Failed to fork file monitor');
 	        }
 	        $self->_monitor_directories;
 	        exit 0;
@@ -46,7 +47,7 @@ sub run_restarter {
 	    if($pid == $fmon){
 	        # if we can't kill the app, let's not start another
 	        unless(kill SIGTERM => $app){
-	            die "Failed to kill the application (pid: $app). Check manually";
+	            croak("Failed to kill the application (pid: $app). Check manually");
 	        }
 	        # wait for it, otherwise the next whie loop will get it
 	        waitpid($app, 0);
@@ -55,7 +56,7 @@ sub run_restarter {
 	        kill SIGTERM => $fmon;
 	        exit;
 	    }
-	    else{ die "Unknown kid $pid reaped!\n"; } # shouldn't happen
+	    else{ croak("Unknown kid $pid reaped!\n"); } # shouldn't happen
 	}
 }
 
@@ -93,7 +94,7 @@ sub _get_directories_to_monitor {
 	        }
 	    }
 	    else {
-	        die $_;
+	        croak($_);
 	    }
 	};
 
