@@ -612,13 +612,7 @@ sub checking_dukgo_user {
 
 sub get_ia_type {
 	my ($self) = @_;
-
-	my $ia_type = first { $_->{dir}->is_dir } @{$self->ia_types};
-
-	$self->emit_and_exit(-1, 'Must be run from the root of a checked-out Instant Answer repository.') unless ($ia_type);
-	$self->emit_and_exit(-1, "Sorry, DuckPAN does not support " . $ia_type->{name} . " yet!") if $ia_type->{supported} == 0;
-
-	return $ia_type;
+	return $self->repository;
 }
 
 sub empty_cache {
