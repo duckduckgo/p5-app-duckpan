@@ -7,6 +7,8 @@ with qw( App::DuckPAN::Cmd );
 use MooX::Options protect_argv => 0;
 use Pod::Usage qw(pod2usage);
 
+sub initialize { return };
+
 sub run {
 	my ($self, $short_output) = @_;
 

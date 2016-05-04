@@ -9,10 +9,16 @@ has app => (
 	is => 'rw',
 );
 
+sub initialize {
+	my $self = shift;
+	$self->app->initialize_working_directory();
+}
+
 sub execute {
 	my ( $self, $args, $chain ) = @_;
 	my $app = shift @{$chain};
 	$self->app($app);
+	$self->initialize();
 	$self->run(@{$args});
 }
 
