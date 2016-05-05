@@ -9,9 +9,16 @@ use MooX::Options;
 with qw( App::DuckPAN::Cmd App::DuckPAN::InstantAnswer::Cmd );
 
 option interactive => (
-	is      => 'ro',
+	is      => 'rwp',
 	short   => 'i',
 	doc     => 'prompt before every removal',
+	default => 0,
+);
+
+option 'assume_yes' => (
+	is      => 'ro',
+	short   => 'y|yes',
+	doc     => 'assume "yes" as answer to all prompts and run non-interactively',
 	default => 0,
 );
 
@@ -21,12 +28,17 @@ sub run {
 	my $ia_cfg = App::DuckPAN::InstantAnswer::Config->new(ia => $ia);
 	my %files = %{$ia_cfg->files()};
 	my @files = @{$files{all}};
+	my $default_yn;
+	if ($self->assume_yes) {
+		$self->_set_interactive(0);
+		$default_yn = 1;
+	}
 	$self->app->emit_and_exit(0, 'Nothing to do') unless @files;
 	$self->app->emit_info(
 		"This will remove the following files:\n" .
 		join "\n", @files
 	);
-	if ($self->app->ask_yn('Continue?')) {
+	if ($default_yn // $self->app->ask_yn('Continue?')) {
 		foreach my $file (@files) {
 			if ($self->interactive) {
 				$file->remove()
