@@ -23,11 +23,30 @@ has _template_dir => (
     doc => 'Path to directory containing all template files.',
 );
 
+my @cheat_sheet_templates = (
+	'code', 'keyboard', 'language', 'link', 'reference', 'terminal',
+);
+
+sub _get_config_cheat_sheet {
+	my %options = @_;
+	my $ia = $options{ia};
+	my $app = $options{app};
+	my $name = $ia->{name} =~ s/\s*cheat\s*sheet\s*$//ri;
+	my $cheat_sheet_template = $app->get_reply(
+		"Template type", choices => \@cheat_sheet_templates,
+	);
+	return {
+		ia_name_normalized => $name,
+		template_type      => $cheat_sheet_template,
+	};
+}
+
 my %templates = (
 	cheat_sheet => {
 		label       => 'Cheat Sheet',
 		input_file  => 'goodie/cheat_sheet.tx',
 		allow       => \&is_cheat_sheet,
+		configure   => \&_get_config_cheat_sheet,
 		output_file => sub {
 			my $vars = shift;
 			my $fname = $vars->{ia}{id} =~ s/_cheat_sheet$//r;
