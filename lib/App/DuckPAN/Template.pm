@@ -36,8 +36,8 @@ has output_file => (
 	required => 1,
 	doc      => 'Path of the output file for the template. ' .
 	            'This string is rendered through Text::Xslate to get the final path. ' .
-	            'If a CODE reference is provided, then it is used to generate the output ' .
-	            'file - it is passed the same arguments as XSlate would receive.',
+	            'If a CODE reference is provided, then it is used to generate the template ' .
+	            'string for use with XSlate; it is passed the same arguments as XSlate would receive.',
 );
 
 has output_directory => (
@@ -142,11 +142,11 @@ sub generate {
 	);
 
 	my $input_file = ref $self->input_file eq 'CODE'
-		? $self->input_file->($vars)
+		? path($tx->render_string($self->input_file->($vars), $vars))
 		: path($tx->render_string($self->input_file, $vars));
 
 	my $output_file = ref $self->output_file eq 'CODE'
-		? $self->output_file->($vars)
+		? path($tx->render_string($self->output_file->($vars), $vars))
 		: path($tx->render_string($self->output_file, $vars));
 
 	croak("Template output file $output_file already exists") and return if $output_file->exists;
