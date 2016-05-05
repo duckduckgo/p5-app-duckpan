@@ -14,6 +14,7 @@ sub run {
 	my $ia_cfg = App::DuckPAN::InstantAnswer::Config->new(ia => $ia);
 	my %files = %{$ia_cfg->files()};
 	my @files = @{$files{all}};
+	$self->app->emit_and_exit(0, 'Nothing to do') unless @files;
 	$self->app->emit_info(
 		"This will remove the following files:\n" .
 		join "\n", @files
