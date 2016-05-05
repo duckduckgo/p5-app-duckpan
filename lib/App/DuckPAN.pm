@@ -80,7 +80,7 @@ option colors => (
 );
 
 option verbose => (
-	is      => 'ro',
+	is      => 'rw',
 	lazy    => 1,
 	short   => 'v|debug',
 	default => sub { 0 },

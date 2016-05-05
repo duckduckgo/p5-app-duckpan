@@ -2,7 +2,11 @@ package App::DuckPAN::Cmd::Server;
 # ABSTRACT: Starting up the web server to test instant answers
 
 use Moo;
-with qw( App::DuckPAN::Cmd App::DuckPAN::Restart );
+with qw(
+	App::DuckPAN::Cmd
+	App::DuckPAN::Restart
+	App::DuckPAN::Option::Tell
+);
 
 use MooX::Options protect_argv => 0;
 use Plack::Runner;

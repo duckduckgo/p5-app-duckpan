@@ -5,7 +5,7 @@ package App::DuckPAN::Cmd::New;
 # list of template-sets and files generated for them
 
 use Moo;
-with qw( App::DuckPAN::Cmd );
+with qw( App::DuckPAN::Cmd App::DuckPAN::Option::Tell );
 
 use MooX::Options protect_argv => 0;
 use Try::Tiny;
