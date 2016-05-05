@@ -99,11 +99,16 @@ sub find_ia_files {
 	} else {
 		# Back-end files
 		my $ddg_path = _path_from_package($ia->{perl_module});
+		my $back_end_base = $ia->{perl_module} =~ s/^DDG::[^:]+:://r;
+		my $back_end_separated = _path_from_package($back_end_base);
 		my $back_end_module = path('lib', "${ddg_path}.pm");
 		$back_end_module = undef unless $back_end_module->exists;
 		my $back_end_dir = path('lib', $ddg_path);
+		my $test_file = path('t', "$back_end_separated.t");
+		$test_file = undef unless $test_file->exists;
 		my @other_back_end = File::Find::Rule->name('*')->in($back_end_dir);
 		$named{back_end_module} = $back_end_module;
+		$named{test} = $test_file,
 		push @other, @other_back_end;
 		# Share files
 		push @other, File::Find::Rule->name('*')
