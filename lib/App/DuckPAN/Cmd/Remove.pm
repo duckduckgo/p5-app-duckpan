@@ -8,6 +8,13 @@ use MooX::Options;
 
 with qw( App::DuckPAN::Cmd App::DuckPAN::InstantAnswer::Cmd );
 
+option interactive => (
+	is      => 'ro',
+	short   => 'i',
+	doc     => 'prompt before every removal',
+	default => 0,
+);
+
 sub run {
 	my $self = shift;
 	my $ia = $self->_ask_ia_check();
@@ -21,7 +28,13 @@ sub run {
 	);
 	if ($self->app->ask_yn('Continue?')) {
 		foreach my $file (@files) {
-			$file->remove();
+			if ($self->interactive) {
+				$file->remove()
+					if $self->app->ask_yn("Remove file: '$file'?");
+			}
+			else {
+				$file->remove();
+			}
 		}
 	}
 }
