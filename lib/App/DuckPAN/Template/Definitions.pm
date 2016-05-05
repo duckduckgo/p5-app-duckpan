@@ -33,8 +33,8 @@ my %templates = (
 			my $fname = $vars->{ia}{id} =~ s/_cheat_sheet$//r;
 			$fname =~ s/_/-/g;
 			$fname .= '.json';
-			return 'share/goodie/cheat_sheets/json/' .
-				$vars->{template_type} eq 'language' ? 'language/' : ''
+			return 'share/<:$repo.share_name:>/cheat_sheets/json/' .
+				($vars->{template_type} eq 'language' ? 'language/' : '')
 				. $fname;
 		}
 	},
