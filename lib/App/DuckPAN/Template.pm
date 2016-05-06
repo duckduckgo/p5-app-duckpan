@@ -149,7 +149,7 @@ sub generate {
 		? path($tx->render_string($self->output_file->($vars), $vars))
 		: path($tx->render_string($self->output_file, $vars));
 
-	croak("Template output file $output_file already exists") and return if $output_file->exists;
+	carp("Template output file $output_file already exists") and return if $output_file->exists;
 
 	my $content = $tx->render($input_file, $vars);
 
