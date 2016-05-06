@@ -25,6 +25,7 @@ use Perl::Version;
 use Path::Tiny;
 use open qw/:std :utf8/;
 use App::DuckPAN::Cmd::Help;
+use DDG::Meta::Data;
 
 no warnings 'uninitialized';
 
@@ -424,6 +425,25 @@ sub phrase_to_camel {
 	$camel =~ s/\s+$//;
 
 	return $camel;
+}
+
+# Normalize an Instant Answer name to a standard form.
+# Returns undef if an IA matching the given name cannot be found.
+sub get_ia_by_name {
+	my ($self, $name) = @_;
+	my $ia;
+	if ($name =~ /^DDG::/) {
+		$ia = DDG::Meta::Data->get_ia(module => $name);
+		$ia = $ia->[0] if $ia;
+	}
+	else {
+		$ia = $name =~ /_/
+			? DDG::Meta::Data->get_ia(id => $name)
+			: DDG::Meta::Data->get_ia(id => $self->camel_to_underscore($name));
+	}
+	$self->emit_and_exit(1, "No Instant Answer found with name '$name'")
+		unless defined $ia;
+	return $ia;
 }
 
 sub check_requirements {

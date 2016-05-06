@@ -53,7 +53,9 @@ sub get_blocks_from_current_dir {
 	    } @args;
 	}
 	else {
-	    @args = map { $_ = "DDG::" . $type->{name} . "::$_" unless m,^lib(::|/)DDG,; $_; } @args;
+	    @args = map {
+				my $camel_name = $self->app->get_ia_by_name($_)->{perl_module};
+			} @args;
 	}
 	require lib;
 	lib->import('lib');
