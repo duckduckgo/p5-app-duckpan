@@ -1,4 +1,4 @@
-package App::DuckPAN::Cmd::Global;
+package App::DuckPAN::Option::Global;
 # ABSTRACT: Commands that can be run from anywhere.
 
 use Moo::Role;
