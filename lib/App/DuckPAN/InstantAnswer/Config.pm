@@ -6,6 +6,7 @@ use Moo;
 
 use App::DuckPAN::InstantAnswer::Util qw(find_ia_files is_cheat_sheet);
 use App::DuckPAN::Template::Definitions;
+use App::DuckPAN::Template::Set;
 
 use Data::Dumper;
 
@@ -22,6 +23,7 @@ has files => (
 );
 
 my $template_def = App::DuckPAN::Template::Definitions->new();
+my $template_sets = App::DuckPAN::Template::Set->new();
 
 sub _build_files {
 	my $self = shift;
@@ -38,6 +40,11 @@ sub for_display {
 sub get_available_templates {
 	my $self = shift;
 	return $template_def->lookup(sub { $_[0]->supports($_[1]) } => $self->ia);
+}
+
+sub get_available_template_sets {
+	my $self = shift;
+	return $template_sets->lookup(sub { $_[0]->supports($_[1]) } => $self->ia);
 }
 
 sub refresh {
