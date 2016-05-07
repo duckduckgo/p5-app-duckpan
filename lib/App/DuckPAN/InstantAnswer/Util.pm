@@ -10,11 +10,14 @@ BEGIN {
 		predicate => [qw(is_cheat_sheet is_spice
 											is_goodie is_full_goodie)],
 	);
-	our @EXPORT_OK = (qw(find_ia_files), map { @$_ } values %EXPORT_TAGS);
+	our @EXPORT_OK = (qw(find_ia_files get_ia), map { @$_ } values %EXPORT_TAGS);
 }
 
 use Path::Tiny;
 use File::Find::Rule;
+
+use DDG::Meta::Data;
+use App::DuckPAN::Lookup::Util;
 
 # Repo, but make sure there is no 's' on the end.
 sub _share_repo {
@@ -123,6 +126,12 @@ sub find_ia_files {
 		all   => \@all,
 		other => \@other,
 	);
+}
+
+my $ias = [values DDG::Meta::Data->by_id()];
+
+sub get_ia {
+	App::DuckPAN::Lookup::Util::lookup($ias, q(id), @_);
 }
 
 1;
