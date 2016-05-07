@@ -160,7 +160,7 @@ sub _build__templates {
     my %templ;
     while (my ($template, $config) = each %{$self->_template_definitions}) {
 			$templ{$template} = App::DuckPAN::Template->new(
-				name => $template,
+				id => $template,
 				template_directory => $self->_template_dir,
 				%$config,
 			);

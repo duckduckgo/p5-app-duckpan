@@ -13,10 +13,10 @@ use Carp;
 
 use namespace::clean;
 
-has name => (
+has id => (
 	is       => 'ro',
 	required => 1,
-	doc      => 'Name of the template',
+	doc      => 'Unique ID of the template',
 );
 
 has label => (

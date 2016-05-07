@@ -18,10 +18,10 @@ use Carp;
 
 use namespace::clean;
 
-has name => (
+has id => (
 	is       => 'ro',
 	required => 1,
-	doc      => 'Name of the template set',
+	doc      => 'Unique ID of the template set',
 );
 
 has description => (
