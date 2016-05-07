@@ -137,7 +137,7 @@ sub _configure_item {
 
 sub _configure_cheat_sheet {
 	my $self = shift;
-	my $ia = $self->ia->ia;
+	my $ia = $self->ia->meta;
 	my $cheat_file;
 	unless ($cheat_file = $self->ia->files->{named}{cheat_sheet}) {
 		$self->app->emit_info("Could not find an appropriate file to configure");
@@ -155,7 +155,7 @@ sub run {
 	my ($self, @args) = @_;
 	my $ia = $self->_ask_ia_check();
 	$self->app->emit_info('Configuring ' . $ia->{id});
-	$self->_set_ia(App::DuckPAN::InstantAnswer::Config->new(ia => $ia));
+	$self->_set_ia(App::DuckPAN::InstantAnswer::Config->new(meta => $ia));
 	$self->_run_configure();
 }
 
@@ -181,7 +181,7 @@ sub _display_files {
 
 sub _configure_ia {
 	my $self = shift;
-	if (is_cheat_sheet($self->ia->ia)) {
+	if (is_cheat_sheet($self->ia->meta)) {
 		$self->_configure_cheat_sheet();
 	} else {
 		$self->app->emit_info("Nothing to configure");
@@ -205,7 +205,7 @@ sub _configure_templates {
 	my $template = $template_map{$to_configure};
 	$template->configure(
 		app => $self->app,
-		ia  => $self->ia->ia,
+		ia  => $self->ia->meta,
 	);
 	$self->ia->refresh();
 	return;

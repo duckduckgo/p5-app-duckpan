@@ -25,7 +25,7 @@ option 'assume_yes' => (
 sub run {
 	my $self = shift;
 	my $ia = $self->_ask_ia_check();
-	my $ia_cfg = App::DuckPAN::InstantAnswer::Config->new(ia => $ia);
+	my $ia_cfg = App::DuckPAN::InstantAnswer::Config->new(meta => $ia);
 	my %files = %{$ia_cfg->files()};
 	my @files = @{$files{all}};
 	my $default_yn;

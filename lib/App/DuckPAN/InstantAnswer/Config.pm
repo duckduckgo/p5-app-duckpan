@@ -10,10 +10,10 @@ use App::DuckPAN::Template::Set;
 
 use Data::Dumper;
 
-has ia => (
+has meta => (
 	is       => 'ro',
-	doc      => 'Instant Answer being configured.',
 	required => 1,
+	doc      => 'Instant Answer Metadata',
 );
 
 has files => (
@@ -22,12 +22,17 @@ has files => (
 	lazy    => 1,
 );
 
+has repo => (
+	is  => 'ro',
+	doc => 'Instant Answer repository associated with the Instant Answer',
+);
+
 my $template_def = App::DuckPAN::Template::Definitions->new();
 my $template_sets = App::DuckPAN::Template::Set->new();
 
 sub _build_files {
 	my $self = shift;
-	my %files = find_ia_files($self->ia);
+	my %files = find_ia_files($self->meta);
 	return \%files;
 }
 
@@ -39,12 +44,12 @@ sub for_display {
 
 sub get_available_templates {
 	my $self = shift;
-	return $template_def->lookup(sub { $_[0]->supports($_[1]) } => $self->ia);
+	return $template_def->lookup(sub { $_[0]->supports($_[1]) } => $self->meta);
 }
 
 sub get_available_template_sets {
 	my $self = shift;
-	return $template_sets->lookup(sub { $_[0]->supports($_[1]) } => $self->ia);
+	return $template_sets->lookup(sub { $_[0]->supports($_[1]) } => $self->meta);
 }
 
 sub refresh {

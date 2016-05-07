@@ -47,7 +47,7 @@ sub run {
 
 	my $ia = $self->_ask_ia_check();
 	$self->_set_ia(
-		App::DuckPAN::InstantAnswer::Config->new(ia => $ia)
+		App::DuckPAN::InstantAnswer::Config->new(meta => $ia)
 	);
 	my @sets = $self->ia->get_available_template_sets();
 	my $set;
