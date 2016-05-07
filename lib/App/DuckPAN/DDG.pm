@@ -9,6 +9,9 @@ use Class::Load ':all';
 use Data::Printer return_value => 'dump';
 use List::Util qw (first);
 
+use App::DuckPAN::InstantAnswer::Util qw(get_ia);
+use App::DuckPAN::InstantAnswer::Config;
+
 sub get_dukgo_user_pass {
 	my ($self) = @_;
 	my $config = $self->app->perl->get_dzil_config;
@@ -38,25 +41,12 @@ sub get_blocks_from_current_dir {
 	$self->emit_and_exit(1, 'You need to have the DDG distribution installed', 'To get the installation command, please run: duckpan check')
 	  unless ($self->app->get_local_ddg_version);
 
-	my $type   = $self->app->get_ia_type();
-	my $finder = Module::Pluggable::Object->new(
-	    search_path => [$type->{dir}],
-	);
-	if (scalar @args == 0) {
-	    my @plugins = $finder->plugins;
-	    push @args, sort { $a cmp $b } @plugins;
-	    @args = map {
-	        $_ =~ s!/!::!g;
-	        my @parts = split('::', $_);
-	        shift @parts;
-	        join('::', @parts);
-	    } @args;
-	}
-	else {
-	    @args = map {
-				my $camel_name = $self->app->get_ia_by_name($_)->{perl_module};
-			} @args;
-	}
+	my $repo = $self->app->repository;
+	my @ias = @args
+		? map { $self->app->get_ia_by_name($_) } @args
+		: grep { $_->is_configured }
+				map { App::DuckPAN::InstantAnswer::Config->new(
+					meta => $_) } get_ia(repo => $repo->{repo});
 	require lib;
 	lib->import("@{[$repo->{lib}]}");
 	$self->app->emit_info("Loading Instant Answers...");
@@ -70,10 +60,9 @@ sub get_blocks_from_current_dir {
 
 	my (%blocks_plugins, @UC_TRIGGERS);
 	# This loop goes through each Goodie / Spice, and it tries to load it.
-	foreach my $class (@args) {
-	    # Let's try to load each Goodie / Spice module
-	    # and see if they load successfully.
-	    my ($load_success, $load_error_message) = try_load_class($class);
+	foreach my $ia (@ias) {
+			my $class = $ia->meta->{perl_module};
+			my ($load_success, $load_error_message) = try_load_class($class);
 
 	    # If they load successfully, $load_success would be a 1.
 	    # Otherwise, it would be a 0.

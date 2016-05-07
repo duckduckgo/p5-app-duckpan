@@ -30,6 +30,11 @@ has repo => (
 my $template_def = App::DuckPAN::Template::Definitions->new();
 my $template_sets = App::DuckPAN::Template::Set->new();
 
+sub is_configured {
+	my $self = shift;
+	return @{$self->files->{all}} ? 1 : 0;
+}
+
 sub _build_files {
 	my $self = shift;
 	my %files = find_ia_files($self->meta);
