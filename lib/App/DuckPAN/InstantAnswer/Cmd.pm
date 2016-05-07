@@ -39,7 +39,7 @@ sub _ask_ia_check {
 		}
 		$ia = $self->_ask_ia();
 	}
-	my $required_repo = $ia->{repo};
+	my $required_repo = $ia->meta->{repo};
 	unless ($required_repo eq $self->app->get_ia_type->{repo}) {
 		$self->app->emit_and_exit(-1,
 			"Wrong repository for $ia->{id}, expecting '$required_repo'");

@@ -24,6 +24,7 @@ use Perl::Version;
 use Path::Tiny;
 use open qw/:std :utf8/;
 use App::DuckPAN::Cmd::Help;
+use App::DuckPAN::InstantAnswer::Config;
 use DDG::Meta::Data;
 
 no warnings 'uninitialized';
@@ -423,7 +424,8 @@ sub get_ia_by_name {
 	}
 	$self->emit_and_exit(1, "No Instant Answer found with name '$name'")
 		unless defined $ia || $no_fail;
-	return $ia;
+	return App::DuckPAN::InstantAnswer::Config->new(meta => $ia) if $ia;
+	return undef;
 }
 
 sub check_requirements {
