@@ -153,10 +153,9 @@ has ia_types => (
 );
 
 sub _build_ia_types {
-	my $ddg_path = path('lib', 'DDG');
 	return [{
 			name          => 'Goodie',
-			dir           => $ddg_path->child('Goodie'),
+			lib           => path('lib'),
 			supported     => 1,
 			template_dir  => path('goodie'),
 			path_basename => 'zeroclickinfo-goodies',
@@ -165,7 +164,7 @@ sub _build_ia_types {
 		},
 		{
 			name          => 'Spice',
-			dir           => $ddg_path->child('Spice'),
+			lib           => path('lib'),
 			supported     => 1,
 			path_basename => 'zeroclickinfo-spice',
 			template_dir  => path('spice'),
@@ -174,14 +173,14 @@ sub _build_ia_types {
 		},
 		{
 			name          => 'Fathead',
-			dir           => $ddg_path->child('Fathead'),
+			lib           => path('lib'),
 			supported     => 0,
 			path_basename => 'zeroclickinfo-fathead',
 			repo          => 'fathead',
 		},
 		{
 			name          => 'Longtail',
-			dir           => $ddg_path->child('Longtail'),
+			lib           => path('lib'),
 			supported     => 0,
 			path_basename => 'zeroclickinfo-longtail',
 			repo          => 'longtail',

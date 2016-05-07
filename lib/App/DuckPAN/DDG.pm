@@ -58,7 +58,7 @@ sub get_blocks_from_current_dir {
 			} @args;
 	}
 	require lib;
-	lib->import('lib');
+	lib->import("@{[$repo->{lib}]}");
 	$self->app->emit_info("Loading Instant Answers...");
 
 	# This list contains all of the classes that loaded successfully.
