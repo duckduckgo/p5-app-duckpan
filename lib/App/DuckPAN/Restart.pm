@@ -4,7 +4,7 @@ package App::DuckPAN::Restart;
 use File::Find::Rule;
 use Filesys::Notify::Simple;
 
-use App::DuckPAN::TemplateDefinitions;
+use App::DuckPAN::Template::Definitions;
 use Try::Tiny;
 use Carp;
 
@@ -65,7 +65,7 @@ sub _get_directories_to_monitor {
 	my @output_dirs;
 
 	try {
-	    my $template_defs = App::DuckPAN::TemplateDefinitions->new;
+	    my $template_defs = App::DuckPAN::Template::Definitions->new;
 	    my @templates = $template_defs->get_templates;
 
 	    for my $template (@templates) {
