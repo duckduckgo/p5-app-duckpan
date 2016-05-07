@@ -154,7 +154,6 @@ has ia_types => (
 
 sub _build_ia_types {
 	my $ddg_path = path('lib', 'DDG');
-	my $t_dir = path('t');
 	return [{
 			name          => 'Goodie',
 			dir           => $ddg_path->child('Goodie'),
@@ -163,16 +162,6 @@ sub _build_ia_types {
 			path_basename => 'zeroclickinfo-goodies',
 			share_name    => 'goodie',
 			repo          => 'goodies',
-			templates     => {
-				code => {
-					in  => path('template', 'lib', 'DDG', 'Goodie', 'Example.pm'),
-					out => $ddg_path->child('Goodie')
-				},
-				test => {
-					in  => path('template', 't', 'Example.t'),
-					out => $t_dir
-				},
-			},
 		},
 		{
 			name          => 'Spice',
@@ -182,24 +171,6 @@ sub _build_ia_types {
 			template_dir  => path('spice'),
 			share_name    => 'spice',
 			repo          => 'spice',
-			templates     => {
-				code => {
-					in  => path('template', 'lib', 'DDG', 'Spice', 'Example.pm'),
-					out => $ddg_path->child('Spice')
-				},
-				test => {
-					in  => path('template', 't', 'Example.t'),
-					out => $t_dir
-				},
-				handlebars => {
-					in  => path('template', 'share', 'spice', 'example', 'example.handlebars'),
-					out => path('share',    'spice')
-				},
-				js => {
-					in  => path('template', 'share', 'spice', 'example', 'example.js'),
-					out => path('share',    'spice')
-				},
-			},
 		},
 		{
 			name          => 'Fathead',
