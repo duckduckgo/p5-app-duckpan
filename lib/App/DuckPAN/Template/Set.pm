@@ -12,7 +12,7 @@ my %default_template_sets = (
 	goodie_standard => {
 		description => 'Standard Goodie Instant Answer',
 		templates    => [
-			$template_defs->get_templates(
+			$template_defs->lookup(
 				id => 'pm', id => 'test',
 			),
 		],
@@ -20,7 +20,7 @@ my %default_template_sets = (
 	cheat_sheet => {
 		description => 'Cheat Sheet Instant Answer',
 		templates   => [
-			$template_defs->get_templates(id => 'cheat_sheet'),
+			$template_defs->lookup(id => 'cheat_sheet'),
 		],
 	},
 );

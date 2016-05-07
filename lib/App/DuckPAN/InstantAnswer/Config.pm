@@ -37,7 +37,7 @@ sub for_display {
 
 sub get_available_templates {
 	my $self = shift;
-	return $template_def->get_templates(allow => $self->ia);
+	return $template_def->lookup(sub { $_[0]->supports($_[1]) } => $self->ia);
 }
 
 sub refresh {

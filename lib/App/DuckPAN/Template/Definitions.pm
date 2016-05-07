@@ -10,6 +10,9 @@ use YAML::XS qw(LoadFile);
 use App::DuckPAN::Template;
 use App::DuckPAN::TemplateSet;
 use App::DuckPAN::InstantAnswer::Util qw(:predicate);
+use Carp;
+
+with qw( App::DuckPAN::Lookup );
 
 use namespace::clean;
 
@@ -85,7 +88,6 @@ sub _get_config_handler {
 	};
 }
 
-
 my %templates = (
 	cheat_sheet => {
 		label       => 'Cheat Sheet',
@@ -145,7 +147,7 @@ my %templates = (
 has _template_definitions => (
 	is => 'ro',
 	doc => 'HASH of template definitions to build.',
-	isa => sub { carp('Not a HASH ref') unless ref $_[0] eq 'HASH' },
+	isa => sub { croak('Not a HASH ref') unless ref $_[0] eq 'HASH' },
 	default => sub { \%templates },
 );
 
@@ -154,6 +156,13 @@ has _templates => (
     lazy    => 1,
     builder => 1,
 );
+
+sub _lookup {
+	my $self = shift;
+	return $self->_templates;
+}
+
+sub _lookup_id { 'id' }
 
 sub _build__templates {
     my $self = shift;
@@ -165,16 +174,8 @@ sub _build__templates {
 				%$config,
 			);
 		}
-		return \%templ;
-}
-
-sub get_templates {
-	my ($self, $by, $lookup) = @_;
-	my @templates = values %{$self->_templates};
-	if ($by eq 'allow') {
-		return grep { $_->supports($lookup) } @templates;
-	}
-	return grep { $_->$by eq $lookup } @templates;
+		my @templates = values %templ;
+		return \@templates;
 }
 
 1;
