@@ -8,11 +8,11 @@ use MooX::Options protect_argv => 0;
 use Pod::Usage qw(pod2usage);
 
 sub run {
-	my ($self, $short_output) = @_;
+	my ($self, $short_output, $no_exit) = @_;
 
-
-	pod2usage(-verbose => 2) unless $short_output;
-	pod2usage(-verbose => 1);
+	$no_exit &&= 'NOEXIT';
+	my $verbosity = $short_output ? 1 : 2;
+	pod2usage(-verbose => $verbosity, -exitval => $no_exit);
 }
 
 1;
