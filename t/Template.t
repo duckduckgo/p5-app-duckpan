@@ -6,21 +6,22 @@ use Test::Deep;
 use App::DuckPAN::Template;
 
 my $fake_goodie = {
-	id   => 'test_ia',
+	id   => 'fake_goodie',
 	repo => 'goodies',
 };
 
 my $fake_spice = {
-	id   => 'test_ia_spice',
+	id   => 'fake_spice',
 	repo => 'spice',
 };
 
 my $fake_cheat_sheet = {
-	id   => 'test_ia_cheat_sheet',
+	id   => 'fake_cheat_sheet',
 	repo => 'goodies',
 };
 
-my @fake_templates = (
+# Testing templates indexed by id.
+my %fake_templates = map { $_->{id} => $_ } (
 	$fake_goodie, $fake_spice, $fake_cheat_sheet,
 );
 
@@ -41,36 +42,37 @@ subtest new => sub {
 };
 
 subtest supports => sub {
-	subtest template_all => sub {
-		my $template_all = App::DuckPAN::Template->new(
-			%template_args,
-			allow => sub { 1 },
-		);
-		foreach (@fake_templates) {
-			cmp_deeply($template_all->supports($_), bool(1));
-		}
+	my $allow_test = sub {
+		my %options = @_;
+		my $allow_sub = $options{allow};
+		my @allows = @{$options{allows}};
+		my %should_allow = map { $_ => 0 } keys %fake_templates;
+		map { $should_allow{$_} = 1 } @allows;
+		return sub {
+			my $template = App::DuckPAN::Template->new(
+				%template_args,
+				allow => $allow_sub,
+			);
+			foreach (keys %should_allow) {
+				cmp_deeply($template->supports($fake_templates{$_}), bool($should_allow{$_}));
+			}
+		};
 	};
-	subtest template_spice => sub {
-		my $template_spice = App::DuckPAN::Template->new(
-			%template_args,
-			allow => sub { $_[0]->{repo} eq 'spice' },
-		);
-		cmp_deeply($template_spice->supports($fake_goodie), bool(0));
-		cmp_deeply($template_spice->supports($fake_cheat_sheet), bool(0));
-		cmp_deeply($template_spice->supports($fake_spice), bool(1));
-	};
-	subtest allow_multiple => sub {
-		my $template_multi = App::DuckPAN::Template->new(
-			%template_args,
-			allow => [
-				sub { $_[0]->{repo} eq 'spice' },
-				sub { $_[0]->{id} =~ /_cheat_sheet$/ },
-			],
-		);
-		cmp_deeply($template_multi->supports($fake_goodie), bool(0));
-		cmp_deeply($template_multi->supports($fake_cheat_sheet), bool(1));
-		cmp_deeply($template_multi->supports($fake_spice), bool(1));
-	};
+	subtest template_all => $allow_test->(
+		allow => sub { 1 },
+		allows => [qw(fake_goodie fake_spice fake_cheat_sheet)],
+	);
+	subtest template_spice => $allow_test->(
+		allow => sub { $_[0]->{repo} eq 'spice' },
+		allows => [qw(fake_spice)],
+	);
+	subtest allow_multiple => $allow_test->(
+		allow => [
+			sub { $_[0]->{repo} eq 'spice' },
+			sub { $_[0]->{id} =~ /_cheat_sheet$/ },
+		],
+		allows => [qw(fake_spice fake_cheat_sheet)],
+	);
 };
 
 done_testing;
