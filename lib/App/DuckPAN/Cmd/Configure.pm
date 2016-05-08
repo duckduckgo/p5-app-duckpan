@@ -30,18 +30,12 @@ sub _get_menu_choice {
 	unless (%options) {
 		return $self->app->get_reply($prompt);
 	}
-	if ($options{multi}) {
-		return $self->app->get_reply($prompt, %options);
-	}
 	my @choices = @{$options{choices}};
-	push @choices, 'Go Back' if $back;
-	my $response = $self->app->get_reply($prompt,
+	push @choices, ($options{hash}
+		? ('Go Back' => 'Go Back') : 'Go Back') if $back;
+	return $self->app->get_reply($prompt,
 		%options, choices => \@choices,
 	);
-	if ($response eq 'Go Back') {
-		$self->$back();
-	}
-	return $response;
 }
 
 sub _display_list {
@@ -193,13 +187,13 @@ sub _configure_templates {
 		$self->app->emit_info('No templates available');
 		return;
 	}
-	my %template_map = map { $_->label => $_ } @templates;
-	my @labels = sort keys %template_map;
-	my $to_configure = $self->_get_menu_choice(
+	my @template_map = map { $_->label => $_ }
+		sort { $a->label cmp $b->label } @templates;
+	my $template = $self->_get_menu_choice(
 		prompt => 'Which template to configure?',
-		choices => \@labels,
+		choices => \@template_map,
+		hash    => 1,
 	);
-	my $template = $template_map{$to_configure};
 	$template->configure(
 		app => $self->app,
 		ia  => $self->ia->meta,
