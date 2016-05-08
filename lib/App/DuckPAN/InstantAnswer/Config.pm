@@ -5,6 +5,7 @@ package App::DuckPAN::InstantAnswer::Config;
 use Moo;
 
 use App::DuckPAN::InstantAnswer::Util qw(find_ia_files is_cheat_sheet);
+use App::DuckPAN::InstantAnswer::Repo;
 use App::DuckPAN::Template::Definitions;
 use App::DuckPAN::Template::Set;
 
@@ -25,10 +26,19 @@ has files => (
 has repo => (
 	is  => 'ro',
 	doc => 'Instant Answer repository associated with the Instant Answer',
+	builder => 1,
+	lazy    => 1,
 );
 
 my $template_def = App::DuckPAN::Template::Definitions->new();
 my $template_sets = App::DuckPAN::Template::Set->new();
+my $repo_defs = App::DuckPAN::InstantAnswer::Repo->new();
+
+sub _build_repo {
+	my $self = shift;
+	my ($repo) = $repo_defs->lookup(repo => $self->meta->{repo});
+	return $repo;
+}
 
 sub is_configured {
 	my $self = shift;

@@ -49,7 +49,7 @@ sub _ask_ia_check {
 		$ia = $self->_ask_ia();
 	}
 	my $required_repo = $ia->meta->{repo};
-	unless ($required_repo eq $self->app->get_ia_type->{repo}) {
+	unless ($required_repo eq $self->app->repository->{repo}) {
 		my $message = "Wrong repository for $ia->{id}, expecting '$required_repo'";
 		if ($options{no_exit}) {
 			$self->app->emit_info($message);

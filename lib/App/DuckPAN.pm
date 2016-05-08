@@ -25,6 +25,7 @@ use Path::Tiny;
 use open qw/:std :utf8/;
 use App::DuckPAN::Cmd::Help;
 use App::DuckPAN::InstantAnswer::Config;
+use App::DuckPAN::InstantAnswer::Repo;
 use DDG::Meta::Data;
 
 no warnings 'uninitialized';
@@ -147,47 +148,6 @@ has term => (
 
 sub _build_term { Term::ReadLine->new('duckpan') }
 
-has ia_types => (
-	is => 'ro',
-	lazy => 1,
-	builder => '_build_ia_types',
-);
-
-sub _build_ia_types {
-	return [{
-			name          => 'Goodie',
-			lib           => path('lib'),
-			supported     => 1,
-			template_dir  => path('goodie'),
-			path_basename => 'zeroclickinfo-goodies',
-			share_name    => 'goodie',
-			repo          => 'goodies',
-		},
-		{
-			name          => 'Spice',
-			lib           => path('lib'),
-			supported     => 1,
-			path_basename => 'zeroclickinfo-spice',
-			template_dir  => path('spice'),
-			share_name    => 'spice',
-			repo          => 'spice',
-		},
-		{
-			name          => 'Fathead',
-			lib           => path('lib'),
-			supported     => 0,
-			path_basename => 'zeroclickinfo-fathead',
-			repo          => 'fathead',
-		},
-		{
-			name          => 'Longtail',
-			lib           => path('lib'),
-			supported     => 0,
-			path_basename => 'zeroclickinfo-longtail',
-			repo          => 'longtail',
-		},
-	];
-}
 
 # Wrapper around Term::UI->get_reply
 #
@@ -629,11 +589,6 @@ sub checking_dukgo_user {
 	return ( $response->code == 200 );
 }
 
-sub get_ia_type {
-	my ($self) = @_;
-	return $self->repository;
-}
-
 sub empty_cache {
 	my ($self) = @_;
 	# Clear cache so share files are written into cache
@@ -649,13 +604,6 @@ has repository => (
 	trigger => \&_check_repository,
 );
 
-sub _get_repository_config {
-	my ($self, $by, $lookup, $single) = @_;
-	$single //= 0;
-	my @repos = grep { $_->{$by} eq $lookup } @{$self->ia_types};
-	$single ? (@repos > 1 ? undef : $repos[0]) : @repos;
-}
-
 sub _check_repository {
 	my ($self, $repo) = @_;
 	my $path_basename = $repo->{path_basename};
@@ -670,8 +618,8 @@ sub initialize_working_directory {
 	my $self = shift;
 	my $check_path = Path::Tiny::cwd;
 	while (!$check_path->is_rootdir()) {
-		if (my $repo = $self->_get_repository_config(
-				path_basename => $check_path->basename, 1
+		if (my ($repo) = App::DuckPAN::InstantAnswer::Repo->lookup(
+				path_basename => $check_path->basename
 			)) {
 			$self->_set_repository($repo);
 			chdir $check_path->stringify;
