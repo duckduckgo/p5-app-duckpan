@@ -2,8 +2,6 @@ package App::DuckPAN::Cmd::Configure;
 # ABSTRACT: Configure an existing Instant Answer.
 
 use Moo;
-with qw( App::DuckPAN::Cmd );
-with qw( App::DuckPAN::InstantAnswer::Cmd );
 
 use MooX::Options protect_argv => 0;
 use Try::Tiny;
@@ -14,6 +12,10 @@ use JSON::MaybeXS qw(decode_json);
 use App::DuckPAN::InstantAnswer::Util qw(is_cheat_sheet);
 use App::DuckPAN::InstantAnswer::Config;
 
+with qw(
+	App::DuckPAN::Cmd
+	App::DuckPAN::InstantAnswer::Cmd
+);
 
 has _prev_menu => (
 	is => 'rwp',
