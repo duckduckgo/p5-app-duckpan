@@ -17,32 +17,18 @@ with qw( App::DuckPAN::Lookup );
 use namespace::clean;
 
 has _template_dir => (
-    is       => 'ro',
-    required => 1,
-    init_arg => 'template_directory',
-    default => sub {
-			path($INC{'App/DuckPAN.pm'} =~ s/\.pm$//r, 'template')
-    },
-    doc => 'Path to directory containing all template files.',
+	is       => 'ro',
+	required => 1,
+	init_arg => 'template_directory',
+	default => sub {
+		path($INC{'App/DuckPAN.pm'} =~ s/\.pm$//r, 'template')
+	},
+	doc => 'Path to directory containing all template files.',
 );
 
 my @cheat_sheet_templates = (
 	'code', 'keyboard', 'language', 'link', 'reference', 'terminal',
 );
-
-sub _get_config_cheat_sheet {
-	my %options = @_;
-	my $ia = $options{ia};
-	my $app = $options{app};
-	my $name = $ia->{name} =~ s/\s*cheat\s*sheet\s*$//ri;
-	my $cheat_sheet_template = $app->get_reply(
-		"Template type", choices => \@cheat_sheet_templates,
-	);
-	return {
-		ia_name_normalized => $name,
-		template_type      => $cheat_sheet_template,
-	};
-}
 
 # Allow user to choose a handler
 sub _get_config_handler {
@@ -78,13 +64,27 @@ sub _get_config_handler {
 	my %check = map { $_ => 1 } ('words', 'query_parts', 'query_raw_parts', 'matches');
 	my $var = $check{$handler} ? '@' : '$';
 	my $trigger = $handler eq 'matches'
-		? q{query => qr/trigger regex/}
-		: q{any => 'triggerword', 'trigger phrase'};
+	? q{query => qr/trigger regex/}
+	: q{any => 'triggerword', 'trigger phrase'};
 
 	return {
 		ia_handler     => $handler,
 		ia_handler_var => $var,
 		ia_trigger     => $trigger
+	};
+}
+
+sub _get_config_cheat_sheet {
+	my %options = @_;
+	my $ia = $options{ia};
+	my $app = $options{app};
+	my $name = $ia->{name} =~ s/\s*cheat\s*sheet\s*$//ri;
+	my $cheat_sheet_template = $app->get_reply(
+		"Template type", choices => \@cheat_sheet_templates,
+	);
+	return {
+		ia_name_normalized => $name,
+		template_type      => $cheat_sheet_template,
 	};
 }
 
@@ -100,8 +100,8 @@ my %templates = (
 			$fname =~ s/_/-/g;
 			$fname .= '.json';
 			return 'share/<:$repo.share_name:>/cheat_sheets/json/' .
-				($vars->{template_type} eq 'language' ? 'language/' : '')
-				. $fname;
+			($vars->{template_type} eq 'language' ? 'language/' : '')
+			. $fname;
 		}
 	},
 	pm => {
@@ -152,9 +152,9 @@ has _template_definitions => (
 );
 
 has _templates => (
-    is      => 'ro',
-    lazy    => 1,
-    builder => 1,
+	is      => 'ro',
+	lazy    => 1,
+	builder => 1,
 );
 
 sub _lookup {
@@ -165,17 +165,17 @@ sub _lookup {
 sub _lookup_id { 'id' }
 
 sub _build__templates {
-    my $self = shift;
-    my %templ;
-    while (my ($template, $config) = each %{$self->_template_definitions}) {
-			$templ{$template} = App::DuckPAN::Template->new(
-				id => $template,
-				template_directory => $self->_template_dir,
-				%$config,
-			);
-		}
-		my @templates = values %templ;
-		return \@templates;
+	my $self = shift;
+	my %templ;
+	while (my ($template, $config) = each %{$self->_template_definitions}) {
+		$templ{$template} = App::DuckPAN::Template->new(
+			id => $template,
+			template_directory => $self->_template_dir,
+			%$config,
+		);
+	}
+	my @templates = values %templ;
+	return \@templates;
 }
 
 1;
