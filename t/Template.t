@@ -6,13 +6,23 @@ use Test::Deep;
 use App::DuckPAN::Template;
 
 my $fake_goodie = {
-	id => 'test_ia',
+	id   => 'test_ia',
 	repo => 'goodies',
 };
+
 my $fake_spice = {
-	id => 'test_ia_spice',
+	id   => 'test_ia_spice',
 	repo => 'spice',
 };
+
+my $fake_cheat_sheet = {
+	id   => 'test_ia_cheat_sheet',
+	repo => 'goodies',
+};
+
+my @fake_templates = (
+	$fake_goodie, $fake_spice, $fake_cheat_sheet,
+);
 
 my %template_args = (
 	id                 => 'test_template',
@@ -36,8 +46,9 @@ subtest supports => sub {
 			%template_args,
 			allow => sub { 1 },
 		);
-		cmp_deeply($template_all->supports($fake_goodie), bool(1));
-		cmp_deeply($template_all->supports($fake_spice), bool(1));
+		foreach (@fake_templates) {
+			cmp_deeply($template_all->supports($_), bool(1));
+		}
 	};
 	subtest template_spice => sub {
 		my $template_spice = App::DuckPAN::Template->new(
@@ -45,7 +56,20 @@ subtest supports => sub {
 			allow => sub { $_[0]->{repo} eq 'spice' },
 		);
 		cmp_deeply($template_spice->supports($fake_goodie), bool(0));
+		cmp_deeply($template_spice->supports($fake_cheat_sheet), bool(0));
 		cmp_deeply($template_spice->supports($fake_spice), bool(1));
+	};
+	subtest allow_multiple => sub {
+		my $template_multi = App::DuckPAN::Template->new(
+			%template_args,
+			allow => [
+				sub { $_[0]->{repo} eq 'spice' },
+				sub { $_[0]->{id} =~ /_cheat_sheet$/ },
+			],
+		);
+		cmp_deeply($template_multi->supports($fake_goodie), bool(0));
+		cmp_deeply($template_multi->supports($fake_cheat_sheet), bool(1));
+		cmp_deeply($template_multi->supports($fake_spice), bool(1));
 	};
 };
 
