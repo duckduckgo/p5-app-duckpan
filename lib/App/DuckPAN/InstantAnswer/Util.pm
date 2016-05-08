@@ -15,6 +15,7 @@ BEGIN {
 
 use Path::Tiny;
 use File::Find::Rule;
+use List::MoreUtils qw(uniq);
 
 use DDG::Meta::Data;
 use App::DuckPAN::Lookup::Util;
@@ -86,6 +87,9 @@ sub _path_from_package {
 }
 
 # Find all *existing* files for an Instant Answer.
+# NOTE: We should handle more of this through the metadata, we
+# shouldn't have to try and guess where the files are (even
+# templates aren't enough).
 sub find_ia_files {
 	my $ia = shift;
 	# All files found.
@@ -94,6 +98,7 @@ sub find_ia_files {
 	my @other;
 	# 'Special' files.
 	my %named;
+	my %named_directories;
 	my %meta_paths = repo_paths($ia);
 	if (is_cheat_sheet($ia)) {
 		my ($cheat_file, @other_cheats) = find_cheat_sheet($ia);
@@ -108,19 +113,30 @@ sub find_ia_files {
 		$back_end_module = undef unless $back_end_module->exists;
 		my $back_end_dir = path('lib', $ddg_path);
 		my $test_file = path('t', "$back_end_separated.t");
+		my $test_dir  = path('t', $back_end_separated);
+		$test_dir = undef unless $test_dir->is_dir;
 		$test_file = undef unless $test_file->exists;
 		my @other_back_end = File::Find::Rule->name('*')->in($back_end_dir);
 		$named{back_end_module} = $back_end_module;
 		$named{test} = $test_file,
+		$named_directories{share} = $meta_paths{local_share};
+		$named_directories{test} = $test_dir;
 		push @other, @other_back_end;
 		# Share files
 		push @other, File::Find::Rule->name('*')
 			->in($meta_paths{local_share});
 	}
-	%named = map { $_ => path($named{$_}) } grep { $named{$_} } (keys %named);
+	my $check_file_hash = sub {
+		my %names = @_;
+		map { $_ => path($names{$_}) } grep { $names{$_} } (keys %names);
+	};
+	%named = $check_file_hash->(%named);
+	%named_directories = $check_file_hash->(%named_directories);
 	@other = map { path($_) } grep { $_ } @other;
-	my %n = map { $_ => 1 } grep { $_ } (@other, values %named);
-	@all = map { path($_) } keys %n;
+	@all = map { path($_) } uniq (
+		@other, values %named, values %named_directories
+	);
+	$named{directories} = \%named_directories;
 	return (
 		named => \%named,
 		all   => \@all,
