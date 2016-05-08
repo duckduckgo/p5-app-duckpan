@@ -3,6 +3,7 @@
 use strict;
 use Test::More;
 use Test::Deep;
+use Test::Exception;
 use App::DuckPAN::Template;
 
 my $fake_goodie = {
@@ -73,6 +74,16 @@ subtest supports => sub {
 		],
 		allows => [qw(fake_spice fake_cheat_sheet)],
 	);
+	subtest bad_allow_types => sub {
+		my @bad_types = (
+			{ 1 => 2 }, "foo", 5, qr/bar/,
+		);
+		foreach (@bad_types) {
+			throws_ok {
+				App::DuckPAN::Template->new(%template_args, allow => $_);
+			} qr/cannot use @{[ref $_]} as a predicate/i, "using $_ for allow";
+		}
+	};
 };
 
 done_testing;
