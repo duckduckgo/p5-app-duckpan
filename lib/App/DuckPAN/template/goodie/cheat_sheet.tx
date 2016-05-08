@@ -29,7 +29,7 @@
                 "trn": "Translation 1.1"
              :  }
              :  default {
-                 "val": "Value 1.1"
+                "val": "Value 1.1"
              :  }
              : }
             }
