@@ -6,6 +6,7 @@ with qw(
 	App::DuckPAN::Cmd
 	App::DuckPAN::Restart
 	App::DuckPAN::Option::Tell
+	App::DuckPAN::InstantAnswer::Cmd::Multi
 );
 
 use MooX::Options protect_argv => 0;
@@ -111,7 +112,7 @@ sub _run_app {
 
 	$self->app->check_requirements; # Ensure eveything is up do date, or exit.
 
-	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@$args)};
+	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@{$self->ias})};
 
 	$self->app->emit_debug("Hostname is: https://" . $self->hostname);
 	$self->app->emit_info("Checking asset cache...");

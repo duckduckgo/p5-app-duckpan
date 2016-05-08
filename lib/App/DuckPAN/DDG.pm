@@ -9,9 +9,6 @@ use Class::Load ':all';
 use Data::Printer return_value => 'dump';
 use List::Util qw (first);
 
-use App::DuckPAN::InstantAnswer::Util qw(get_ia);
-use App::DuckPAN::InstantAnswer::Config;
-
 sub get_dukgo_user_pass {
 	my ($self) = @_;
 	my $config = $self->app->perl->get_dzil_config;
@@ -36,17 +33,12 @@ sub show_failed_modules {
 }
 
 sub get_blocks_from_current_dir {
-	my ($self, @args) = @_;
+	my ($self, @ias) = @_;
 
 	$self->emit_and_exit(1, 'You need to have the DDG distribution installed', 'To get the installation command, please run: duckpan check')
 	  unless ($self->app->get_local_ddg_version);
 
 	my $repo = $self->app->repository;
-	my @ias = @args
-		? map { $self->app->get_ia_by_name($_) } @args
-		: grep { $_->is_configured }
-				map { App::DuckPAN::InstantAnswer::Config->new(
-					meta => $_) } get_ia(repo => $repo->{repo});
 	require lib;
 	lib->import("@{[$repo->{lib}]}");
 	$self->app->emit_info("Loading Instant Answers...");
@@ -112,10 +104,6 @@ sub get_blocks_from_current_dir {
 	        }
 	    }
 	}
-
-	# Since @args can contain modules that we don't want to trigger (since they didn't load in the first place),
-	# and @successfully_loaded does, we just use what's in @successfully_loaded.
-	@args = @successfully_loaded;
 
 	# Now let's tell the user why some of the modules failed.
 	$self->show_failed_modules(\%failed_to_load);
