@@ -40,14 +40,6 @@ has output_file => (
 	            'string for use with XSlate; it is passed the same arguments as XSlate would receive.',
 );
 
-has output_directory => (
-	is       => 'ro',
-	init_arg => undef,
-	lazy     => 1,
-	builder  => 1,
-	doc      => 'Directory known to contain all of the generated template output files and subdirectories',
-);
-
 has _template_dir_top => (
 	is	     => 'ro',
 	required => 1,
@@ -83,18 +75,6 @@ sub _normalize_allow_to_sub {
 sub supports {
 	my ($self, $what) = @_;
 	return $self->allow->($what);
-}
-
-sub _build_output_directory {
-	my ($self) = @_;
-	my $out_dir = path($self->output_file);
-
-	# Get the directory that is certain to be the closest ancestor of the
-	# output file i.e., keep removing directory parts from the right till the
-	# path does not contain any Text::Xslate syntax.
-	$out_dir = $out_dir->parent while $out_dir =~ /<:/;
-
-	return $out_dir;
 }
 
 has _configure => (
