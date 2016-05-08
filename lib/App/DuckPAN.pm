@@ -11,7 +11,7 @@ use File::Which;
 use Class::Load ':all';
 use HTTP::Request::Common qw( GET POST );
 use HTTP::Status;
-use List::Util qw( first max );
+use List::Util qw( first max pairkeys );
 use LWP::UserAgent;
 use LWP::Simple;
 use Parse::CPAN::Packages::Fast;
@@ -189,9 +189,30 @@ sub _build_ia_types {
 	];
 }
 
+# Wrapper around Term::UI->get_reply
+#
+# Additional features:
+#
+# If the C<hash> option is set to true, then C<choices> is
+# treated as an even-sized list of pairs (see L<List::Util::pairs>)
+# for which the keys are used as the displayed choices and the
+# values the results.
 sub get_reply {
 	my ( $self, $prompt, %params ) = @_;
-	$self->term->get_reply( prompt => $prompt, %params );
+	my $use_hash = delete $params{hash};
+	my @term_args = (%params, prompt => $prompt);
+	if ($use_hash and my $choices = $params{choices}) {
+		my %choices = @$choices;
+		my @choices = pairkeys @$choices;
+		push @term_args, (choices => \@choices);
+		if ($params{multi}) {
+			my @response = $self->term->get_reply( @term_args );
+			return map { $choices{$_} } @response;
+		}
+		my $response = $self->term->get_reply( @term_args );
+		return $choices{$response};
+	}
+	$self->term->get_reply( @term_args );
 }
 
 sub ask_yn {
