@@ -12,6 +12,11 @@ option id => (
 	doc    => 'ID of Instant Answer to configure',
 );
 
+has ia => (
+	is  => 'rwp',
+	doc => 'Instant Answer the command is running on',
+);
+
 sub _ask_ia {
 	my $self = shift;
 	my $ia;
@@ -25,9 +30,12 @@ sub _ask_ia {
 }
 
 sub _ask_ia_check {
-	my $self = shift;
+	my ($self, %options) = @_;
 	my $ia;
-	if ($self->id) {
+	if ($self->ia) {
+		return;
+	}
+	elsif ($self->id) {
 		$ia = $self->app->get_ia_by_name($self->id);
 	} else {
 		unless ($self->app->ask_yn(
@@ -35,15 +43,29 @@ sub _ask_ia_check {
 				default => 'y')
 		) {
 			$self->app->emit_and_exit(-1,
-				"Please create an Instant Answer page before running duckpan new");
+				"Please create an Instant Answer page before running duckpan new")
+			unless $options{no_exit};
 		}
 		$ia = $self->_ask_ia();
 	}
 	my $required_repo = $ia->meta->{repo};
 	unless ($required_repo eq $self->app->get_ia_type->{repo}) {
-		$self->app->emit_and_exit(-1,
-			"Wrong repository for $ia->{id}, expecting '$required_repo'");
+		my $message = "Wrong repository for $ia->{id}, expecting '$required_repo'";
+		if ($options{no_exit}) {
+			$self->app->emit_info($message);
+			$ia = undef;
+		}
+		else {
+			$self->app->emit_and_exit(-1, $message);
+		}
 	}
+	return $ia;
+}
+
+sub _initialize_ia {
+	my ($self, %options) = @_;
+	my $ia = $self->_ask_ia_check(%options);
+	$self->_set_ia($ia) if $ia;
 	return $ia;
 }
 

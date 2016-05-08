@@ -36,19 +36,12 @@ option template => (
 # Methods #
 ###########
 
-has ia => (
-	is => 'rwp',
-);
-
 my $set_defs = App::DuckPAN::Template::Set->new();
 
 sub run {
 	my ($self, @args) = @_;
 
-	my $ia = $self->_ask_ia_check();
-	$self->_set_ia(
-		App::DuckPAN::InstantAnswer::Config->new(meta => $ia)
-	);
+	$self->_initialize_ia(no_exit => 1);
 	my @sets = $self->ia->get_available_template_sets();
 	my $set;
 	if (my $template = $self->template) {
@@ -64,7 +57,7 @@ sub run {
 			choices => [sort keys %set_map],
 		)};
 	}
-	$set->generate( app => $self->app, ia => $ia );
+	$set->generate( app => $self->app, ia => $self->ia->meta );
 }
 
 1;

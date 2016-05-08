@@ -14,9 +14,6 @@ use JSON::MaybeXS qw(decode_json);
 use App::DuckPAN::InstantAnswer::Util qw(is_cheat_sheet);
 use App::DuckPAN::InstantAnswer::Config;
 
-has ia => (
-	is => 'rwp',
-);
 
 has _prev_menu => (
 	is => 'rwp',
@@ -153,9 +150,7 @@ sub _configure_cheat_sheet {
 
 sub run {
 	my ($self, @args) = @_;
-	my $ia = $self->_ask_ia_check();
-	$self->app->emit_info('Configuring ' . $ia->{id});
-	$self->_set_ia(App::DuckPAN::InstantAnswer::Config->new(meta => $ia));
+	$self->_initialize_ia(no_exit => 1);
 	$self->_run_configure();
 }
 
