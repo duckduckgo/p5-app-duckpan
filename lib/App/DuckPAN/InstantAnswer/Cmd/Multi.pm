@@ -5,6 +5,18 @@ package App::DuckPAN::InstantAnswer::Cmd::Multi;
 use App::DuckPAN::InstantAnswer::Util qw(get_ia);
 use App::DuckPAN::InstantAnswer::Config;
 
+# Grab Instant Answer from CLI arg, and make sure it is valid!
+sub _arg_to_ia {
+	my ($app, $arg) = @_;
+	my $repo = $app->repository->{repo};
+	my $ia = $app->get_ia_by_name($_);
+	my $ia_repo = $ia->repo->{repo};
+	unless ($repo eq $ia_repo) {
+		$app->emit_and_exit(-1, "Wrong repository for @{[$ia->meta->{id}]}, expecting '$ia_repo'");
+	}
+	return $ia;
+}
+
 use namespace::clean;
 
 use Moo::Role;
@@ -23,7 +35,7 @@ after initialize => sub {
 	my @args = @{$self->args};
 	my $repo = $self->app->repository;
 	my @ias = @args
-		? map { $self->app->get_ia_by_name($_) } @args
+		? map { _arg_to_ia($self->app, $_) } @args
 		: grep { $_->is_configured }
 				map { App::DuckPAN::InstantAnswer::Config->new(
 					meta => $_) } get_ia(repo => $repo->{repo});
