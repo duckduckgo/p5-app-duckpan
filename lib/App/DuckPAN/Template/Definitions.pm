@@ -26,53 +26,69 @@ has _template_dir => (
 	doc => 'Path to directory containing all template files.',
 );
 
+my @handlers = (
+	# Scalar-based
+	'remainder: (default) The query without the trigger words, spacing and case are preserved.' => 'remainder',
+	'query_raw: Like remainder but with trigger words intact' => 'query_raw',
+	'query: Full query normalized with a single space between terms' => 'query',
+	'query_lc: Like query but in lowercase' => 'query_lc',
+	'query_clean: Like query_lc but with non-alphanumeric characters removed' => 'query_clean',
+	'query_nowhitespace: All whitespace removed' => 'query_nowhitespace',
+	'query_nowhitespace_nodash: All whitespace and hyphens removed' => 'query_nowhitespace_nodash',
+	# Array-based
+	'matches: Returns an array of captured expression from a regular expression trigger' => 'matches',
+	'words: Like query_clean but returns an array of the terms split on whitespace' => 'words',
+	'query_parts: Like query but returns an array of the terms split on whitespace' => 'query_parts',
+	'query_raw_parts: Like query_parts but array contains original whitespace elements' => 'query_raw_parts',
+);
+
+my @get_config_handler = (
+	ia_handler => {
+		type => 'reply',
+		configure => {
+			prompt => 'Which handler would you like to use to process the query?',
+			choices => \@handlers,
+			hash    => 1,
+		},
+	},
+	ia_handler_var => {
+		configure => sub {
+			my %f = @_;
+			my $handler = $f{ia_handler};
+			my %check = map { $_ => 1 } ('words', 'query_parts', 'query_raw_parts', 'matches');
+			return $check{$handler} ? '@' : '$';
+		},
+	},
+	ia_trigger => {
+		configure => sub {
+			my %f = @_;
+			return $f{ia_handler} eq 'matches'
+				? q{query => qr/trigger regex/}
+				: q{any => 'triggerword', 'trigger phrase'};
+		},
+	},
+);
+
 my @cheat_sheet_templates = (
 	'code', 'keyboard', 'language', 'link', 'reference', 'terminal',
 );
 
-# Allow user to choose a handler
-sub _get_config_handler {
-	my %options = @_;
-	my $app = $options{app};
-
-	my @handlers = (
-		# Scalar-based
-		'remainder: (default) The query without the trigger words, spacing and case are preserved.',
-		'query_raw: Like remainder but with trigger words intact',
-		'query: Full query normalized with a single space between terms',
-		'query_lc: Like query but in lowercase',
-		'query_clean: Like query_lc but with non-alphanumeric characters removed',
-		'query_nowhitespace: All whitespace removed',
-		'query_nowhitespace_nodash: All whitespace and hyphens removed',
-		# Array-based
-		'matches: Returns an array of captured expression from a regular expression trigger',
-		'words: Like query_clean but returns an array of the terms split on whitespace',
-		'query_parts: Like query but returns an array of the terms split on whitespace',
-		'query_raw_parts: Like query_parts but array contains original whitespace elements'
-	);
-
-	my $res = $app->get_reply(
-		'Which handler would you like to use to process the query?',
-		choices => \@handlers,
-		default => $handlers[0]
-	);
-
-	unless($res =~ /^([^:]+)/){
-		$app->emit_and_exit(-1, "Failed to extract handler from response: $res");
-	}
-	my $handler = $1;
-	my %check = map { $_ => 1 } ('words', 'query_parts', 'query_raw_parts', 'matches');
-	my $var = $check{$handler} ? '@' : '$';
-	my $trigger = $handler eq 'matches'
-	? q{query => qr/trigger regex/}
-	: q{any => 'triggerword', 'trigger phrase'};
-
-	return {
-		ia_handler     => $handler,
-		ia_handler_var => $var,
-		ia_trigger     => $trigger
-	};
-}
+my @get_config_cheat_sheet = (
+	template_type => {
+		type => 'reply',
+		configure => {
+			prompt => 'Template type',
+			choices => \@cheat_sheet_templates,
+		},
+	},
+	ia_name_normalized => {
+		configure => sub {
+			my %vars = @_;
+			my $name = $vars{ia}->{name} =~ s/\s*cheat\s*sheet\s*$//ri;
+			return $name;
+		},
+	},
+);
 
 sub _get_config_cheat_sheet {
 	my %options = @_;
@@ -88,33 +104,35 @@ sub _get_config_cheat_sheet {
 	};
 }
 
+sub _get_cheat_sheet_output_file {
+	my $vars = shift;
+	my $fname = $vars->{ia}{id} =~ s/_cheat_sheet$//r;
+	$fname =~ s/_/-/g;
+	$fname .= '.json';
+	return 'share/<:$repo.share_name:>/cheat_sheets/json/' .
+	($vars->{template_type} eq 'language' ? 'language/' : '')
+	. $fname;
+}
+
 my %templates = (
 	cheat_sheet => {
 		label       => 'Cheat Sheet',
 		input_file  => 'goodie/cheat_sheet.tx',
 		allow       => \&is_cheat_sheet,
-		configure   => \&_get_config_cheat_sheet,
-		output_file => sub {
-			my $vars = shift;
-			my $fname = $vars->{ia}{id} =~ s/_cheat_sheet$//r;
-			$fname =~ s/_/-/g;
-			$fname .= '.json';
-			return 'share/<:$repo.share_name:>/cheat_sheets/json/' .
-			($vars->{template_type} eq 'language' ? 'language/' : '')
-			. $fname;
-		}
+		configure   => [@get_config_cheat_sheet],
+		output_file => \&_get_cheat_sheet_output_file,
 	},
 	pm => {
 		label       => 'Perl Module',
 		allow       => [\&is_full_goodie, \&is_spice],
-		configure   => \&_get_config_handler,
+		configure   => [@get_config_handler],
 		input_file  => '<:$repo.template_dir:>/perl_main.tx',
 		output_file => 'lib/<:$package_separated:>.pm',
 	},
 	min_pm => {
 		label       => 'Minimal Perl Module',
 		allow       => \&is_full_goodie,
-		configure   => \&_get_config_handler,
+		configure   => [@get_config_handler],
 		input_file  => '<:$repo.template_dir:>/perl_main_basic.tx',
 		output_file => 'lib/<:$package_separated:>.pm',
 	},

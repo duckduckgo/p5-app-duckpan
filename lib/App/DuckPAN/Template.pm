@@ -9,6 +9,7 @@ use Moo;
 use Try::Tiny;
 use Text::Xslate;
 use Path::Tiny qw(path);
+use List::Util qw(pairs);
 use Carp;
 
 use namespace::clean;
@@ -79,23 +80,39 @@ sub supports {
 
 has _configure => (
 	is => 'ro',
-	default => sub { sub { {} } },
+	default => sub { [] },
 	init_arg => 'configure',
 );
 
 sub configure {
 	my ($self, %options) = @_;
-	my $additional = $self->_configure->(%options);
 	my $separated = $options{ia}->{perl_module} =~ s{::}{/}gr;
 	my $base_separated = $separated =~ s{^DDG/[^/]+/}{}r;
-	my $vars = {
+	my %vars = (
 		ia                     => $options{ia},
 		repo                   => $options{app}->repository,
 		package_separated      => $separated,
 		package_base_separated => $base_separated,
-		%$additional,
-	};
-	$self->generate($options{app}, $vars);
+	);
+	my $app = $options{app};
+	my @configs = @{$self->_configure};
+	# Build the configured variables from the definitions.
+	foreach (pairs @configs) {
+		my ($output_var, $config) = @$_;
+		my $cfg  = $config->{configure};
+		my $val;
+		if (ref $cfg eq 'CODE') {
+			$val = $cfg->(%vars);
+		}
+		else {
+			my $type = $config->{type} // 'no_config';
+			if ($type eq 'reply') {
+				$val = $app->get_reply($cfg->{prompt}, %$cfg);
+			}
+		}
+		$vars{$output_var} = $val;
+	}
+	$self->generate($app, \%vars);
 }
 
 sub indent {
