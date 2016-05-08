@@ -1,24 +1,23 @@
 package App::DuckPAN::Restart;
 # ABSTRACT: Automatic restarting of application on file change
 
-use File::Find::Rule;
-use Filesys::Notify::Simple;
-
-use App::DuckPAN::Template::Definitions;
-use Try::Tiny;
 use Carp;
+use Filesys::Notify::Simple;
+use List::MoreUtils qw(uniq);
 
 use strict;
 
+use namespace::clean;
+
 use Moo::Role;
 
-requires '_run_app';
+requires qw(_run_app ias);
 
 sub run_restarter {
 	my ($self, $args) = @_;
 
-	# exit immediately if not in an IA directory
-	$self->app->get_ia_type;
+	# ensure working directory is always valid.
+	$self->app->initialize_working_directory();
 
 	# will keep (re)starting the server until the app exits
 	while(1){
@@ -36,7 +35,7 @@ sub run_restarter {
 	            kill SIGTERM => $app;
 	            croak('Failed to fork file monitor');
 	        }
-	        $self->_monitor_directories;
+	        $self->_monitor_files;
 	        exit 0;
 	    }
 
@@ -60,72 +59,25 @@ sub run_restarter {
 	}
 }
 
-sub _get_directories_to_monitor {
+# All files associated with any of the configured Instant Answers.
+sub _get_files_to_monitor {
 	my $self = shift;
-	my @output_dirs;
-
-	try {
-	    my $template_defs = App::DuckPAN::Template::Definitions->new;
-	    my @templates = $template_defs->get_templates;
-
-	    for my $template (@templates) {
-	        push @output_dirs, $template->output_directory
-	            unless $template->name =~ /test/;
-	    }
+	my @monitor_files;
+	my @ias = @{$self->ias};
+	foreach my $ia (@ias) {
+		my @files = @{$ia->files->{all}};
+		push @monitor_files, @files;
 	}
-	catch {
-	    if (/template definitions/i) {
-	        # There was a problem loading the template definitions file. This
-	        # can happen if the instant answer repository is of an older
-	        # version and does not have the templates.yml file.
-	        #
-	        # In this case we use the older method of determining directories
-	        # to monitor. This support can be removed sometime in the future.
-	        # Note: Cheatsheet directories will not be monitored with this
-	        # method.
-
-	        $self->app->emit_debug("Instant Answers repository does not have a " .
-	            "template definitions file. Some directories may not be monitored " .
-	            "for changes.");
-
-	        while(my ($type, $io) = each %{$self->app->get_ia_type()->{templates}}){
-	            next if $type eq 'test'; # skip the test dir?
-	            push @output_dirs, $io->{out};
-	        }
-	    }
-	    else {
-	        croak($_);
-	    }
-	};
-
-	my %distinct_dirs;
-
-	# add all subdirectories
-	for my $dir (@output_dirs) {
-	    ++$distinct_dirs{$_} for File::Find::Rule->directory()->in($dir);
-	}
-
-	++$distinct_dirs{$self->app->get_ia_type()->{dir}};
-
-	return [ keys %distinct_dirs ];
+	return uniq @monitor_files;
 }
 
-# Monitors development directories for file changes.  Tries to get the
-# list of directories in a general way.  This subroutine
-# blocks, so when it returns we know there's been a change
-sub _monitor_directories {
+sub _monitor_files {
 	my $self = shift;
-
-	# Find all of the directories that neeed to monitored
-	# Note: Could potentially be functionality added to App::DuckPAN
-	# which would return the directories involved in an IA
-	# (see https://github.com/duckduckgo/p5-app-duckpan/issues/200)
-	my $dirs = $self->_get_directories_to_monitor;
-
+	my @files = $self->_get_files_to_monitor();
 	FSMON: while(1){
 	    # Find all subdirectories
 	    # Create our watcher with each directory
-	    my $watcher = Filesys::Notify::Simple->new($dirs);
+	    my $watcher = Filesys::Notify::Simple->new(\@files);
 	    # Wait for something to happen.  This blocks, which is why
 	    # it's in a wheel.  On detection of update it will fall
 	    # through; thus the while(1)
