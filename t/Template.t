@@ -36,10 +36,8 @@ my %template_args = (
 );
 
 subtest new => sub {
-	my $template = App::DuckPAN::Template->new(
-		%template_args,
-	);
-	isa_ok($template, 'App::DuckPAN::Template', 'new template');
+	my @args = %template_args;
+	new_ok('App::DuckPAN::Template' => \@args);
 };
 
 subtest supports => sub {
