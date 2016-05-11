@@ -10,6 +10,7 @@ BEGIN {
 }
 
 use List::Util qw(pairs);
+use List::MoreUtils qw(uniq);
 
 sub satisfy {
 	my ($parent, $by, $lookup) = @_;
@@ -19,9 +20,8 @@ sub satisfy {
 }
 
 sub lookup {
-	my ($lookup_vals, $lookup_id, @lookups) = @_;
-	my %results = map { $_->{$lookup_id} => $_ } @$lookup_vals;
-	my @results = values %results;
+	my ($lookup_vals, @lookups) = @_;
+	my @results = uniq @$lookup_vals;
 	foreach (pairs @lookups) {
 		return () unless @results;
 		my ($by, $lookup) = @$_;

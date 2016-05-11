@@ -29,10 +29,8 @@ my $baz = {
 
 my $lookups = [ $foo, $bar, $baz ];
 
-my $lookup_id = 'id';
-
 subtest 'lookup' => sub {
-	my $look = sub { lookup($lookups, $lookup_id, @_) };
+	my $look = sub { lookup($lookups, @_) };
 	cmp_deeply([$look->()], bag(@$lookups), 'no lookups specified');
 	subtest 'single lookup' => sub {
 		my @id = $look->(id => 'foo');

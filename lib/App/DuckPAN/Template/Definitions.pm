@@ -180,8 +180,6 @@ sub _lookup {
 	return $self->_templates;
 }
 
-sub _lookup_id { 'id' }
-
 sub _build__templates {
 	my $self = shift;
 	my %templ;
