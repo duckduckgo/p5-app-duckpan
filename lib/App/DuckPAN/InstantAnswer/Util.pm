@@ -147,7 +147,7 @@ sub find_ia_files {
 my $ias = [values DDG::Meta::Data->by_id()];
 
 sub get_ia {
-	App::DuckPAN::Lookup::Util::lookup($ias, q(id), @_);
+	App::DuckPAN::Lookup::Util::lookup($ias, @_);
 }
 
 1;
