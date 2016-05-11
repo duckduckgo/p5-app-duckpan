@@ -13,12 +13,9 @@ use List::Util qw(pairs);
 
 sub satisfy {
 	my ($parent, $by, $lookup) = @_;
-	if (ref $by eq 'CODE') {
-		return $by->($parent, $lookup);
-	}
 	my $pby = ref $parent eq 'HASH'
 		? $parent->{$by} : $parent->$by;
-	ref $pby eq 'CODE' ? $pby->($lookup) : $pby eq $lookup;
+	ref $lookup eq 'CODE' ? $lookup->($pby) : $pby eq $lookup;
 }
 
 sub lookup {
