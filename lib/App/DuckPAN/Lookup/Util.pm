@@ -20,15 +20,14 @@ sub satisfy {
 
 sub lookup {
 	my ($lookup_vals, $lookup_id, @lookups) = @_;
-	my @items = @$lookup_vals;
-	return @items unless @lookups;
-	my %results;
+	my %results = map { $_->{$lookup_id} => $_ } @$lookup_vals;
+	my @results = values %results;
 	foreach (pairs @lookups) {
+		return () unless @results;
 		my ($by, $lookup) = @$_;
-		map { $results{$_->{$lookup_id}} = $_ }
-			grep { satisfy($_, $by, $lookup) } @items;
+		@results = grep { satisfy($_, $by, $lookup) } @results;
 	}
-	return values %results;
+	return @results;
 }
 
 1;

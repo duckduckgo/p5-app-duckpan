@@ -43,8 +43,12 @@ subtest 'lookup' => sub {
 		cmp_deeply(\@gte1, bag($bar, $baz), 'with $by as a subroutine');
 	};
 	subtest 'multi lookup' => sub {
-		my @foo_bar_baz = $look->(id => 'baz', foo_or_bar => 1);
-		cmp_deeply(\@foo_bar_baz, bag($foo, $bar, $baz), 'lookup that should include everything');
+		my @foo_bar_baz = $look->(id => 'bar', foo_or_bar => 1);
+		cmp_deeply(\@foo_bar_baz, [$bar], 'with overlapping values');
+		my @id_foo_bar = $look->(id => 'foo', id => 'bar');
+		cmp_deeply(\@id_foo_bar, [], 'with 2 unique keys');
+		my @desc_foo_bar = $look->(description => 'A metasyntactic variable', foo_or_bar => 1);
+		cmp_deeply(\@desc_foo_bar, bag($foo, $bar), 'with overlapping values (multiple)');
 	};
 };
 
