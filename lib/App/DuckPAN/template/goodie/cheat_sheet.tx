@@ -14,35 +14,32 @@
 
     "template_type": "<: $template_type :>",
 
+: my $sections = ['First Section', 'Second Section']
     "section_order": [
-        "First Section",
-        "Second Section"
+: for $sections -> $section_name {
+        "<:$section_name:>"<: if !$~section_name.is_last { ',' } :>
+: }
     ],
 
     "sections": {
-        "First Section": [
+: for $sections -> $section_name {
+        "<:$section_name:>": [
+  : for [1, 2] -> $num_field {
             {
-                "key": "Key 1.1",
-             : given $template_type {
-             :  when "language" {
-                "val": "Value 1.1",
-                "trn": "Translation 1.1"
-             :  }
-             :  default {
-                "val": "Value 1.1"
-             :  }
-             : }
-            }
-        ],
-        "Second Section": [
-            {
-                "key": "Key 2.1",
-                "val": "Value 2.2"
-            },
-            {
-                "key": "Key 2.2",
-                "val": "Value 2.2"
-            }
-        ]
+    : my $field_no = $~section_name.count ~ '.' ~ $num_field
+                "key": "Key <:$field_no:>",
+    : given $template_type {
+      :  when "language" {
+                "val": "Value <:$field_no:>",
+                "trn": "Translation <:$field_no:>"
+      : }
+      :  default {
+                "val": "Value <:$field_no:>"
+      : }
+    : }
+            }<: if !$~num_field.is_last { ',' } :>
+  : }
+        ]<: if !$~section_name.is_last { ',' } :>
+: }
     }
 }
