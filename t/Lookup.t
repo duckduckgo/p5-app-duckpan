@@ -38,7 +38,9 @@ subtest 'lookup' => sub {
 		my @desc = $look->(description => 'A metasyntactic variable');
 		cmp_deeply(\@desc, bag($foo, $bar, $baz), 'lookup with non-unique key');
 		my @gte1 = $look->(numeric => sub { $_[0] >= 1 });
-		cmp_deeply(\@gte1, bag($bar, $baz), 'with $by as a subroutine');
+		cmp_deeply(\@gte1, bag($bar, $baz), 'with $lookup as a subroutine');
+		my @by_sub = $look->(sub { $_[0]->{numeric} >= $_[1] } => 1);
+		cmp_deeply(\@by_sub, bag($bar, $baz), 'with $by as a subroutine');
 	};
 	subtest 'multi lookup' => sub {
 		my @foo_bar_baz = $look->(id => 'bar', foo_or_bar => 1);
