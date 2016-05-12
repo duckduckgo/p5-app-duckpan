@@ -14,6 +14,7 @@ use List::MoreUtils qw(uniq);
 
 sub satisfy {
 	my ($parent, $by, $lookup) = @_;
+	return $by->($parent, $lookup) if ref $by eq 'CODE';
 	my $pby = ref $parent eq 'HASH'
 		? $parent->{$by} : $parent->$by;
 	ref $lookup eq 'CODE' ? $lookup->($pby) : $pby eq $lookup;
