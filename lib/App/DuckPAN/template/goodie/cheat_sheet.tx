@@ -33,6 +33,9 @@
                 "val": "Value <:$field_no:>",
                 "trn": "Translation <:$field_no:>"
       : }
+      :  when "link" {
+                "link": "Link <:$field_no:>"
+      : }
       :  default {
                 "val": "Value <:$field_no:>"
       : }
