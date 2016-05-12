@@ -24,7 +24,7 @@ sub run_restarter {
 	    defined(my $app = fork) or croak('Failed to fork application');
 	    unless($app){ # app kid
 	        $self->_run_app($args);
-	        exit 0;
+	        return;
 	    }
 
 	    # Slightly different format here since we need to take care of
@@ -36,7 +36,7 @@ sub run_restarter {
 	            croak('Failed to fork file monitor');
 	        }
 	        $self->_monitor_files;
-	        exit 0;
+	        return;
 	    }
 
 	    # wait for one them to exit. -1 waits for all children
@@ -53,7 +53,7 @@ sub run_restarter {
 	    }
 	    elsif($pid == $app){ # or exit
 	        kill SIGTERM => $fmon;
-	        exit;
+	        return;
 	    }
 	    else{ croak("Unknown kid $pid reaped!\n"); } # shouldn't happen
 	}
