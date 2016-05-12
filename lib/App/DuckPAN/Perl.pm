@@ -140,7 +140,7 @@ sub duckpan_install {
 			# update the url if not the latest
 			if($version != $latest_version){
 				unless($duckpan_module_url = $self->find_previous_url($module, $version)){
-					$self->app->emit_and_exit(-1, "Failed to find version $version of $package");
+					$self->app->emit_and_exit(1, "Failed to find version $version of $package");
 				}
 			}
 			$message = $reinstall ?
@@ -157,7 +157,7 @@ sub duckpan_install {
 				}
 				else{
 					$message = "Could not locate version $pinned_version of '$package'";
-					$self->app->emit_and_exit(-1, $message);
+					$self->app->emit_and_exit(1, $message);
 				}
 			}
 			else{
@@ -186,7 +186,7 @@ sub duckpan_install {
 		if(system "cpanm @to_install"){
 			my $err = "cpanm failed (err $?) to (re)install the following modules:\n\n\t" .
 				join("\n\t", @to_install);
-			$self->app->emit_and_exit(-1, $err);
+			$self->app->emit_and_exit(1, $err);
 		}
 	}
 }

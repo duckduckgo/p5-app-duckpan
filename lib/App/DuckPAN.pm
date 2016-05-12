@@ -101,7 +101,7 @@ sub _build_duckpan_packages {
 	my $mirror_to   = $self->cfg->cache_path->child($gz);
 
 	if (is_error(mirror($package_url, $mirror_to))) {
-		$self->emit_and_exit(-1, "Cannot download $package_url");
+		$self->emit_and_exit(1, "Cannot download $package_url");
 	}
 
 	return Parse::CPAN::Packages::Fast->new($mirror_to->stringify);
