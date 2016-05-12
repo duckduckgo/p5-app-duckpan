@@ -12,9 +12,7 @@ my %default_template_sets = (
 	goodie_standard => {
 		description => 'Standard Goodie Instant Answer',
 		templates    => [
-			$template_defs->lookup(
-				id => 'pm', id => 'test',
-			),
+			map { $template_defs->lookup(id => $_) } qw(pm test),
 		],
 	},
 	cheat_sheet => {
