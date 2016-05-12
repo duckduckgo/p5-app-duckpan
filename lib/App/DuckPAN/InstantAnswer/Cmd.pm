@@ -45,6 +45,7 @@ sub _ask_ia_check {
 			$self->app->emit_and_exit(-1,
 				"Please create an Instant Answer page before running duckpan new")
 			unless $options{no_exit};
+			return;
 		}
 		$ia = $self->_ask_ia();
 	}
