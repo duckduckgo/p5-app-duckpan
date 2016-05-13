@@ -33,32 +33,14 @@ sub show_failed_modules {
 }
 
 sub get_blocks_from_current_dir {
-	my ($self, @args) = @_;
+	my ($self, @ias) = @_;
 
 	$self->emit_and_exit(1, 'You need to have the DDG distribution installed', 'To get the installation command, please run: duckpan check')
 	  unless ($self->app->get_local_ddg_version);
 
-	my $type   = $self->app->get_ia_type();
-	my $finder = Module::Pluggable::Object->new(
-	    search_path => [$type->{dir}],
-	);
-	if (scalar @args == 0) {
-	    my @plugins = $finder->plugins;
-	    push @args, sort { $a cmp $b } @plugins;
-	    @args = map {
-	        $_ =~ s!/!::!g;
-	        my @parts = split('::', $_);
-	        shift @parts;
-	        join('::', @parts);
-	    } @args;
-	}
-	else {
-	    @args = map {
-				my $camel_name = $self->app->get_ia_by_name($_)->{perl_module};
-			} @args;
-	}
+	my $repo = $self->app->repository;
 	require lib;
-	lib->import('lib');
+	lib->import("@{[$repo->{lib}]}");
 	$self->app->emit_info("Loading Instant Answers...");
 
 	# This list contains all of the classes that loaded successfully.
@@ -70,10 +52,9 @@ sub get_blocks_from_current_dir {
 
 	my (%blocks_plugins, @UC_TRIGGERS);
 	# This loop goes through each Goodie / Spice, and it tries to load it.
-	foreach my $class (@args) {
-	    # Let's try to load each Goodie / Spice module
-	    # and see if they load successfully.
-	    my ($load_success, $load_error_message) = try_load_class($class);
+	foreach my $ia (@ias) {
+			my $class = $ia->meta->{perl_module};
+			my ($load_success, $load_error_message) = try_load_class($class);
 
 	    # If they load successfully, $load_success would be a 1.
 	    # Otherwise, it would be a 0.
@@ -123,10 +104,6 @@ sub get_blocks_from_current_dir {
 	        }
 	    }
 	}
-
-	# Since @args can contain modules that we don't want to trigger (since they didn't load in the first place),
-	# and @successfully_loaded does, we just use what's in @successfully_loaded.
-	@args = @successfully_loaded;
 
 	# Now let's tell the user why some of the modules failed.
 	$self->show_failed_modules(\%failed_to_load);

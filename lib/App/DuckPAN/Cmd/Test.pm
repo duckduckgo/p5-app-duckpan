@@ -1,12 +1,16 @@
 package App::DuckPAN::Cmd::Test;
 # ABSTRACT: Command for running the tests of this library
 
-use MooX;
-with qw( App::DuckPAN::Cmd );
-
 use File::Find::Rule;
-
+use MooX;
 use MooX::Options protect_argv => 0;
+
+use App::DuckPAN::InstantAnswer::Util qw(is_cheat_sheet);
+
+with qw(
+	App::DuckPAN::Cmd
+	App::DuckPAN::InstantAnswer::Cmd::Multi
+);
 
 option full => (
 	is      => 'ro',
@@ -19,8 +23,6 @@ option full => (
 sub run {
 	my ($self, @args) = @_;
 
-	my $ia_type = $self->app->get_ia_type->{name};
-
 	my $ret = 0;
 
 	if ($self->full) {
@@ -28,35 +30,25 @@ sub run {
 		$self->app->emit_error('Could not begin testing. Is Dist::Zilla installed?') if $ret = system('dzil test');
 	}
 	else {
-		my @to_test = ('t') unless @args;
+		my @ias = @{$self->ias};
+		my @to_test = ('t') unless @ias;
 		my @cheat_sheet_tests;
-		foreach my $ia (@args) {
-			if ($ia =~ /_cheat_sheet$/) {
-				$self->app->emit_and_exit(1, 'Cheat sheets can only be tested in Goodies')
-					unless $ia_type eq 'Goodie';
-				$ia =~ s/_cheat_sheet$//;
-				$ia =~ s/_/-/g;
-				push @cheat_sheet_tests, $ia;
+		foreach my $ia (@ias) {
+			if (is_cheat_sheet($ia->meta)) {
+				my $dash_name = $ia->files->{named}{cheat_sheet}->basename('.json');
+				push @cheat_sheet_tests, $dash_name;
 				next;
 			}
-			# Unfortunately we can't just use the name, because some have
-			# spaces - thus we grab the end of the package name.
-			$ia = $self->app->get_ia_by_name($ia)->{perl_module} =~ /::(\w+)$/;
-			$ia = $1;
-			if (-d "t/$ia") {
-				push @to_test, "t/$ia";
-			}
-			elsif (my @test_file = File::Find::Rule->name("$ia.t")->in('t')) {
-				push @to_test, "@test_file";
-			}
-			else {
-				$self->app->emit_and_exit(1, "Could not find any tests for $ia");
-			}
-		};
+			my $test_f = $ia->files->{named}{directories}{test}
+				// $ia->files->{named}{test};
+			$self->app->emit_info(
+				"No tests found for @{[$ia->meta->{id}]}"
+			) and next unless defined $test_f;
+			push @to_test, $test_f;
+		}
 		$self->app->emit_error('Tests failed! See output above for details') if @to_test           and $ret = system("prove -lr @to_test");
 		$self->app->emit_error('Tests failed! See output above for details') if @cheat_sheet_tests and $ret = system("prove -lr t/CheatSheets/CheatSheetsJSON.t :: @cheat_sheet_tests");
 	}
-
 	return $ret;
 }
 

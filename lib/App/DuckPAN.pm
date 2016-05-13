@@ -11,7 +11,7 @@ use File::Which;
 use Class::Load ':all';
 use HTTP::Request::Common qw( GET POST );
 use HTTP::Status;
-use List::Util qw( first max );
+use List::Util qw( first max pairkeys );
 use LWP::UserAgent;
 use LWP::Simple;
 use Parse::CPAN::Packages::Fast;
@@ -20,11 +20,12 @@ use Term::ANSIColor;
 use Term::UI;
 use Term::ReadLine;
 use Carp;
-use Encode;
 use Perl::Version;
 use Path::Tiny;
 use open qw/:std :utf8/;
 use App::DuckPAN::Cmd::Help;
+use App::DuckPAN::InstantAnswer::Config;
+use App::DuckPAN::InstantAnswer::Repo;
 use DDG::Meta::Data;
 
 no warnings 'uninitialized';
@@ -80,9 +81,9 @@ option colors => (
 );
 
 option verbose => (
-	is      => 'ro',
+	is      => 'rw',
 	lazy    => 1,
-	short   => 'v',
+	short   => 'v|debug',
 	default => sub { 0 },
 	doc     => 'provide expanded output during operation',
 );
@@ -147,75 +148,31 @@ has term => (
 
 sub _build_term { Term::ReadLine->new('duckpan') }
 
-has ia_types => (
-	is => 'ro',
-	lazy => 1,
-	builder => '_build_ia_types',
-);
 
-sub _build_ia_types {
-	my $ddg_path = path('lib', 'DDG');
-	my $t_dir = path('t');
-	return [{
-			name          => 'Goodie',
-			dir           => $ddg_path->child('Goodie'),
-			supported     => 1,
-			path_basename => 'zeroclickinfo-goodies',
-			templates     => {
-				code => {
-					in  => path('template', 'lib', 'DDG', 'Goodie', 'Example.pm'),
-					out => $ddg_path->child('Goodie')
-				},
-				test => {
-					in  => path('template', 't', 'Example.t'),
-					out => $t_dir
-				},
-			},
-		},
-		{
-			name          => 'Spice',
-			dir           => $ddg_path->child('Spice'),
-			supported     => 1,
-			path_basename => 'zeroclickinfo-spice',
-			templates     => {
-				code => {
-					in  => path('template', 'lib', 'DDG', 'Spice', 'Example.pm'),
-					out => $ddg_path->child('Spice')
-				},
-				test => {
-					in  => path('template', 't', 'Example.t'),
-					out => $t_dir
-				},
-				handlebars => {
-					in  => path('template', 'share', 'spice', 'example', 'example.handlebars'),
-					out => path('share',    'spice')
-				},
-				js => {
-					in  => path('template', 'share', 'spice', 'example', 'example.js'),
-					out => path('share',    'spice')
-				},
-			},
-		},
-		{
-			name          => 'Fathead',
-			dir           => $ddg_path->child('Fathead'),
-			supported     => 0,
-			path_basename => 'zeroclickinfo-fathead',
-		},
-		{
-			name          => 'Longtail',
-			dir           => $ddg_path->child('Longtail'),
-			supported     => 0,
-			path_basename => 'zeroclickinfo-longtail',
-		},
-	];
-}
-
+# Wrapper around Term::UI->get_reply
+#
+# Additional features:
+#
+# If the C<hash> option is set to true, then C<choices> is
+# treated as an even-sized list of pairs (see L<List::Util::pairs>)
+# for which the keys are used as the displayed choices and the
+# values the results.
 sub get_reply {
 	my ( $self, $prompt, %params ) = @_;
-	my $return = $self->term->get_reply( prompt => $prompt, %params );
-	Encode::_utf8_on($return);
-	return $return;
+	my $use_hash = delete $params{hash};
+	my @term_args = (%params, prompt => $prompt);
+	if ($use_hash and my $choices = $params{choices}) {
+		my %choices = @$choices;
+		my @choices = pairkeys @$choices;
+		push @term_args, (choices => \@choices);
+		if ($params{multi}) {
+			my @response = $self->term->get_reply( @term_args );
+			return map { $choices{$_} } @response;
+		}
+		my $response = $self->term->get_reply( @term_args );
+		return $choices{$response};
+	}
+	$self->term->get_reply( @term_args );
 }
 
 sub ask_yn {
@@ -434,7 +391,8 @@ sub phrase_to_camel {
 # Normalize an Instant Answer name to a standard form.
 # Returns undef if an IA matching the given name cannot be found.
 sub get_ia_by_name {
-	my ($self, $name) = @_;
+	my ($self, $name, %options) = @_;
+	my $no_fail = $options{no_fail} // 0;
 	my $ia;
 	if ($name =~ /^DDG::/) {
 		$ia = DDG::Meta::Data->get_ia(module => $name);
@@ -446,8 +404,9 @@ sub get_ia_by_name {
 			: DDG::Meta::Data->get_ia(id => $self->camel_to_underscore($name));
 	}
 	$self->emit_and_exit(1, "No Instant Answer found with name '$name'")
-		unless defined $ia;
-	return $ia;
+		unless defined $ia || $no_fail;
+	return App::DuckPAN::InstantAnswer::Config->new(meta => $ia) if $ia;
+	return undef;
 }
 
 sub check_requirements {
@@ -630,11 +589,6 @@ sub checking_dukgo_user {
 	return ( $response->code == 200 );
 }
 
-sub get_ia_type {
-	my ($self) = @_;
-	return $self->repository;
-}
-
 sub empty_cache {
 	my ($self) = @_;
 	# Clear cache so share files are written into cache
@@ -650,13 +604,6 @@ has repository => (
 	trigger => \&_check_repository,
 );
 
-sub _get_repository_config {
-	my ($self, $by, $lookup, $single) = @_;
-	$single //= 0;
-	my @repos = grep { $_->{$by} eq $lookup } @{$self->ia_types};
-	$single ? (@repos > 1 ? undef : $repos[0]) : @repos;
-}
-
 sub _check_repository {
 	my ($self, $repo) = @_;
 	my $path_basename = $repo->{path_basename};
@@ -671,8 +618,8 @@ sub initialize_working_directory {
 	my $self = shift;
 	my $check_path = Path::Tiny::cwd;
 	while (!$check_path->is_rootdir()) {
-		if (my $repo = $self->_get_repository_config(
-				path_basename => $check_path->basename, 1
+		if (my ($repo) = App::DuckPAN::InstantAnswer::Repo->lookup(
+				path_basename => $check_path->basename
 			)) {
 			$self->_set_repository($repo);
 			chdir $check_path->stringify;

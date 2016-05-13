@@ -1,0 +1,30 @@
+---
+# Template definitions for goodies.
+
+# A template set is a collection of templates used to generate all files of a
+# sub-type of an Instant Answer type. Each set can have some 'required'
+# templates (which are always applied) and some 'optional' templates (which are
+# applied after asking the user).
+# The 'subdir_support' field specifies if IAs created with the template set
+# support being created inside a subdirectory. It defaults to 'true'.
+template_sets:
+    default:
+        description: Standard Goodie Instant Answer
+        required: [ pm, test ]
+        optional: [ js, css, handlebars  ]
+
+    cheatsheet:
+        description: Cheat Sheet Instant Answer
+        required: [ cheatsheet_json ]
+        subdir_support: false
+
+    javascript:
+        description: Javascript-focused instant answer
+        required: [ min-pm, js, test ]
+        optional: [ css, handlebars  ]
+
+    all:
+        description: Goodie with all backend and frontend files
+        required: [ pm, test, js, css, handlebars ]
+...
+
