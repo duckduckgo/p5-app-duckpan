@@ -15,7 +15,7 @@ has ia => (
 );
 
 has files => (
-	is      => 'ro',
+	is      => 'rwp',
 	builder => 1,
 	lazy    => 1,
 );
@@ -30,6 +30,11 @@ $Data::Dumper::Terse = 1;
 sub for_display {
 	my ($self, $item) = @_;
 	return Dumper($item);
+}
+
+sub refresh {
+	my $self = shift;
+	$self->_set_files($self->_build_files);
 }
 
 1;
