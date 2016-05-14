@@ -26,6 +26,11 @@ sub _build_files {
 	return \%files;
 }
 
+sub is_configured {
+	my $self = shift;
+	return @{$self->files->{all}} ? 1 : 0;
+}
+
 $Data::Dumper::Terse = 1;
 sub for_display {
 	my ($self, $item) = @_;
