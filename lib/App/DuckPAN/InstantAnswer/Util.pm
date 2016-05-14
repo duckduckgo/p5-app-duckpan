@@ -7,8 +7,10 @@ BEGIN {
 	our @ISA = qw(Exporter);
 
 	our %EXPORT_TAGS = (
-		predicate => [qw(is_cheat_sheet is_spice
-											is_goodie is_full_goodie)],
+		predicate => [qw(
+			is_cheat_sheet is_spice
+			is_goodie is_full_goodie
+		)],
 	);
 	our @EXPORT_OK = (qw(find_ia_files get_ia), map { @$_ } values %EXPORT_TAGS);
 }
