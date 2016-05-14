@@ -8,10 +8,10 @@ use App::DuckPAN::InstantAnswer::Util qw(find_ia_files is_cheat_sheet);
 
 use Data::Dumper;
 
-has ia => (
+has meta => (
 	is       => 'ro',
-	doc      => 'Instant Answer being configured.',
 	required => 1,
+	doc      => 'Instant Answer Metadata',
 );
 
 has files => (
@@ -22,7 +22,7 @@ has files => (
 
 sub _build_files {
 	my $self = shift;
-	my %files = find_ia_files($self->ia);
+	my %files = find_ia_files($self->meta);
 	return \%files;
 }
 
