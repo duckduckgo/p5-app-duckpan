@@ -1,7 +1,6 @@
 package App::DuckPAN::Lookup;
 # ABSTRACT: Role for standardized lookups.
 
-use List::Util qw(pairs);
 use App::DuckPAN::Lookup::Util;
 
 use Moo::Role;
