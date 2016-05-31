@@ -73,13 +73,13 @@ sub _build__template_defs {
 			# common error for users with an older IA repository
 			my $type = $self->app->get_ia_type();
 
-			$self->app->emit_and_exit(-1,
+			$self->app->emit_and_exit(1,
 				"Template definitions file not found for " . $type->{name} .
 				" Instant Answers. You may need to pull the latest version " .
 				"of this repository.");
 		}
 		else {
-			$self->app->emit_and_exit(-1, $error);
+			$self->app->emit_and_exit(1, $error);
 		}
 	};
 
@@ -106,7 +106,7 @@ sub _build__template_set {
 		# We didn't find the template-set by the name. This could mean
 		# that there was a typo in the name or the user has an older IA
 		# repo and it not present in that version.
-		$self->app->emit_and_exit(-1,
+		$self->app->emit_and_exit(1,
 			"'" . $self->template . "' is not a valid template for a " .
 			$type->{name} . " Instant Answer. You may need to update " .
 			"your repository to get the latest templates.\n" .
@@ -135,7 +135,7 @@ sub run {
 	# Process the --cheatsheet option
 	if ($self->cheatsheet || $self->template eq 'cheatsheet') {
 		if ($type->{name} ne 'Goodie') {
-			$self->app->emit_and_exit(-1,
+			$self->app->emit_and_exit(1,
 				"Cheat Sheets can be created only in the Goodie " .
 				"Instant Answer repository.");
 		}
@@ -164,12 +164,12 @@ sub run {
 	my $entered_name = (@args) ? join(' ', @args) : $self->app->get_reply('Please enter a name for your Instant Answer: ');
 
 	# Validate the entered name
-	$self->app->emit_and_exit(-1, 'Must supply a name for your Instant Answer.') unless $entered_name;
-	$self->app->emit_and_exit(-1,
+	$self->app->emit_and_exit(1, 'Must supply a name for your Instant Answer.') unless $entered_name;
+	$self->app->emit_and_exit(1,
 		"'$entered_name' is not a valid name for an Instant Answer. " .
 		'Please run the program again and provide a valid name.'
 	) unless $entered_name =~ m@^( [a-zA-Z0-9\s] | (?<![:/])(::|/)(?![:/]) )+$@x;
-	$self->app->emit_and_exit(-1,
+	$self->app->emit_and_exit(1,
 		'The name for this type of Instant Answer cannot contain package or path separators. ' .
 		'Please run the program again and provide a valid name.'
 	) if !$template_set->subdir_support && $entered_name =~ m![/:]!;
@@ -189,7 +189,7 @@ sub run {
 			$lc_path = join("/", map { $self->app->camel_to_underscore($_) } @path_parts);
 		}
 		else {
-			$self->app->emit_and_exit(-1, "Malformed input. Please provide a properly formatted package name for your Instant Answer.");
+			$self->app->emit_and_exit(1, "Malformed input. Please provide a properly formatted package name for your Instant Answer.");
 		}
 	}
 
@@ -235,7 +235,7 @@ sub run {
 		$error =~ s/.*\K at .* line \d+\.$//
 			unless $self->app->verbose;
 
-		$self->app->emit_and_exit(-1, $error)
+		$self->app->emit_and_exit(1, $error)
 	}
 
 	$self->app->emit_info('Success!');
@@ -268,7 +268,7 @@ sub _config_handler {
 	);
 
 	unless($res =~ /^([^:]+)/){
-		$self->app->emit_and_exit(-1, "Failed to extract handler from response: $res");
+		$self->app->emit_and_exit(1, "Failed to extract handler from response: $res");
 	}
 	my $handler = $1;
 	my $var = (any {$handler eq $_} qw(words query_parts query_raw_parts matches)) ? '@' : '$';
