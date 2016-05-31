@@ -82,7 +82,7 @@ option colors => (
 option verbose => (
 	is      => 'ro',
 	lazy    => 1,
-	short   => 'v',
+	short   => 'v|debug',
 	default => sub { 0 },
 	doc     => 'provide expanded output during operation',
 );
