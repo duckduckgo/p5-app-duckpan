@@ -632,7 +632,15 @@ sub checking_dukgo_user {
 
 sub get_ia_type {
 	my ($self) = @_;
-	return $self->repository;
+
+	my $repo = $self->repository;
+	unless ($repo) {
+		$self->emit_and_exit(-1,
+			'Must be run from within an Instant Answer repository'
+		);
+	}
+
+	return $repo;
 }
 
 sub empty_cache {
@@ -681,11 +689,6 @@ sub initialize_working_directory {
 	}
 	continue {
 		$check_path = $check_path->parent;
-	}
-	unless ($self->repository) {
-		$self->emit_and_exit(-1,
-			'Must be run from within an Instant Answer repository'
-		);
 	}
 }
 
