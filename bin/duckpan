@@ -56,15 +56,12 @@ Commands include:
 	help            View more detailed help information
 	installdeps     Install all Perl dependencies
 	new             Generate new Instant Answer skeleton
-	poupload        Upload .po translations file to Duck.co
 	publisher       Start local web server for DuckDuckGo-Publisher static websites
 	query           Test Instant Answer triggers on command line
 	reinstall       Reinstalls installed, pinned, or most recent DuckPAN and DDG Perl modules
 	latest          Like reintall but ignores installed versions
-	release         Pushes a new release of the current project to duckpan.org
 	roadrunner      Same as installdeps, but skips tests (dangerous!)
 	server          Start local web server to test Instant Answer display
-	setup           Configure Duck.co and PAUSE account 'poupload' and 'release'
 	update          Installs newest DuckPAN packages
 	upgrade         Installs newest DuckPAN and DDG packages
 
@@ -133,6 +130,10 @@ Tests your release, by running the tests in the B<t/> directory using Dzil (if a
 
 Attempt to install dependencies for the distribution in your current directory using cpanm.
 
+=item C<duckpan roadrunner>
+
+Same as installdeps, but without testing them. Meep meep!
+
 =item C<duckpan publisher>
 
 Starts a local web server which displays static websites created with L<DuckDuckGo-Publisher|https://github.com/duckduckgo/duckduckgo-publisher>.
@@ -165,37 +166,6 @@ Like L<reinstall> except it ignores any installed version.
 Loads the specified external library. This should be used to test changes made to L<App::DuckPAN> and L<DDG>. Example: loading modified DuckPAN modules C<duckpan -I../p5-app-duckpan/lib server>.
 
 =back
-
-
-=head2 FOR DUCKDUCKHACK ADMINS
-
-=over 4
-
-=item C<duckpan setup>
-
-Helps configure your environment so you can use L<Dist::Zilla::Plugin::UploadToDuckPAN>, which is used by B<duckpan release>.
-
-=item C<duckpan release>
-
-Pushes a new release of the current project (ie. Spice, Goodie or Publisher) to L<DuckPAN.org|http://duckpan.org>
-
-=item C<duckpan roadrunner>
-
-Same as installdeps, but without testing them. Meep meep!
-
-=back
-
-
-=head2 FOR TRANSLATION MANAGERS
-
-=over 4
-
-=item C<duckpan poupload> [--domain] filepath
-
-Upload a po file to the Community Platform.
-
-=back
-
 
 =head1 ENVIRONMENT VARIABLES
 
@@ -254,9 +224,9 @@ To contribute to DuckPAN, please visit L<https://github.com/duckduckgo/p5-app-du
 
 =over 4
 
-=item B<IRC>
+=item B<Slack>
 
-We invite you to join us at B<#duckduckgo> on B<irc.freenode.net> for any queries and lively discussion.
+We invite you to join us on L<Slack|https://quackslack.herokuapp.com/> for any queries and lively discussion.
 
 =item B<Repository>
 

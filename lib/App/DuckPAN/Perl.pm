@@ -20,29 +20,6 @@ use Class::Load ':all';
 
 no warnings 'uninitialized';
 
-sub dzil_root { Dist::Zilla::Util->_global_config_root }
-sub dzil_config { path(shift->dzil_root,'config.ini') }
-
-sub setup {
-	my ( $self, %params ) = @_;
-	my $config_root = Dist::Zilla::Util->_global_config_root;
-	my $config = $self->get_dzil_config;
-	$config = {} unless $config;
-	$config->{'%Rights'} = {
-		license_class => 'Perl_5',
-		copyright_holder => $params{name},
-	} unless defined $config->{'%Rights'};
-	$config->{'%User'} = {
-		email => $params{email},
-		name => $params{name},
-	} unless defined $config->{'%User'};
-	$config->{'%DUKGO'} = {
-		username => $params{user},
-		password => $params{pass},
-	};
-	$self->set_dzil_config($config);
-}
-
 sub get_local_version {
 	my ($self, $module) = @_;
 	require Module::Data;
@@ -249,18 +226,6 @@ sub authors_of_latest_dists {
     # only contain [-A-Z0-9] whereas duckpan allows other characters like _.
     # When this happens cpanid is undefined.  Thats why we grep for defined.
     return grep { defined $_ } map { $_->cpanid } @dists;
-}
-
-sub set_dzil_config {
-	my ( $self, $config ) = @_;
-	$self->dzil_root->mkpath unless -d $self->dzil_root;
-	Config::INI::Writer->write_file($config,$self->dzil_config);
-}
-
-sub get_dzil_config {
-	my ( $self ) = @_;
-	return unless -d $self->dzil_root && -f $self->dzil_config;
-	Config::INI::Reader->read_file($self->dzil_config);
 }
 
 1;

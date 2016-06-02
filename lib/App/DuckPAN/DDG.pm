@@ -9,15 +9,6 @@ use Class::Load ':all';
 use Data::Printer return_value => 'dump';
 use List::Util qw (first);
 
-sub get_dukgo_user_pass {
-	my ($self) = @_;
-	my $config = $self->app->perl->get_dzil_config;
-	$self->app->emit_and_exit(1, "No configuration found for your https://duck.co/ username and password", "Please use 'dzil setup' first!")
-	  unless (defined $config->{'%DUKGO'});
-
-	return $config->{'%DUKGO'}->{username}, $config->{'%DUKGO'}->{password};
-}
-
 # This function tells the user which modules / instant answers failed to load.
 sub show_failed_modules {
 	my ($self, $failed_to_load) = @_;
