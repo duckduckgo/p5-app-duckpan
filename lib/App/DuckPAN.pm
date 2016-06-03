@@ -35,20 +35,6 @@ option dev_version => (
 	doc => 'Version used when using unreleased code, e.g. git repos'
 );
 
-option dukgo_my_account => (
-	is => 'ro',
-	lazy => 1,
-	default => sub { 'https://duck.co/my/account' },
-	doc => 'Account page URI - you need to be authed to get HTTP 200',
-);
-
-option dukgo_login => (
-	is => 'ro',
-	lazy => 1,
-	default => sub { 'https://duck.co/my/login' },
-	doc => 'URI to log into community platform. defaults to "https://duck.co/my/login"',
-);
-
 option check => (
 	is          => 'ro',
 	lazy        => 1,
@@ -620,14 +606,6 @@ sub check_ddg {
 		}
 	}
 	return $ok;
-}
-
-sub checking_dukgo_user {
-	my ( $self, $user, $pass ) = @_;
-	my $request = GET( $self->dukgo_my_account );
-	$request->authorization_basic( $user, $pass );
-	my $response = $self->http->request( $request );
-	return ( $response->code == 200 );
 }
 
 sub get_ia_type {
