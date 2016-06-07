@@ -190,10 +190,20 @@ sub request {
 					$to = "https://beta.duckduckgo.com$request_uri" if $use_ddh;
 					p($to);
 
-					my $res = $self->ua->request(HTTP::Request->new(
-						GET => $to,
-						[ $accept_header ? (Accept => $accept_header) : () ]
-					));
+					my $res;
+					if ( $post_body && !$use_ddh ) {
+						$res = $self->ua->request(HTTP::Request->new(
+							POST => $to,
+							[ $accept_header ? (Accept => $accept_header) : () ],
+							$post_body
+						));
+					}
+					else {
+						$res = $self->ua->request(HTTP::Request->new(
+							GET => $to,
+							[ $accept_header ? (Accept => $accept_header) : () ]
+						));
+					}
 
 					if ($res->is_success) {
 						$body = $res->decoded_content;
