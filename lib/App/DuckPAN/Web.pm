@@ -157,15 +157,18 @@ sub request {
 				my $re = $rewrite->has_from ? qr{$from} : qr{(.*)};
 				if (my @captures = $path_remainder =~ m/$re/) {
 					my $to = $rewrite->parsed_to;
+					my $post_body = $rewrite->post_body;
 					for (1..@captures) {
 						my $index = $_-1;
 						my $cap_from = '\$'.$_;
 						my $cap_to = $captures[$index];
 						if (defined $cap_to) {
 							$to =~ s/$cap_from/$cap_to/g;
+							$post_body =~ s/$cap_from/$cap_to/g;
 						}
 						else {
 							$to =~ s/$cap_from//g;
+							$post_body =~ s/$cap_from//g;
 						}
 					}
 					# Make sure we replace "${dollar}" with "$".
