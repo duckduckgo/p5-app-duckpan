@@ -157,15 +157,18 @@ sub request {
 				my $re = $rewrite->has_from ? qr{$from} : qr{(.*)};
 				if (my @captures = $path_remainder =~ m/$re/) {
 					my $to = $rewrite->parsed_to;
+					my $post_body = $rewrite->post_body;
 					for (1..@captures) {
 						my $index = $_-1;
 						my $cap_from = '\$'.$_;
 						my $cap_to = $captures[$index];
 						if (defined $cap_to) {
 							$to =~ s/$cap_from/$cap_to/g;
+							$post_body =~ s/$cap_from/$cap_to/g;
 						}
 						else {
 							$to =~ s/$cap_from//g;
+							$post_body =~ s/$cap_from//g;
 						}
 					}
 					# Make sure we replace "${dollar}" with "$".
@@ -187,10 +190,20 @@ sub request {
 					$to = "https://beta.duckduckgo.com$request_uri" if $use_ddh;
 					p($to);
 
-					my $res = $self->ua->request(HTTP::Request->new(
-						GET => $to,
-						[ $accept_header ? (Accept => $accept_header) : () ]
-					));
+					my $res;
+					if ( $post_body && !$use_ddh ) {
+						$res = $self->ua->request(HTTP::Request->new(
+							POST => $to,
+							[ $accept_header ? (Accept => $accept_header) : () ],
+							$post_body
+						));
+					}
+					else {
+						$res = $self->ua->request(HTTP::Request->new(
+							GET => $to,
+							[ $accept_header ? (Accept => $accept_header) : () ]
+						));
+					}
 
 					if ($res->is_success) {
 						$body = $res->decoded_content;
