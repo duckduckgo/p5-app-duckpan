@@ -6,6 +6,7 @@ use DDG::Request;
 use DDG::Test::Location;
 use DDG::Test::Language;
 use DDG::Meta::Data;
+use App::DuckPAN::Fathead;
 use Path::Tiny;
 use Plack::Request;
 use Plack::Response;
@@ -27,6 +28,7 @@ has page_js => ( is => 'ro', required => 1 );
 has page_locales => ( is => 'ro', required => 1 );
 has page_templates => ( is => 'ro', required => 1 );
 has server_hostname => ( is => 'ro', required => 0 );
+has repository => ( is => 'ro', required => 0 );
 
 has _our_hostname => ( is => 'rw' );
 has _share_dir_hash => ( is => 'rw' );
@@ -72,16 +74,16 @@ sub BUILD {
 }
 
 sub run_psgi {
-	my ( $self, $env ) = @_;
+	my ( $self, $app, $env ) = @_;
 	$self->_our_hostname($env->{HTTP_HOST}) unless $self->_our_hostname;
 	my $request = Plack::Request->new($env);
-	my $response = $self->request($request);
+	my $response = $self->request($app, $request);
 	return $response->finalize;
 }
 
 my $has_common_js = 0;
 sub request {
-	my ( $self, $request ) = @_;
+	my ( $self, $app, $request ) = @_;
 	my $hostname = $self->server_hostname;
 	my @path_parts = split(/\/+/,$request->request_uri);
 	shift @path_parts;
@@ -97,19 +99,19 @@ sub request {
 		for (keys %{$self->_share_dir_hash}) {
 			if ($request->path =~ m|^/$_/|g) {
 
-	                           $share_dir = $_;
-	                           # Get filename from path and url unescape
-	                           my $filename = uri_unescape( pop @path_parts );
-	                           # Trim path from left to right to find parent dir of filename
-	                           # e.g /share/goodie/foo/foo_imgs/image.png -> "foo_imgs"
-	                           my $remainder = $request->path_info;
-	                           $remainder =~ s|$share_dir||;
-	                           $remainder =~ s|$filename||;
-	                           $remainder =~ s|//|/|;
-	                           $remainder =~ s|^/\d{3,4}||;
+				$share_dir = $_;
+				# Get filename from path and url unescape
+				my $filename = uri_unescape( pop @path_parts );
+				# Trim path from left to right to find parent dir of filename
+				# e.g /share/goodie/foo/foo_imgs/image.png -> "foo_imgs"
+				my $remainder = $request->path_info;
+				$remainder =~ s|$share_dir||;
+				$remainder =~ s|$filename||;
+				$remainder =~ s|//|/|;
+				$remainder =~ s|^/\d{3,4}||;
 
-	                           # if valid remainder exists, prepend to filename
-	                           $filename = "$remainder$filename" if $remainder ne $filename;
+				# if valid remainder exists, prepend to filename
+				$filename = "$remainder$filename" if $remainder ne $filename;
 
 				if (my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename)) {
 
@@ -276,6 +278,29 @@ sub request {
 		my @calls_goodie;
 		my @ids;
 
+		my $repo = $app->get_ia_type;
+
+		##########
+		# FATHEAD
+		if ($repo->{name} eq "Fathead") {
+
+			my $output_txt = path( $app->fathead_output() );
+			if ($output_txt->exists) {
+				my $result = App::DuckPAN::Fathead->search_output($query, $output_txt);
+				if ($result){
+					p($result, colored => $app->colors);
+				}
+				else {
+					$app->emit_info('Sorry, no matches found in output.txt') unless $result;
+				}
+			}
+			else {
+				$app->emit_info('Sorry, no output.txt file was not found');
+			}
+		}
+
+		###################
+		#  SPICE & GOODIES
 		for (@{$self->blocks}) {
 			push(@results,$_->request($ddg_request));
 		}

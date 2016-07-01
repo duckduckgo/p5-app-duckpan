@@ -43,7 +43,7 @@ option check => (
 	doc         => 'perform requirements checks. turn off with --no-check',
 );
 
-option 'empty' => (
+option empty => (
 	is          => 'ro',
 	lazy        => 1,
 	short       => 'e',
@@ -77,6 +77,13 @@ has duckpan_packages => (
 	is => 'ro',
 	lazy => 1,
 	builder => 1,
+);
+
+has 'fathead_output' => (
+	is => 'rw',
+	lazy => 1,
+	required => 0,
+	default => sub { undef },
 );
 
 sub _build_duckpan_packages {
@@ -185,7 +192,7 @@ sub _build_ia_types {
 		{
 			name          => 'Fathead',
 			dir           => $ddg_path->child('Fathead'),
-			supported     => 0,
+			supported     => 1,
 			path_basename => 'zeroclickinfo-fathead',
 		},
 		{

@@ -23,6 +23,15 @@ option port => (
 	doc  => 'set port on which server should listen. defaults to 5000',
 );
 
+option 'output_txt' => (
+	is => 'ro',
+	format => 's',
+	lazy => 1,
+	short => 'o',
+	default => sub { undef },
+	doc  => 'Set location for the output.txt file to load',
+);
+
 
 has page_info => (
 	is      => 'ro',
@@ -105,6 +114,8 @@ sub _run_app {
 
 	my $cache_path = $self->app->cfg->cache_path;
 
+	$self->app->fathead_output( $self->output_txt );
+
 	$self->app->check_requirements; # Ensure eveything is up do date, or exit.
 
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@$args)};
@@ -127,7 +138,7 @@ sub _run_app {
 	# Pull files out of cache to be served later by DuckPAN server
 	my %web_args = (
 		blocks          => \@blocks,
-		server_hostname => $self->hostname,
+		server_hostname => $self->hostname
 	);
 	foreach my $page (keys %{$self->page_info}) {
 		$web_args{'page_' . $page} = $self->slurp_or_empty($self->page_info->{$page});
@@ -141,7 +152,7 @@ sub _run_app {
 	my $runner = Plack::Runner->new(
 		#loader => 'Restarter',
 		includes => ['lib'],
-		app      => sub { $web->run_psgi(@_) },
+		app      => sub { $web->run_psgi($self->app, @_) },
 	);
 	#$runner->loader->watch("./lib");
 	$runner->parse_options("--port", $self->port);
