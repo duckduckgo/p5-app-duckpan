@@ -11,7 +11,7 @@ option 'output_txt' => (
 	format => 's',
 	lazy => 1,
 	short => 'o',
-    default => sub { undef },
+	default => sub { undef },
 	doc  => 'Set location for the output.txt file to load',
 );
 

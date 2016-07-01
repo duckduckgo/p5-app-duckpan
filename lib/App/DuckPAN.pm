@@ -79,7 +79,7 @@ has duckpan_packages => (
 	builder => 1,
 );
 
-has 'fathead_output' => (
+has fathead_output => (
 	is => 'rw',
 	lazy => 1,
 	required => 0,
