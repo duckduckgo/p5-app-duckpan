@@ -164,7 +164,7 @@ sub request {
 						my $cap_to = $captures[$index];
 						if (defined $cap_to) {
 							$to =~ s/$cap_from/$cap_to/g;
-							$post_body =~ s/$cap_from/$cap_to/g;
+							$post_body =~ s/$cap_from/$cap_to/g if $post_body;
 						}
 						else {
 							$to =~ s/$cap_from//g;
