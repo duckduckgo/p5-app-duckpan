@@ -212,6 +212,12 @@ sub run {
 		ia_path_lc        => $lc_filepath,
 	);
 
+	# Cheat sheets use hyphenated file names.
+	if ($self->template eq 'cheatsheet') {
+		my $underscored = $vars{ia_id} =~ s/_cheat_sheet//r;
+		$vars{cheat_sheet_hyphenated} = $underscored =~ s/_/-/gr;
+	}
+
 	# If the Perl module every becomes optional, this should only run if the user
 	# requests one
 	unless($no_handler){
