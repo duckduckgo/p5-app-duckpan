@@ -29,7 +29,21 @@ sub search_output {
         csv_tables => {
             output => {
                 file => 'output.txt',
-                col_names => [ map { "col$_" } (1..13)  ],
+                col_names => [
+                    "title",
+                    "type",
+                    "redirect",
+                    "col4",
+                    "categories",
+                    "col6",
+                    "related_topics",
+                    "external_links",
+                    "disambiguation",
+                    "col10",
+                    "images",
+                    "abstract",
+                    "source_url",
+                ],
             },
         },
     }) or die $DBI::errstr;
@@ -38,9 +52,9 @@ sub search_output {
     $@ = "";
 
     eval {
-        my $sth = $dbh->prepare("SELECT * FROM output WHERE col1 = ?");
+        my $sth = $dbh->prepare("SELECT * FROM output WHERE title = ?");
         $sth->execute($query);
-        while (my $row = $sth->fetchrow_arrayref) {
+        while (my $row = $sth->fetchrow_hashref) {
             $result = $row;
         }
         $sth->finish();
@@ -49,9 +63,49 @@ sub search_output {
     return $result;
 }
 
-sub output_as_json {
-    my ($self, $output_txt) = @_;
-    return "done";
+# Build a Structed Answer hash
+# Properties depend on Fathead result type
+sub structured_answer {
+    my ($self, $data) = @_;
+
+    my $out = {
+        id => "main_answer",
+        # meta => $meta,
+        data => $data,
+        from => 'main_answer',
+        signal => "high",
+    };
+
+    $out->{data}->{Heading} = $data->{title};
+    $out->{data}->{Abstract} = $data->{abstract};
+    $out->{data}->{AbstractURL} = $data->{url};
+    $out->{data}->{Image} = $data->{images}; ##TODO Process `images` into HTML
+    # $out->{data}->{Results} = [ { FirstResult => "htpps://duckduckgo.com"} ]; ##TODO Builds Results array
+
+    if ($data->{type} eq 'A') {
+        $out->{topic} = 'About';
+        $out->{model} = 'FatheadArticle';
+        $out->{templates} = {
+            'detail' => 'info_detail'
+        };
+    }
+
+    if ($data->{type} eq 'D') {
+        $out->{topic} = 'Meanings';
+        $out->{model} = 'FatheadListItem';
+        $out->{templates} = {
+            'item' => 'meanings_item'
+        };
+    }
+
+    if ($data->{type} eq 'C') {
+        $out->{topic} = 'List';
+        $out->{model} = 'FatheadListItem';
+        $out->{templates} = {
+            'item' => 'categories_item'
+        };
+    }
+    return $out;
 }
 
 1;

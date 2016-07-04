@@ -276,27 +276,44 @@ sub request {
 		my @calls_script = ();
 		my %calls_template = ();
 		my @calls_goodie;
+		my @calls_fathead;
 		my @ids;
 
-		my $repo = $app->get_ia_type;
+		my $page = $self->page_spice;
+		my $uri_encoded_query = uri_escape_utf8($query, "^A-Za-z");
+		my $html_encoded_query = encode_entities($query);
+		my $uri_encoded_ddh = quotemeta(uri_escape('duckduckhack-template-for-spice2', "^A-Za-z0-9"));
+		$page =~ s/duckduckhack-template-for-spice2/$html_encoded_query/g;
+		$page =~ s/$uri_encoded_ddh/$uri_encoded_query/g;
+
+		# For debugging query replacement.
+		#p($uri_encoded_ddh);
+		#p($page);
+
+		my $root = HTML::TreeBuilder->new;
+		$root->parse($page);
+
 
 		##########
 		# FATHEAD
+		my $repo = $app->get_ia_type;
 		if ($repo->{name} eq "Fathead") {
 
 			my $output_txt = path( $app->fathead_output() );
-			if ($output_txt->exists) {
-				my $result = App::DuckPAN::Fathead->search_output($query, $output_txt);
-				if ($result){
-					p($result, colored => $app->colors);
-				}
-				else {
-					$app->emit_info('Sorry, no matches found in output.txt') unless $result;
-				}
+			$app->emit_error('Sorry, no output.txt file was not found') unless $output_txt->exists;
+
+			my $data = App::DuckPAN::Fathead->search_output($query, $output_txt);
+
+			if ($data){
+				my $result = App::DuckPAN::Fathead->structured_answer($data);
+				p($result, colored => $app->colors);
+				push @calls_fathead, $result;
 			}
 			else {
-				$app->emit_info('Sorry, no output.txt file was not found');
+				# TODO Fallback to DDG API?
+				show_error($self, $query, $root);
 			}
+
 		}
 
 		###################
@@ -319,34 +336,8 @@ sub request {
 				return $response;
 		}
 
-		my $page = $self->page_spice;
-		my $uri_encoded_query = uri_escape_utf8($query, "^A-Za-z");
-		my $html_encoded_query = encode_entities($query);
-		my $uri_encoded_ddh = quotemeta(uri_escape('duckduckhack-template-for-spice2', "^A-Za-z0-9"));
-		$page =~ s/duckduckhack-template-for-spice2/$html_encoded_query/g;
-		$page =~ s/$uri_encoded_ddh/$uri_encoded_query/g;
-
-		# For debugging query replacement.
-		#p($uri_encoded_ddh);
-		#p($page);
-
-		my $root = HTML::TreeBuilder->new;
-		$root->parse($page);
-
 		# Check for no results
-		if (!scalar(@results)) {
-			my $error = "Sorry, no hit for your instant answer";
-			$root = HTML::TreeBuilder->new;
-			$root->parse($self->page_root);
-			my $text_field = $root->look_down(
-				"name", "q"
-			);
-			$text_field->attr( value => $query );
-			$root->find_by_tag_name('body')->push_content(
-				HTML::TreeBuilder->new_from_content("<script type=\"text/javascript\">seterr('$error')</script>")->guts
-			);
-			p($error, color => { string => 'red' });
-		}
+		show_error($self, $query, $root) if !scalar(@results);
 
 		# Iterate over results,
 		# checking if result is a Spice or Goodie
@@ -424,6 +415,8 @@ sub request {
 							. "});</script>")->guts);
 					}
 				}
+				# HTML Goodie
+				# TODO Remove when all HTML Goodies return structured_answer
 				else {
 					$zci_container->push_content(
 						HTML::TreeBuilder->new_from_content(
@@ -500,6 +493,13 @@ sub request {
 			# $calls_script = q|<script type="text/JavaScript">/*DDH.add(| . encode_json($goodie) . q|);*/</script>|;
 			$calls_script .= q|<script type="text/JavaScript">DDG.ready(function(){ window.setTimeout(DDH.add.bind(DDH, | . encode_json($goodie) . q|), 100)});</script>|;
 		}
+		elsif(@calls_fathead){
+			my $fathead = shift @calls_fathead;
+			# $calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$fathead->{id}'});",
+			# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
+			# $calls_script = q|<script type="text/JavaScript">/*DDH.add(| . encode_json($fathead) . q|);*/</script>|;
+			$calls_script .= q|<script type="text/JavaScript">DDG.ready(function(){ window.setTimeout(DDH.add.bind(DDH, | . encode_json($fathead) . q|), 100)});</script>|;
+		}
 		else{
 			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
 		}
@@ -547,6 +547,20 @@ sub request {
 	return $response;
 }
 
+sub show_error {
+	my ($self, $query, $root)  = @_;
+	my $error = "Sorry, no results were returned from Instant Answer";
+	$root = HTML::TreeBuilder->new;
+	$root->parse($self->page_root);
+	my $text_field = $root->look_down(
+		"name", "q"
+	);
+	$text_field->attr( value => $query );
+	$root->find_by_tag_name('body')->push_content(
+		HTML::TreeBuilder->new_from_content("<script type=\"text/javascript\">seterr('$error')</script>")->guts
+	);
+	p($error, color => { string => 'red' });
+}
 
 #inject some mock results into the SERP to make it look a little more real
 sub inject_mock_content {
