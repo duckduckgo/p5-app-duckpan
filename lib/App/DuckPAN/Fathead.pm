@@ -66,7 +66,7 @@ sub search_output {
 		}
 		$sth->finish();
 	};
-	$self->app->emit_error("SQL database error: $@");
+	$self->app->emit_error("SQL database error: $@") if $@;
 
 	return $result;
 }
