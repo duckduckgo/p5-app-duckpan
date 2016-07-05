@@ -454,13 +454,6 @@ duckpan -I../p5-app-duckpan/lib server
 
 ### For DuckDuckHack Admins
 
-```
-duckpan release
-```
-
-Release the distribution of the current directory. Used to issue new releases for the following repos: zeroclickinfo-spice, zeroclickinfo-goodies, p5-app-duckpan, duckduckgo-publisher, duckduckgo.
-
----
 
 ```
 duckpan setup
