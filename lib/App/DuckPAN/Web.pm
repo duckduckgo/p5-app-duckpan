@@ -336,7 +336,7 @@ sub request {
 		}
 
 		# Check for no results
-		show_error($self, $query, $root) if !scalar(@results);
+		show_error($self, $query, $root) if !scalar(@results) && $repo->{name} ne "Fathead";
 
 		# Iterate over results,
 		# checking if result is a Spice or Goodie
