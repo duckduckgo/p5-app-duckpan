@@ -28,7 +28,6 @@ has page_js => ( is => 'ro', required => 1 );
 has page_locales => ( is => 'ro', required => 1 );
 has page_templates => ( is => 'ro', required => 1 );
 has server_hostname => ( is => 'ro', required => 0 );
-has repository => ( is => 'ro', required => 0 );
 
 has _our_hostname => ( is => 'rw' );
 has _share_dir_hash => ( is => 'rw' );
