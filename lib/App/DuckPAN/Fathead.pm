@@ -32,7 +32,7 @@ sub search_output {
 		csv_allow_whitespace    => 1,
 		csv_allow_quotes        => 1,
 		RaiseError              => 1,
-		PrintError              => 1,
+		PrintError              => 0,
 		csv_tables => {
 			output => {
 				file => 'output.txt',
@@ -66,7 +66,8 @@ sub search_output {
 		}
 		$sth->finish();
 	};
-	$@ and die "SQL database error: $@";
+	$self->app->emit_error("SQL database error: $@");
+
 	return $result;
 }
 

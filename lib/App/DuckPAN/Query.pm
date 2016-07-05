@@ -130,7 +130,7 @@ sub _run_query {
 				}
 			}
 			else {
-				$app->emit_info('Sorry, no output.txt file was not found');
+				$app->emit_and_exit(1, 'Sorry, no output.txt file was not found');
 			}
 		}
 
