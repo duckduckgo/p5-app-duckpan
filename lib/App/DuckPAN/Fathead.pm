@@ -76,9 +76,15 @@ sub structured_answer {
         signal => "high",
     };
 
+    ## TODO Get IA Metadata
     $out->{data}->{Heading} = $data->{title};
     $out->{data}->{Abstract} = $data->{abstract};
-    $out->{data}->{AbstractURL} = $data->{url};
+    $out->{data}->{AbstractURL} = $data->{source_url};
+    $out->{data}->{FirstURL} = $data->{source_url};
+    $out->{data}->{meta} = {
+        src_name => "Website",
+        repo => "fathead"
+    };
     $out->{data}->{Image} = $data->{images}; ##TODO Process `images` into HTML
     # $out->{data}->{Results} = [ { FirstResult => "htpps://duckduckgo.com"} ]; ##TODO Builds Results array
 
