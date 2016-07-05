@@ -79,13 +79,6 @@ has duckpan_packages => (
 	builder => 1,
 );
 
-has fathead_output => (
-	is => 'rw',
-	lazy => 1,
-	required => 0,
-	default => sub { undef },
-);
-
 sub _build_duckpan_packages {
 	my $self = shift;
 
@@ -99,6 +92,13 @@ sub _build_duckpan_packages {
 
 	return Parse::CPAN::Packages::Fast->new($mirror_to->stringify);
 }
+
+has fathead_output => (
+	is => 'rw',
+	lazy => 1,
+	required => 0,
+	default => sub { undef },
+);
 
 option duckpan => (
 	is => 'ro',
