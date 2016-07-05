@@ -32,7 +32,7 @@ sub _run_app {
 	my @blocks = @{$self->app->ddg->get_blocks_from_current_dir(@$args)};
 
 	require App::DuckPAN::Query;
-	App::DuckPAN::Query->run($self->app, \@blocks, $args);
+	App::DuckPAN::Query->run($self->app, \@blocks);
 }
 
 1;

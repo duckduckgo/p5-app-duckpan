@@ -11,7 +11,7 @@ use open qw/:std :utf8/;
 
 # Entry into the module.
 sub run {
-	my ( $self, $app, $blocks, $args ) = @_;
+	my ( $self, $app, $blocks) = @_;
 
 	# Here so that travis builds will pass on github
 	require DDG::Request;
@@ -26,7 +26,7 @@ sub run {
 		package_states => [
 			$self => [qw(_start _stop _get_user_input _got_user_input _run_query)]
 		],
-		args => [$app, $blocks, $args] # passed to _start
+		args => [$app, $blocks] # passed to _start
 	);
 	POE::Kernel->run();
 
@@ -91,7 +91,7 @@ sub _get_user_input {
 
 # Event that processes the query
 sub _run_query {
-	my ($k, $h, $query, $args) = @_[KERNEL, HEAP, ARG0, ARG2];
+	my ($k, $h, $query) = @_[KERNEL, HEAP, ARG0];
 
 	my ($app, $blocks) = @$h{qw{app blocks}};
 	Encode::_utf8_on($query);
