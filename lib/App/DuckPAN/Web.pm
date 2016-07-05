@@ -309,7 +309,7 @@ sub request {
 			}
 			else {
 				# TODO Fallback to DDG API?
-				show_error($self, $query, $root);
+				return $self->_no_results_error($query, $root);
 			}
 
 		}
@@ -335,7 +335,7 @@ sub request {
 		}
 
 		# Check for no results
-		show_error($self, $query, $root) if !scalar(@results) && $repo->{name} ne "Fathead";
+		return $self->_no_results_error($query, $root) if !scalar(@results) && $repo->{name} ne "Fathead";
 
 		# Iterate over results,
 		# checking if result is a Spice or Goodie
@@ -545,19 +545,27 @@ sub request {
 	return $response;
 }
 
-sub show_error {
-	my ($self, $query, $root)  = @_;
+sub _no_results_error {
+	my ($self, $query)  = @_;
+
+	my $response = Plack::Response->new(200);
+	$response->content_type('text/html');
 	my $error = "Sorry, no results were returned from Instant Answer";
-	$root = HTML::TreeBuilder->new;
+	my $root = HTML::TreeBuilder->new;
+
 	$root->parse($self->page_root);
-	my $text_field = $root->look_down(
-		"name", "q"
-	);
+	my $text_field = $root->look_down( "name", "q" );
 	$text_field->attr( value => $query );
 	$root->find_by_tag_name('body')->push_content(
-		HTML::TreeBuilder->new_from_content("<script type=\"text/javascript\">seterr('$error')</script>")->guts
+		HTML::TreeBuilder->new_from_content(
+			qq(<script type="text/javascript">seterr('$error')</script>)
+		)->guts
 	);
 	p($error, color => { string => 'red' });
+
+	my $body = $root->as_HTML;
+	$response->body($body);
+	return $response;
 }
 
 #inject some mock results into the SERP to make it look a little more real
