@@ -11,7 +11,7 @@ use open qw/:std :utf8/;
 
 # Entry into the module.
 sub run {
-	my ( $self, $app, $blocks) = @_;
+	my ( $self, $app, $blocks ) = @_;
 
 	# Here so that travis builds will pass on github
 	require DDG::Request;
