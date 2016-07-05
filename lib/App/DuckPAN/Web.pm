@@ -516,7 +516,7 @@ sub request {
 		}
 
 
-		inject_mock_content($root);
+		$self->_inject_mock_content($root);
 
 		$page = $root->as_HTML;
 
@@ -569,9 +569,9 @@ sub _no_results_error {
 }
 
 #inject some mock results into the SERP to make it look a little more real
-sub inject_mock_content {
+sub _inject_mock_content {
 
-	my $root= shift;
+	my ($self, $root) = @_;
 
 	# ensure results and ad containers exist
 	my $ad_container = $root->look_down(id => "ads");
@@ -609,7 +609,7 @@ sub inject_mock_content {
 	for (1..4){
 		$links_container->push_content(
 			HTML::TreeBuilder->new_from_content(
-				q(<div id="r$_-0" class="result results_links_deep " data-nir="$_"
+				qq(<div id="r$_-0" class="result results_links_deep " data-nir="$_"
 					<div class="result__body links_main links_deep">
 						<h2 class="result__title">
 						<a class="result__a" href="#">
