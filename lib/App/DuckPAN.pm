@@ -93,13 +93,6 @@ sub _build_duckpan_packages {
 	return Parse::CPAN::Packages::Fast->new($mirror_to->stringify);
 }
 
-has fathead_output => (
-	is => 'rw',
-	lazy => 1,
-	required => 0,
-	default => sub { undef },
-);
-
 option duckpan => (
 	is => 'ro',
 	lazy => 1,
@@ -280,6 +273,17 @@ has ddg => (
 sub _build_ddg {
 	load_class('App::DuckPAN::DDG');
 	App::DuckPAN::DDG->new( app => shift );
+}
+
+has fathead => (
+	is => 'ro',
+	builder => 1,
+	lazy => 1,
+);
+
+sub _build_fathead {
+	load_class('App::DuckPAN::Fathead');
+	App::DuckPAN::Fathead->new( app => shift );
 }
 
 sub execute {

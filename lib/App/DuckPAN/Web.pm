@@ -6,7 +6,6 @@ use DDG::Request;
 use DDG::Test::Location;
 use DDG::Test::Language;
 use DDG::Meta::Data;
-use App::DuckPAN::Fathead;
 use Path::Tiny;
 use Plack::Request;
 use Plack::Response;
@@ -298,13 +297,13 @@ sub request {
 		my $repo = $app->get_ia_type;
 		if ($repo->{name} eq "Fathead") {
 
-			my $output_txt = path( $app->fathead_output() );
+			my $output_txt = path( $app->fathead->output_txt );
 			$app->emit_error('Sorry, no output.txt file was not found') unless $output_txt->exists;
 
-			my $data = App::DuckPAN::Fathead->search_output($query, $output_txt);
+			my $data = $app->fathead->search_output($query);
 
 			if ($data){
-				my $result = App::DuckPAN::Fathead->structured_answer($data);
+				my $result = $app->fathead->structured_answer($data);
 				p($result, colored => $app->colors);
 				push @calls_fathead, $result;
 			}

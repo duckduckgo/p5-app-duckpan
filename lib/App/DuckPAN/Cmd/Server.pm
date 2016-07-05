@@ -114,7 +114,7 @@ sub _run_app {
 
 	my $cache_path = $self->app->cfg->cache_path;
 
-	$self->app->fathead_output( $self->output_txt );
+	$self->app->fathead->output_txt( $self->output_txt );
 
 	$self->app->check_requirements; # Ensure eveything is up do date, or exit.
 

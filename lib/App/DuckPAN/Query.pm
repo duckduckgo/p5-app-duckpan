@@ -119,10 +119,9 @@ sub _run_query {
 		}
 		else {
 
-			my $output_txt = path( $app->fathead_output() );
-
+			my $output_txt = path( $app->fathead->output_txt() );
 			if ($output_txt->exists) {
-				my $result = App::DuckPAN::Fathead->search_output($query, $output_txt);
+				my $result = $app->fathead->search_output($query);
 				if ($result){
 					$app->emit_info('---', "Match found: $output_txt", p($result, colored => $app->colors), '---');
 				}

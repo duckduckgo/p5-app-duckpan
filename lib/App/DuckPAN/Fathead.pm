@@ -9,15 +9,22 @@ use JSON;
 use Path::Tiny;
 use Data::Printer return_value => 'dump';
 
+has output_txt => (
+	is => 'rw',
+	lazy => 1,
+	required => 0,
+	default => sub { undef },
+);
+
 sub search_output {
 
-	my ($self, $query, $output_txt) = @_;
+	my ($self, $query) = @_;
 
 	# Open output.txt file for searching
 	# Handles as a CSV with "\t" separator
 	# Provide numbered column names
 	my $dbh = DBI->connect ("dbi:CSV:", undef, undef, {
-		f_dir                   => $output_txt->parent,
+		f_dir                   => path($self->output_txt)->parent,
 		f_ext                   => ".txt/r",
 		csv_sep_char            => "\t",
 		csv_quote_char          => undef,
