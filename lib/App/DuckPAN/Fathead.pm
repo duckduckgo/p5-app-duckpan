@@ -59,7 +59,8 @@ sub search_output {
 	$@ = "";
 
 	eval {
-		my $sth = $dbh->prepare("SELECT * FROM output WHERE title = ?");
+		# TODO lowercase all titles first
+		my $sth = $dbh->prepare("SELECT * FROM output WHERE lower(title) = ?");
 		$sth->execute($query);
 		while (my $row = $sth->fetchrow_hashref) {
 			$result = $row;
