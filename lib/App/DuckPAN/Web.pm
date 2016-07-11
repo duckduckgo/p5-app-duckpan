@@ -498,7 +498,7 @@ sub request {
 				$calls_script .= qq|
 					<script type="text/JavaScript">
 						DDG.ready(function(){
-							Spice.$spice_id.call_data = $json_data;
+							DDG.inject('Spice.$spice_id.call_data', $json_data);
 						});
 					</script>|;
 			}
