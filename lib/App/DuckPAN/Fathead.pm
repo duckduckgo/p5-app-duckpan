@@ -165,7 +165,7 @@ sub get_structured_answer {
 		meta => $metadata,
 	};
 
-	# Define template, topic and model based on result type
+	# Article Result
 	if ($data->{type} eq 'A') {
 		$out->{duckbar_topic} = 'About';
 		$out->{model} = 'FatheadArticle';
@@ -179,6 +179,7 @@ sub get_structured_answer {
 		);
 	}
 
+	# Disambiguation Result
 	if ($data->{type} eq 'D') {
 		$out->{duckbar_topic} = 'Meanings';
 		$out->{model} = 'FatheadListItem';
@@ -189,6 +190,7 @@ sub get_structured_answer {
 		);
 	}
 
+	# Category Pages Result
 	if ($data->{type} eq 'C') {
 		$out->{duckbar_topic} = 'List';
 		$out->{model} = 'FatheadListItem';
