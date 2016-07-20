@@ -108,23 +108,22 @@ sub search_output {
 
 	my ($self, $query) = @_;
 
-	my $result = $self->db_lookup($query);
+	my $result = $self->_db_lookup($query);
 
 	if ($result->{type} eq "R") {
 		my $redirect = $result->{redirect};
-		$result = $self->db_lookup($redirect);
+		$result = $self->_db_lookup($redirect);
 		$self->app->emit_notice("Following Redirect: '$query' -> '$redirect'");
 	}
 
 	$self->result($result);
-
 	return $self->has_result;
 
 }
 
 # Attempt to get a result from DB (output.txt)
 # Capture & display any raised errors
-sub db_lookup {
+sub _db_lookup {
 	my ($self, $query) = @_;
 
 	my $result;
