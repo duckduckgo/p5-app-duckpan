@@ -106,7 +106,7 @@ sub _run_query {
 				$app->emit_info('---', "Match found: $output_txt", p($result, colored => $app->colors), '---');
 			}
 			else {
-				$app->emit_info('Sorry, no matches found in output.txt');
+				$app->emit_error('Sorry, no matches found in output.txt');
 			}
 		}
 		else {
