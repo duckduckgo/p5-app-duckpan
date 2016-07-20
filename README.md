@@ -290,7 +290,7 @@ Some of our awesome community members have written shell completion scripts for 
 #### Fish Shell
 
 - Submitted by: [gabriellhrn](https://github.com/gabriellhrn)
-- link: https://github.com/gabriellhrn/dotfiles/blob/master/fish/completions/duckpan-completion.fish
+- link: https://github.com/gabriellhrn/dotfiles/blob/master/fish/.config/fish/completions/duckpan-completion.fish
 
 #### Z Shell
 
