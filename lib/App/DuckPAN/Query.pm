@@ -119,18 +119,13 @@ sub _run_query {
 		}
 		else {
 
-			my $output_txt = path( $app->fathead->output_txt() );
-			if ($output_txt->exists) {
-				my $result = $app->fathead->search_output($query);
-				if ($result){
-					$app->emit_info('---', "Match found: $output_txt", p($result, colored => $app->colors), '---');
-				}
-				else {
-					$app->emit_info('Sorry, no matches found in output.txt');
-				}
+			my $output_txt = $app->fathead->output_txt;
+			my $result = $app->fathead->search_output($query);
+			if ($result){
+				$app->emit_info('---', "Match found: $output_txt", p($result, colored => $app->colors), '---');
 			}
 			else {
-				$app->emit_and_exit(1, 'Sorry, no output.txt file was not found');
+				$app->emit_info('Sorry, no matches found in output.txt');
 			}
 		}
 

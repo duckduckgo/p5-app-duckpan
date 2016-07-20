@@ -297,11 +297,8 @@ sub request {
 		my $repo = $app->get_ia_type;
 		if ($repo->{name} eq "Fathead") {
 
-			my $output_txt = path( $app->fathead->output_txt );
-			$app->emit_error('Sorry, no output.txt file was not found') unless $output_txt->exists;
-
+			my $output_txt = $app->fathead->output_txt;
 			my $data = $app->fathead->search_output($query);
-
 			if ($data){
 				my $result = $app->fathead->structured_answer($data);
 				p($result, colored => $app->colors);
@@ -311,7 +308,6 @@ sub request {
 				# TODO Fallback to DDG API?
 				return $self->_no_results_error($query, $root);
 			}
-
 		}
 
 		###################
