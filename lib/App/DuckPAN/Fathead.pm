@@ -83,7 +83,7 @@ sub _build_dbh {
 					"related_topics",
 					"external_links",
 					"disambiguation",
-					"col10",
+					"disambiguation",
 					"images",
 					"abstract",
 					"abstract_url",
