@@ -51,7 +51,7 @@ sub get_blocks_from_current_dir {
 		$self->app->fathead->selected(@fatheads);
 
 		my @clean_args = grep {
-			$type->{name} eq "Spice" || $type->{name} eq "Spice"
+			$type->{name} eq "Spice" || $type->{name} eq "Goodie"
 		} @args;
 
 		@args = map {
