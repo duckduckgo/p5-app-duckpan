@@ -23,16 +23,6 @@ option port => (
 	doc  => 'set port on which server should listen. defaults to 5000',
 );
 
-option 'output_txt' => (
-	is => 'ro',
-	format => 's',
-	lazy => 1,
-	short => 'o',
-	default => sub { undef },
-	doc  => 'Set location for the output.txt file to load',
-);
-
-
 has page_info => (
 	is      => 'ro',
 	builder => '_build_page_info',
@@ -113,8 +103,6 @@ sub _run_app {
 	my ($self, $args) = @_;
 
 	my $cache_path = $self->app->cfg->cache_path;
-
-	$self->app->fathead->output_txt( $self->output_txt );
 
 	$self->app->check_requirements; # Ensure eveything is up do date, or exit.
 
