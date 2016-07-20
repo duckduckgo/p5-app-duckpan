@@ -128,7 +128,7 @@ sub _db_lookup {
 	my ($self, $query) = @_;
 
 	my $result;
-	$@ = "";
+	$@ = '';
 
 	eval {
 		# TODO lowercase all titles first
@@ -140,7 +140,6 @@ sub _db_lookup {
 		$sth->finish();
 	};
 	$self->app->emit_error("SQL database error: $@") if $@;
-
 	return $result;
 }
 
