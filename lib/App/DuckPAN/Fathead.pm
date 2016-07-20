@@ -80,7 +80,7 @@ sub search_output {
 					"col10",
 					"images",
 					"abstract",
-					"source_url",
+					"abstract_url",
 				],
 			},
 		},
@@ -89,6 +89,8 @@ sub search_output {
 	my $result;
 	$@ = "";
 
+	# Attempt to get a result from DB
+	# Capture & display any raised errors
 	eval {
 		# TODO lowercase all titles first
 		my $sth = $dbh->prepare("SELECT * FROM output WHERE lower(title) = ?");
@@ -103,31 +105,38 @@ sub search_output {
 	return $result;
 }
 
-# Build a Structed Answer hash
+# Build a Structured Answer hash
 # Properties depend on Fathead result type
 sub structured_answer {
 	my ($self, $data) = @_;
 
+	# Get IA Metadata via ID lookup
+	# Assume selected is an ID
+	my $metadata = DDG::Meta::Data->get_ia(id => $self->selected) // {};
+
+	# DBD::Csv ignores col_names letter casing
+	# So, manually map columns to template properties
+	# TODO update info_detail template to use lowercase variable names
+	my %extra_data = (
+		Heading 	=> $data->{title},
+		Abstract 	=> $data->{abstract},
+		AbstractURL => $data->{abstract_url},
+		FirstURL 	=> $metadata->{src_url},
+		# TODO Process `images` into HTML links
+		Image 		=> $data->{images},
+		# TODO Builds Results array for disambiguations
+		# Results 	=> [ { FirstResult => "htpps://duckduckgo.com"} ];
+	);
+
 	my $out = {
-		id => "main_answer",
-		# meta => $meta,
-		data => $data,
-		from => 'main_answer',
-		signal => "high",
+		id => $self->selected,
+		# from => $self->selected,
+		# signal => "high",
+		meta => $metadata,
+		data => { %$data, %extra_data }
 	};
 
-	## TODO Get IA Metadata
-	$out->{data}->{Heading} = $data->{title};
-	$out->{data}->{Abstract} = $data->{abstract};
-	$out->{data}->{AbstractURL} = $data->{source_url};
-	$out->{data}->{FirstURL} = $data->{source_url};
-	$out->{data}->{meta} = {
-		src_name => "Website",
-		repo => "fathead"
-	};
-	$out->{data}->{Image} = $data->{images}; ##TODO Process `images` into HTML
-	# $out->{data}->{Results} = [ { FirstResult => "htpps://duckduckgo.com"} ]; ##TODO Builds Results array
-
+	# Define template, topic and model based on result type
 	if ($data->{type} eq 'A') {
 		$out->{topic} = 'About';
 		$out->{model} = 'FatheadArticle';
