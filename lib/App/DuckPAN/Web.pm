@@ -298,9 +298,8 @@ sub request {
 		if ($repo->{name} eq "Fathead") {
 
 			my $output_txt = $app->fathead->output_txt;
-			my $data = $app->fathead->search_output($query);
-			if ($data){
-				my $result = $app->fathead->structured_answer($data);
+			if ($app->fathead->search_output($query)){
+				my $result = $app->fathead->get_structured_answer;
 				p($result, colored => $app->colors);
 				push @calls_fathead, $result;
 			}

@@ -99,7 +99,17 @@ sub _run_query {
 	my $repo = $app->get_ia_type;
 
 	try {
-		unless ($repo->{name} eq "Fathead") {
+		if ($repo->{name} eq "Fathead") {
+			my $output_txt = $app->fathead->output_txt;
+			if ($app->fathead->search_output($query)){
+				my $result = $app->fathead->get_structured_answer;
+				$app->emit_info('---', "Match found: $output_txt", p($result, colored => $app->colors), '---');
+			}
+			else {
+				$app->emit_info('Sorry, no matches found in output.txt');
+			}
+		}
+		else {
 			my $request = DDG::Request->new(
 				query_raw => $query,
 				location => test_location_by_env(),
@@ -117,18 +127,6 @@ sub _run_query {
 				$app->emit_info('Sorry, no Instant Answers returned a result')
 			}
 		}
-		else {
-
-			my $output_txt = $app->fathead->output_txt;
-			my $result = $app->fathead->search_output($query);
-			if ($result){
-				$app->emit_info('---', "Match found: $output_txt", p($result, colored => $app->colors), '---');
-			}
-			else {
-				$app->emit_info('Sorry, no matches found in output.txt');
-			}
-		}
-
 	}
 	catch {
 		my $error = $_;
