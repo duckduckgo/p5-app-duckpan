@@ -47,9 +47,15 @@ sub _build_output_txt {
 	return $file;
 }
 
-sub search_output {
+has dbh => (
+	is => 'rw',
+	lazy => 1,
+	required => 0,
+	builder => 1
+);
 
-	my ($self, $query) = @_;
+sub _build_dbh {
+	my ( $self ) = @_;
 
 	# Open output.txt file for searching
 	# Handles as a CSV with "\t" separator
@@ -86,15 +92,39 @@ sub search_output {
 		},
 	}) or die $DBI::errstr;
 
+	return $dbh;
+}
+
+# Get a Fathead result from the DB
+# Requery when we get a Redirect
+sub search_output {
+
+	my ($self, $query) = @_;
+
+	my $result = $self->db_lookup($query);
+
+	if ($result->{type} eq "R") {
+		my $redirect = $result->{redirect};
+		$result = $self->db_lookup($redirect);
+		$self->app->emit_notice("Following Redirect: '$query' -> '$redirect'");
+	}
+
+	return $result;
+
+}
+
+# Attempt to get a result from DB (output.txt)
+# Capture & display any raised errors
+sub db_lookup {
+	my ($self, $query) = @_;
+
 	my $result;
 	$@ = "";
 
-	# Attempt to get a result from DB
-	# Capture & display any raised errors
 	eval {
 		# TODO lowercase all titles first
-		my $sth = $dbh->prepare("SELECT * FROM output WHERE lower(title) = ?");
-		$sth->execute($query);
+		my $sth = $self->dbh->prepare("SELECT * FROM output WHERE lower(title) = ?");
+		$sth->execute(lc $query);
 		while (my $row = $sth->fetchrow_hashref) {
 			$result = $row;
 		}
