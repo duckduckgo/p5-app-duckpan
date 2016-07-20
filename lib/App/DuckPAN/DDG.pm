@@ -27,9 +27,9 @@ sub get_blocks_from_current_dir {
 	my ($self, @args) = @_;
 
 	$self->emit_and_exit(1, 'You need to have the DDG distribution installed', 'To get the installation command, please run: duckpan check')
-	  unless ($self->app->get_local_ddg_version);
+		unless ($self->app->get_local_ddg_version);
 
-	my $type   = $self->app->get_ia_type();
+	my $type   = $self->app->get_ia_type;
 	my $finder = Module::Pluggable::Object->new(
 		search_path => [$type->{dir}],
 	);
@@ -44,9 +44,18 @@ sub get_blocks_from_current_dir {
 		} @args;
 	}
 	else {
-		@args = map {
-			my $camel_name = $self->app->get_ia_by_name($_)->{perl_module};
+		my @fatheads = grep {
+			$type->{name} eq "Fathead"
 		} @args;
+		$self->app->fathead->selected(@fatheads);
+
+		my @clean_args = grep {
+			$type->{name} eq "Spice" || $type->{name} eq "Spice"
+		} @args;
+
+		@args = map {
+			$self->app->get_ia_by_name($_)->{perl_module}
+		} @clean_args;
 	}
 	require lib;
 	lib->import('lib');
