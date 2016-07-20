@@ -556,7 +556,7 @@ sub _no_results_error {
 			qq(<script type="text/javascript">seterr('$error')</script>)
 		)->guts
 	);
-	$self->app->emit_error("$error");
+	p($error, color => { string => 'red' });
 
 	my $body = $root->as_HTML;
 	$response->body($body);
