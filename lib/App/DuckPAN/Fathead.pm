@@ -7,6 +7,8 @@ with 'App::DuckPAN::HasApp';
 use DBI;
 use JSON;
 use Path::Tiny;
+use HTML::TreeBuilder;
+use HTML::Element;
 use Data::Printer return_value => 'dump';
 
 has selected => (
@@ -150,55 +152,86 @@ sub get_structured_answer {
 	# Get IA Metadata via ID lookup
 	# Assume selected is an ID
 	my $metadata = DDG::Meta::Data->get_ia(id => $self->selected) // {};
+	$self->app->emit_error("No Metadata found for ID: ".$self->selected) unless keys $metadata;
 	my $data = $self->result;
 
 	# DBD::Csv ignores col_names letter casing
 	# So, manually map columns to template properties
 	# TODO update info_detail template to use lowercase variable names
-	my %extra_data = (
-		Heading 	=> $data->{title},
-		Abstract 	=> $data->{abstract},
-		AbstractURL => $data->{abstract_url},
-		FirstURL 	=> $metadata->{src_url},
-		# TODO Process `images` into HTML links
-		Image 		=> $data->{images},
-		# TODO Builds Results array for disambiguations
-		# Results 	=> [ { FirstResult => "htpps://duckduckgo.com"} ];
-	);
+	my %extra_data;
 
 	my $out = {
 		id => $self->selected,
-		# from => $self->selected,
-		# signal => "high",
+		signal => "high",
 		meta => $metadata,
-		data => { %$data, %extra_data }
 	};
 
 	# Define template, topic and model based on result type
 	if ($data->{type} eq 'A') {
-		$out->{topic} = 'About';
+		$out->{duckbar_topic} = 'About';
 		$out->{model} = 'FatheadArticle';
-		$out->{templates} = {
-			'detail' => 'info_detail'
-		};
+		$out->{templates} = { detail => 'info_detail' };
+		%extra_data = (
+			Heading 	=> $data->{title},
+			Abstract 	=> $data->{abstract},
+			AbstractURL => $data->{abstract_url},
+			FirstURL 	=> $metadata->{src_url},
+			# TODO Process `images` into HTML links
+			Image 		=> $data->{images},
+		);
 	}
 
 	if ($data->{type} eq 'D') {
-		$out->{topic} = 'Meanings';
+		$out->{duckbar_topic} = 'Meanings';
 		$out->{model} = 'FatheadListItem';
-		$out->{templates} = {
-			'item' => 'meanings_item'
-		};
+		$out->{templates} = { item => 'meanings_item' };
+		%extra_data = (
+			Heading 	=> $data->{title}." (".$metadata->{name}.")",
+			RelatedTopics => $self->_get_related_topics($data->{disambiguation}, $out)
+		);
 	}
 
 	if ($data->{type} eq 'C') {
-		$out->{topic} = 'List';
+		$out->{duckbar_topic} = 'List';
 		$out->{model} = 'FatheadListItem';
-		$out->{templates} = {
-			'item' => 'categories_item'
-		};
+		$out->{templates} = { item => 'categories_item' };
 	}
+
+	$out->{data} = { %$data, %extra_data };
 	return $out;
+}
+
+# Emulate internal processing to build JSON
+# matching DDG API result format
+sub _get_related_topics {
+	my ($self, $disambiguations, $out) = @_;
+	my @related_topics;
+	my @disambiguations = split /\\n/, $disambiguations;
+	foreach my $disambiguation (@disambiguations){
+		my $result = {};
+		if ($disambiguation =~ m/^\*\[\[(\w+)\]\],(.+)$/) {
+			my $title = $1;
+			my $html  = $2;
+
+			# Parse HTML into plaintext
+			my $root = HTML::TreeBuilder->new_from_content($html);
+			$root->elementify();
+			my $text = $root->as_trimmed_text;
+
+			# Build URL Path
+			my $href = "/".$out->{meta}->{src_id}."/$title";
+			my $a = HTML::Element->new('a', href => $href);
+			$a->push_content($title);
+
+			$result = {
+				Result => $a->as_HTML . "$text",    # generates `<a href="$url">$title</a>$text` which gets parsed by template helpers
+				FirstURL => $href,
+				Text => $text
+			};
+		}
+		push @related_topics, $result;
+	}
+	return \@related_topics;
 }
 
 1;
