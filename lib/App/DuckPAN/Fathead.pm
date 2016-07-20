@@ -9,12 +9,43 @@ use JSON;
 use Path::Tiny;
 use Data::Printer return_value => 'dump';
 
+has selected => (
+	is => 'rw',
+	lazy => 1,
+	required => 0,
+	predicate => 1,
+	trigger => 1
+);
+
+sub _trigger_selected {
+	my ( $self, $id ) = @_;
+	my $dir = path("lib/fathead/$id");
+	unless ($dir->is_dir) {
+		my $full_path = $dir->realpath;
+		$self->app->emit_and_exit(1, "Directory not found: $full_path") ;
+	}
+	return $dir;
+}
+
 has output_txt => (
 	is => 'rw',
 	lazy => 1,
 	required => 0,
-	default => sub { undef },
+	builder => 1
 );
+
+sub _build_output_txt {
+	my ( $self ) = @_;
+	my $file = undef;
+	if ($self->has_selected) {
+		$file = path("lib/fathead/", $self->selected, "/output.txt");
+		unless ($file->exists){
+			my $full_path = $file->realpath;
+			$self->app->emit_and_exit(1, "No output.txt was not found in $full_path");
+		}
+	}
+	return $file;
+}
 
 sub search_output {
 
@@ -24,7 +55,7 @@ sub search_output {
 	# Handles as a CSV with "\t" separator
 	# Provide numbered column names
 	my $dbh = DBI->connect ("dbi:CSV:", undef, undef, {
-		f_dir                   => path($self->output_txt)->parent,
+		f_dir                   => $self->output_txt->parent,
 		f_ext                   => ".txt/r",
 		csv_sep_char            => "\t",
 		csv_quote_char          => undef,
