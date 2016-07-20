@@ -34,6 +34,7 @@ sub get_blocks_from_current_dir {
 		search_path => [$type->{dir}],
 	);
 	if (scalar @args == 0) {
+		$self->app->emit_and_exit(1, "No Fathead ID passed as argument.", "Please specify a Fathead ID e.g. 'duckpan server mdn_css'") if $type->{name} eq "Fathead";
 		my @plugins = $finder->plugins;
 		push @args, sort { $a cmp $b } @plugins;
 		@args = map {

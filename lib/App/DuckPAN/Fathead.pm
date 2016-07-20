@@ -54,11 +54,6 @@ has dbh => (
 	builder => 1
 );
 
-sub BUILD {
-	my ($self, $args) = @_;
-	$self->app->emit_and_exit(1, "No Fathead ID passed as argument.", "Please specify a Fathead ID e.g. 'duckpan server mdn_css'") unless $self->selected;
-}
-
 sub _build_dbh {
 	my ( $self ) = @_;
 
