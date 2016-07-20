@@ -176,8 +176,7 @@ sub get_structured_answer {
 			Abstract 	=> $data->{abstract},
 			AbstractURL => $data->{abstract_url},
 			FirstURL 	=> $metadata->{src_url},
-			# TODO Process `images` into HTML links
-			Image 		=> $data->{images},
+			Image 		=> $self->_get_image($data->{images}),
 		);
 	}
 
@@ -232,6 +231,17 @@ sub _get_related_topics {
 		push @related_topics, $result;
 	}
 	return \@related_topics;
+}
+
+# Emulate internal processing to build JSON
+# matching DDG API result format
+sub _get_image {
+	my ($self, $image) = @_;
+	my $url = "";
+	if ($image =~ m/^\[\[Image:(.+)\]\]$/) {
+		$url = $1;
+	}
+	return $url;
 }
 
 1;
