@@ -186,7 +186,7 @@ sub get_structured_answer {
 		$out->{templates} = { item => 'meanings_item' };
 		%extra_data = (
 			Heading 	=> $data->{title}." (".$metadata->{name}.")",
-			RelatedTopics => $self->_get_related_topics($data->{disambiguation}, $out)
+			RelatedTopics => $self->_parse_disambiguations($data->{disambiguation}, $out)
 		);
 	}
 
@@ -203,10 +203,10 @@ sub get_structured_answer {
 
 # Emulate internal processing to build JSON
 # matching DDG API result format
-sub _get_related_topics {
+sub _parse_disambiguations {
 	my ($self, $disambiguations, $out) = @_;
-	my @related_topics;
-	my @disambiguations = split /\\n/, $disambiguations;
+	my @out;
+	my @disambiguations = split /\\\\n/, $disambiguations;
 	foreach my $disambiguation (@disambiguations){
 		my $result = {};
 		if ($disambiguation =~ m/^\*\[\[(\w+)\]\],(.+)$/) {
@@ -229,14 +229,14 @@ sub _get_related_topics {
 				Text => $text
 			};
 		}
-		push @related_topics, $result;
+		push @out, $result;
 	}
-	return \@related_topics;
+	return \@out;
 }
 
 # Emulate internal processing to build JSON
 # matching DDG API result format
-sub _get_image {
+sub _parse_image {
 	my ($self, $image) = @_;
 	my $url = "";
 	if ($image =~ m/^\[\[Image:(.+)\]\]$/) {
