@@ -237,7 +237,7 @@ sub _parse_disambiguations {
 
 # Emulate internal processing to build JSON
 # matching DDG API result format
-sub _parse_image {
+sub _get_image {
 	my ($self, $image) = @_;
 	my $url = "";
 	if ($image =~ m/^\[\[Image:(.+)\]\]$/) {
