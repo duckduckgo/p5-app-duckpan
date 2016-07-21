@@ -172,7 +172,7 @@ sub get_structured_answer {
 		$out->{templates} = { detail => 'info_detail' };
 		%extra_data = (
 			Heading 	=> $data->{title},
-			Abstract 	=> $data->{abstract},
+			Abstract 	=> $self->_replace_newlines($data->{abstract}),
 			AbstractURL => $data->{abstract_url},
 			FirstURL 	=> $metadata->{src_url},
 			Image 		=> $self->_get_image($data->{images}),
@@ -244,5 +244,13 @@ sub _get_image {
 	}
 	return $url;
 }
+
+
+sub _replace_newlines {
+	my ($self, $abstract) = @_;
+	$abstract =~ s/\\n/<br>/g;
+	return $abstract;
+}
+
 
 1;
