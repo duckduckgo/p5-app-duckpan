@@ -97,16 +97,9 @@ sub _build_dbh {
 	return $dbh;
 }
 
-has result => (
-	is => 'rw',
-	lazy => 1,
-	required => 0,
-	predicate => 1
-);
-
 # Get a Fathead result from the DB
 # Requery when we get a Redirect
-sub search_output {
+sub _search_output {
 
 	my ($self, $query) = @_;
 
@@ -117,9 +110,7 @@ sub search_output {
 		$result = $self->_db_lookup($redirect);
 		$self->app->emit_notice("Following Redirect: '$query' -> '$redirect'");
 	}
-
-	$self->result($result) if $result;
-	return $self->has_result;
+	return $result;
 }
 
 # Attempt to get a result from DB (output.txt)
@@ -143,16 +134,21 @@ sub _db_lookup {
 	return $result;
 }
 
+sub structured_answer_for_query {
+	my ($self, $query) = @_;
+	my $result = $self->_search_output($query) or return undef;
+	return $self->_build_structured_answer($result);
+}
+
 # Build a Structured Answer hash
 # Properties depend on Fathead result type
-sub get_structured_answer {
-	my ($self) = @_;
+sub _build_structured_answer {
+	my ($self, $data) = @_;
 
 	# Get IA Metadata via ID lookup
 	# Assume selected is an ID
 	my $metadata = DDG::Meta::Data->get_ia(id => $self->selected) // {};
 	$self->app->emit_error("No Metadata found for ID: ".$self->selected) unless keys $metadata;
-	my $data = $self->result;
 
 	# DBD::Csv ignores col_names letter casing
 	# So, manually map columns to template properties
