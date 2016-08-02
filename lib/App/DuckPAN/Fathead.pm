@@ -161,7 +161,7 @@ sub _build_structured_answer {
 		%extra_data = (
 			Heading 	=> $data->{title},
 			Abstract 	=> $self->_replace_newlines($data->{abstract}),
-			AbstractURL => $data->{abstract_url},
+			AbstractURL	=> $data->{abstract_url},
 			FirstURL 	=> $metadata->{src_url},
 			Image 		=> $self->_get_image($data->{images}),
 		);
@@ -173,7 +173,7 @@ sub _build_structured_answer {
 		$out->{model} = 'FatheadListItem';
 		$out->{templates} = { item => 'meanings_item' };
 		%extra_data = (
-			Heading 	=> $data->{title}." (".$metadata->{name}.")",
+			Heading => $data->{title}." (".$metadata->{name}.")",
 			RelatedTopics => $self->_parse_disambiguations($data->{disambiguation}, $out)
 		);
 	}
