@@ -5,6 +5,8 @@ use Moo;
 use Data::Printer return_value => 'dump';
 use POE qw( Wheel::ReadLine );
 use Try::Tiny;
+use Path::Tiny;
+use App::DuckPAN::Fathead;
 use open qw/:std :utf8/;
 
 # Entry into the module.
@@ -21,10 +23,10 @@ sub run {
 
 	# Main session. All events declared have equivalent subs.
 	POE::Session->create(
-	    package_states => [
-	        $self => [qw(_start _stop _get_user_input _got_user_input _run_query)]
-	    ],
-	    args => [$app, $blocks] # passed to _start
+		package_states => [
+			$self => [qw(_start _stop _get_user_input _got_user_input _run_query)]
+		],
+		args => [$app, $blocks] # passed to _start
 	);
 	POE::Kernel->run();
 
@@ -39,7 +41,7 @@ sub _start {
 
 	# Session that handles user input
 	my $powh_readline = POE::Wheel::ReadLine->new(
-	    InputEvent => '_got_user_input'
+		InputEvent => '_got_user_input'
 	);
 	$powh_readline->bind_key("C-\\", "interrupt");
 	$powh_readline->read_history($history_path);
@@ -69,15 +71,15 @@ sub _got_user_input {
 
 	# If we have input, send it off to be processed
 	if($input){
-	    my ($console, $history_path) = @$h{qw(console history_path)};
+		my ($console, $history_path) = @$h{qw(console history_path)};
 
-	    $console->put("  You entered: $input");
-	    $console->addhistory($input);
-	    $console->write_history($history_path);
-	    $k->yield(_run_query => $input); # this yield keeps the loop going
+		$console->put("  You entered: $input");
+		$console->addhistory($input);
+		$console->write_history($history_path);
+		$k->yield(_run_query => $input); # this yield keeps the loop going
 	}
 	else{
-	    $h->{console}->put('\\_o< Thanks for testing!');
+		$h->{console}->put('\\_o< Thanks for testing!');
 	}
 	# falling through here without queuing an event ends the app.
 }
@@ -94,35 +96,48 @@ sub _run_query {
 	my ($app, $blocks) = @$h{qw{app blocks}};
 	Encode::_utf8_on($query);
 
+	my $repo = $app->get_ia_type;
+
 	try {
-	    my $request = DDG::Request->new(
-	        query_raw => $query,
-	        location => test_location_by_env(),
-	        language => test_language_by_env(),
-	    );
-	    my $hit;
-	    # Iterate through the IAs passing each the query request
-	    for my $b (@$blocks) {
-	        for ($b->request($request)) {
-	            $hit = 1;
-	            $app->emit_info('---', p($_, colored => $app->colors), '---');
-	        }
-	    }
-	    unless ($hit) {
-	        $app->emit_info('Sorry, no hit on your instant answer')
-	    }
+		if ($repo->{name} eq "Fathead") {
+			my $output_txt = $app->fathead->output_txt;
+			if (my $result = $app->fathead->structured_answer_for_query($query)) {
+				$app->emit_info('---', "Match found: $output_txt", p($result, colored => $app->colors), '---');
+			}
+			else {
+				$app->emit_error('Sorry, no matches found in output.txt');
+			}
+		}
+		else {
+			my $request = DDG::Request->new(
+				query_raw => $query,
+				location => test_location_by_env(),
+				language => test_language_by_env(),
+			);
+			my $hit;
+			# Iterate through the IAs passing each the query request
+			for my $b (@$blocks) {
+				for ($b->request($request)) {
+					$hit = 1;
+					$app->emit_info('---', p($_, colored => $app->colors), '---');
+				}
+			}
+			unless ($hit) {
+				$app->emit_info('Sorry, no Instant Answers returned a result')
+			}
+		}
 	}
 	catch {
-	    my $error = $_;
-	    if ($error =~ m/Malformed UTF-8 character/) {
-	        $app->emit_info('You got a malformed utf8 error message. Normally' .
-	            ' it means that you tried to enter a special character at the query' .
-	            ' prompt but your interface is not properly configured for utf8.' .
-	            ' Please check the documentation for your terminal, ssh client' .
-	            ' or other client used to execute duckpan.'
-	        );
-	    }
-	    $app->emit_info("Caught error: $error");
+		my $error = $_;
+		if ($error =~ m/Malformed UTF-8 character/) {
+			$app->emit_info('You got a malformed utf8 error message. Normally' .
+				' it means that you tried to enter a special character at the query' .
+				' prompt but your interface is not properly configured for utf8.' .
+				' Please check the documentation for your terminal, ssh client' .
+				' or other client used to execute duckpan.'
+			);
+		}
+		$app->emit_info("Caught error: $error");
 	};
 
 	# Enqueue input event

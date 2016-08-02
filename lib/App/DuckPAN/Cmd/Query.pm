@@ -6,8 +6,6 @@ with qw( App::DuckPAN::Cmd App::DuckPAN::Restart );
 
 use MooX::Options protect_argv => 0;
 
-# Entry point into app
-
 sub run {
 	my ($self, @args) = @_;
 

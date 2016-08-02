@@ -43,7 +43,7 @@ option check => (
 	doc         => 'perform requirements checks. turn off with --no-check',
 );
 
-option 'empty' => (
+option empty => (
 	is          => 'ro',
 	lazy        => 1,
 	short       => 'e',
@@ -128,7 +128,7 @@ option cache => (
 has term => (
 	is => 'ro',
 	lazy => 1,
-	builder => '_build_term',
+	builder => 1,
 );
 
 sub _build_term { Term::ReadLine->new('duckpan') }
@@ -136,7 +136,7 @@ sub _build_term { Term::ReadLine->new('duckpan') }
 has ia_types => (
 	is => 'ro',
 	lazy => 1,
-	builder => '_build_ia_types',
+	builder => 1,
 );
 
 sub _build_ia_types {
@@ -185,7 +185,7 @@ sub _build_ia_types {
 		{
 			name          => 'Fathead',
 			dir           => $ddg_path->child('Fathead'),
-			supported     => 0,
+			supported     => 1,
 			path_basename => 'zeroclickinfo-fathead',
 		},
 		{
@@ -212,7 +212,7 @@ sub ask_yn {
 
 has http => (
 	is => 'ro',
-	builder => '_build_http',
+	builder => 1,
 	lazy => 1,
 );
 
@@ -255,7 +255,7 @@ sub _build_cfg {
 
 has perl => (
 	is => 'ro',
-	builder => '_build_perl',
+	builder => 1,
 	lazy => 1,
 );
 
@@ -266,13 +266,24 @@ sub _build_perl {
 
 has ddg => (
 	is => 'ro',
-	builder => '_build_ddg',
+	builder => 1,
 	lazy => 1,
 );
 
 sub _build_ddg {
 	load_class('App::DuckPAN::DDG');
 	App::DuckPAN::DDG->new( app => shift );
+}
+
+has fathead => (
+	is => 'ro',
+	builder => 1,
+	lazy => 1,
+);
+
+sub _build_fathead {
+	load_class('App::DuckPAN::Fathead');
+	App::DuckPAN::Fathead->new( app => shift );
 }
 
 sub execute {
