@@ -105,10 +105,10 @@ sub _search_output {
 
 	my $result = $self->_db_lookup($query);
 
-	if ($result && $result->{type} eq "R") {
+	while ($result && $result->{type} eq 'R') {
 		my $redirect = $result->{redirect};
+		$self->app->emit_notice("Following Redirect: '$result->{title}' -> '$redirect'");
 		$result = $self->_db_lookup($redirect);
-		$self->app->emit_notice("Following Redirect: '$query' -> '$redirect'");
 	}
 	return $result;
 }
