@@ -26,28 +26,20 @@ sub _trigger_selected {
 		my $full_path = $dir->realpath;
 		$self->app->emit_and_exit(1, "Directory not found: $full_path") ;
 	}
+	my $file = $dir->child("output.txt");
+	unless ($file->exists){
+		my $full_path = $file->realpath;
+		$self->app->emit_and_exit(1, "No output.txt was not found in $full_path");
+	}
+	$self->output_txt($file);
 	return $dir;
 }
 
 has output_txt => (
 	is => 'rw',
 	lazy => 1,
-	required => 0,
-	builder => 1
+	required => 0
 );
-
-sub _build_output_txt {
-	my ( $self ) = @_;
-	my $file = undef;
-	if ($self->has_selected) {
-		$file = path("lib/fathead/", $self->selected, "/output.txt");
-		unless ($file->exists){
-			my $full_path = $file->realpath;
-			$self->app->emit_and_exit(1, "No output.txt was not found in $full_path");
-		}
-	}
-	return $file;
-}
 
 has dbh => (
 	is => 'rw',
