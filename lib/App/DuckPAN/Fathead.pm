@@ -216,7 +216,7 @@ sub _parse_disambiguations {
 			my $text = $root->as_trimmed_text;
 
 			# Build URL Path
-			my $href = "/".$out->{meta}->{src_id}."/$title";
+			my $href = "/?q=$title&ia=about";
 			my $a = HTML::Element->new('a', href => $href);
 			$a->push_content($title);
 
