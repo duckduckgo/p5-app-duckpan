@@ -37,21 +37,19 @@ sub _trigger_selected {
 
 has _trigger_words => (
 	is      => 'ro',
-	lazy    => 1,
 	builder => 1,
+	lazy    => 1,
 );
 
 sub _build__trigger_words {
 	my ($self) = @_;
 	my $tf = 'trigger_words.txt';
-	my $file;
-	if ($self->has_selected) {
-		$file = path("lib/fathead/", $self->selected, $tf);
-		unless ($file->exists){
-			my $full_path = $file->realpath;
-			$self->app->emit_error("No $tf was found in $full_path");
-			return [];
-		}
+	return [] unless $self->has_selected;
+	my $file = path("lib/fathead/", $self->selected, $tf);
+	unless ($file->exists){
+		my $full_path = $file->realpath;
+		$self->app->emit_debug("No $tf was found in $full_path");
+		return [];
 	}
 	chomp (my @words = $file->lines);
 	return \@words;
