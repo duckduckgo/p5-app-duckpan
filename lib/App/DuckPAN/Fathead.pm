@@ -64,8 +64,8 @@ has _trigger_re => (
 sub _build__trigger_re {
 	my ($self) = @_;
 	my @words = @{$self->_trigger_words};
-	my $text = '\b(?:' . (join '|', map { quotemeta $_ } @words) . ')\b';
-	return qr/$text/i;
+	my $text = join '|', map { quotemeta $_ } @words;
+	return qr/\b(?:$text)\b/i;
 }
 
 has output_txt => (
