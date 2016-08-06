@@ -364,14 +364,15 @@ duckpan new MyFirst::Spice
 ---
 
 ```
-duckpan query [package_name ...]
+duckpan query [package_name ... | instant_inswer_id ...]
 ```
 
 Test Goodie and Spice triggers interactively on the command line.
 
 Arguments:
 
-- `[package_name ...]` to load only the specified Spice or Goodie Instant Answers.
+- `[package_name ...]` to load one or more Spice, or Goodie Instant Answers.
+- `[instant_answer_id ...]` to load one or more Spice, or Goodie Instant Answers; Or load a single Fathead Instant Answer
 
 Example:
 
@@ -383,13 +384,21 @@ duckpan query Npm
 duckpan query Twitter IsItUp
 ```
 
+```
+duckpan query mdn_css
+```
+
 ---
 
 ```
-duckpan server [--port <number>] [package_name ...]
+duckpan server [--port <number>] [package_name ... | instant_inswer_id ...]
 ```
 
-Test Goodie and Spice Instant Answers on a local web server, which replicates the DuckDuckGo production environment. This should be used to ensure Spice and Goodies are displayed properly. For Spice Instant Answers, you should use the DuckPAN Server to also test your JavaScript code and Handlebars templates.
+Test multiple Goodie or Spice, or individual Fathead Instant Answers on a local web server, which simulates the DuckDuckGo production environment. This should be used to ensure Goodie, Spice and Fathead Instant Answers are displayed properly.
+
+For Spice Instant Answers, you should use the DuckPAN Server to also test your JavaScript code and Handlebars templates. 
+
+For Fathead Instant Answers, the specified Instant Answer ID must have a matching folder in the `/lib/fathead/` dir containing an **output.txt** file. 
 
 Options:
 
@@ -397,7 +406,8 @@ Options:
 
 Arguments:
 
-- `[package_name ...]` to load only the specified Spice or Goodie Instant Answers.
+- `[package_name ...]` to load one or more Spice, or Goodie Instant Answers.
+- `[instant_answer_id ...]` to load one or more Spice, or Goodie Instant Answers; Or load a single Fathead Instant Answer
 
 Example:
 
