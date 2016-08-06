@@ -205,7 +205,7 @@ sub _parse_disambiguations {
 	my @disambiguations = split /\\n/, $disambiguations;
 	foreach my $disambiguation (@disambiguations){
 		my $result = {};
-		if ($disambiguation =~ m/^\*\[\[(.+)\]\],(.+)$/) {
+		if ($disambiguation =~ m/^\*\[\[(.+)\]\](?:,|\s)(.+)$/) {
 
 			my $title = $1;
 			my $html  = $2;
