@@ -231,6 +231,27 @@ sub _parse_disambiguations {
 	return \@out;
 }
 
+# Parse list of Related Topics into hash
+# Processed by internal JS to create InfoBox w/ "Related Topics" heading
+sub _parse_related_topics {
+	my ($self, $related_topics, $out) = @_;
+	my @infobox_data;
+	my @related_topics = split /\\n/, $related_topics;
+	foreach my $related_topic (@related_topics){
+		if ($related_topic =~ m/^\[\[(.+)(?:|(.+))?\]\]$/) {
+			my $topic = lc ($2 || $1);
+			my $url = "/fathead/c/$topic";
+			push @infobox_data, { Text => $1, FirstURL => $url };
+		}
+		else {
+			$self->app->emit_error("Incorrect syntax for related topic: $related_topic");
+		}
+	}
+	p(@infobox_data);
+	return \@infobox_data;
+}
+
+
 # Emulate internal processing to build JSON
 # matching DDG API result format
 sub _get_image {
