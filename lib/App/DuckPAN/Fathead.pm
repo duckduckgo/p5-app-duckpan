@@ -253,7 +253,6 @@ sub _parse_related_topics {
 			$self->app->emit_error("Incorrect syntax for related topic: $related_topic");
 		}
 	}
-	p(@infobox_data);
 	return \@infobox_data;
 }
 
