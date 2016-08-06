@@ -31,12 +31,12 @@ sub _trigger_selected {
 		my $full_path = $file->realpath;
 		$self->app->emit_and_exit(1, "No output.txt was not found in $full_path");
 	}
-	$self->output_txt($file);
+	$self->_set_output_txt($file);
 	return $dir;
 }
 
 has output_txt => (
-	is => 'rw',
+	is => 'rwp',
 	lazy => 1,
 	required => 0
 );
