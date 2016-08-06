@@ -169,9 +169,12 @@ sub _build_structured_answer {
 		%extra_data = (
 			Heading 	=> $data->{title},
 			Abstract 	=> $self->_replace_newlines($data->{abstract}),
-			AbstractURL => $data->{abstract_url},
-			FirstURL 	=> $metadata->{src_url},
+			AbstractURL	=> $data->{abstract_url},
 			Image 		=> $self->_get_image($data->{images}),
+			RelatedTopics => $self->_parse_related_topics($data->{related_topics}, $out)
+			# Results		=> [
+			# { FirstURL 	=> $metadata->{src_url} },
+			# ],
 		);
 	}
 
