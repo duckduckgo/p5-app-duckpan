@@ -189,7 +189,10 @@ sub _build_structured_answer {
 		);
 	}
 
+
 	# Category Pages Result
+	# TODO:
+	#  Build category pages by parsing each article's categories
 	if ($data->{type} eq 'C') {
 		$out->{duckbar_topic} = 'List';
 		$out->{model} = 'FatheadListItem';
