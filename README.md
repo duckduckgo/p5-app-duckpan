@@ -6,7 +6,7 @@ DuckPAN is an application built to aid DuckDuckHack developers. It is mainly use
 
 Below are instructions to set up DuckPAN on various development environments.
 
-*Currently DuckPAN only supports Goodie and Spice Instant Answers.*
+*Currently DuckPAN supports **Goodie**, **Spice**, and **FatHead** Instant Answers*
 
 Join us on Slack! [Request invite](mailto:QuackSlack@duckduckgo.com?subject=AddMe)
 
