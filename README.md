@@ -419,6 +419,10 @@ duckpan server Movie
 duckpan server IDN Sort Morse
 ```
 
+```
+duckpan query mdn_css
+```
+
 ---
 
 ```
