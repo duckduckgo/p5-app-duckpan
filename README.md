@@ -394,7 +394,7 @@ duckpan query mdn_css
 duckpan server [--port <number>] [package_name ... | instant_inswer_id ...]
 ```
 
-Test multiple Goodie or Spice, or individual Fathead Instant Answers on a local web server, which simulates the DuckDuckGo production environment. This should be used to ensure Goodie, Spice and Fathead Instant Answers are displayed properly.
+Test multiple Goodie or Spice, or individual Fathead Instant Answers on a local web server, which simulates the DuckDuckGo production environment. This should be used to ensure Goodie, Spice, and Fathead Instant Answers are displayed properly.
 
 For Spice Instant Answers, you should use the DuckPAN Server to also test your JavaScript code and Handlebars templates. 
 
