@@ -364,15 +364,15 @@ duckpan new MyFirst::Spice
 ---
 
 ```
-duckpan query [package_name ... | instant_inswer_id ...]
+duckpan query [name ... | id ...]
 ```
 
 Test Goodie and Spice triggers interactively on the command line.
 
 Arguments:
 
-- `[package_name ...]` to load one or more Spice, or Goodie Instant Answers.
-- `[instant_answer_id ...]` to load one or more Spice, or Goodie Instant Answers; Or load a single Fathead Instant Answer
+- `[name ...]` to load one or more Spice, or Goodie Instant Answers.
+- `[id ...]` to load one or more Spice, or Goodie Instant Answers; Or load a single Fathead Instant Answer
 
 Example:
 
@@ -391,7 +391,7 @@ duckpan query mdn_css
 ---
 
 ```
-duckpan server [--port <number>] [package_name ... | instant_inswer_id ...]
+duckpan server [--port <number>] [name ... | id ...]
 ```
 
 Test multiple Goodie or Spice, or individual Fathead Instant Answers on a local web server, which simulates the DuckDuckGo production environment. This should be used to ensure Goodie, Spice, and Fathead Instant Answers are displayed properly.
@@ -406,8 +406,8 @@ Options:
 
 Arguments:
 
-- `[package_name ...]` to load one or more Spice, or Goodie Instant Answers.
-- `[instant_answer_id ...]` to load one or more Spice, or Goodie Instant Answers; Or load a single Fathead Instant Answer
+- `[name ...]` to load one or more Spice, or Goodie Instant Answers.
+- `[id ...]` to load one or more Spice, or Goodie Instant Answers; Or load a single Fathead Instant Answer
 
 Example:
 
