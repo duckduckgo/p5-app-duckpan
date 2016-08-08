@@ -169,9 +169,12 @@ sub _build_structured_answer {
 		%extra_data = (
 			Heading 	=> $data->{title},
 			Abstract 	=> $self->_replace_newlines($data->{abstract}),
-			AbstractURL => $data->{abstract_url},
-			FirstURL 	=> $metadata->{src_url},
+			AbstractURL	=> $data->{abstract_url},
 			Image 		=> $self->_get_image($data->{images}),
+			RelatedTopics => $self->_parse_related_topics($data->{related_topics}, $out)
+			# Results		=> [
+			# { FirstURL 	=> $metadata->{src_url} },
+			# ],
 		);
 	}
 
@@ -186,7 +189,10 @@ sub _build_structured_answer {
 		);
 	}
 
+
 	# Category Pages Result
+	# TODO:
+	#  Build category pages by parsing each article's categories
 	if ($data->{type} eq 'C') {
 		$out->{duckbar_topic} = 'List';
 		$out->{model} = 'FatheadListItem';
@@ -205,7 +211,7 @@ sub _parse_disambiguations {
 	my @disambiguations = split /\\n/, $disambiguations;
 	foreach my $disambiguation (@disambiguations){
 		my $result = {};
-		if ($disambiguation =~ m/^\*\[\[(.+)\]\],(.+)$/) {
+		if ($disambiguation =~ m/^\*\[\[(.+)\]\](?:,|\s)(.+)$/) {
 
 			my $title = $1;
 			my $html  = $2;
@@ -230,6 +236,26 @@ sub _parse_disambiguations {
 	}
 	return \@out;
 }
+
+# Parse list of Related Topics into hash
+# Processed by internal JS to create InfoBox w/ "Related Topics" heading
+sub _parse_related_topics {
+	my ($self, $related_topics, $out) = @_;
+	my @infobox_data;
+	my @related_topics = split /\\n/, $related_topics;
+	foreach my $related_topic (@related_topics){
+		if ($related_topic =~ m/^\[\[(.+)(?:|(.+))?\]\]$/) {
+			my $topic = lc ($2 || $1);
+			my $url = "/fathead/c/$topic";
+			push @infobox_data, { Text => $1, FirstURL => $url };
+		}
+		else {
+			$self->app->emit_error("Incorrect syntax for related topic: $related_topic");
+		}
+	}
+	return \@infobox_data;
+}
+
 
 # Emulate internal processing to build JSON
 # matching DDG API result format
