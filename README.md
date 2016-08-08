@@ -420,7 +420,7 @@ duckpan server IDN Sort Morse
 ```
 
 ```
-duckpan query mdn_css
+duckpan server mdn_css
 ```
 
 ---
