@@ -494,13 +494,13 @@ sub request {
 			# $calls_script = run_on_ready_script( "DDH.add($json)" );
 			$calls_script = run_on_ready_script( "DDH.add.bind(DDH, $json)" );
 		}
-		else{
-			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
+		else {
+			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('$_')" } @calls_nrj) . ';' : '';
 		}
-		my $calls_nrc = @calls_nrc ? join(';', map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
+		my $calls_nrc = @calls_nrc ? join(';', map { "nrc('$_')" } @calls_nrc) . ';' : '';
 
 		if (%calls_template) {
-			foreach my $spice_name ( keys %calls_template ){
+			foreach my $spice_name ( keys %calls_template ) {
 				$calls_script .= join("",map {
 					my $template_name = $_;
 					my $is_ct_self = $calls_template{$spice_name}{$template_name}{"is_ct_self"};
