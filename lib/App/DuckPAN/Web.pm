@@ -539,6 +539,20 @@ sub request {
 	return $response;
 }
 
+
+sub run_on_ready_script {
+	my ($str, $delay) = @_;
+
+	# any unescaped script tags at this stage will XSS the page - so strip them
+	$str =~ s|</?script>||gi;
+
+	# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
+	# return qq|<script type="text/javascript">DDG.ready(function () { $str });</script>|;
+	return qq|<script type="text/javascript">DDG.ready(function () { window.setTimeout($str, 100); });</script>|;
+
+}
+
+
 sub _no_results_error {
 	my ($self, $query)  = @_;
 
