@@ -543,7 +543,7 @@ sub request {
 
 
 sub run_on_ready_script {
-	my ($str, $delay) = @_;
+	my ($str) = @_;
 
 	# any unescaped script tags at this stage will XSS the page - so strip them
 	$str =~ s|</?script>||gi;
