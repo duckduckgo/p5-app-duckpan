@@ -29,7 +29,7 @@ sub _trigger_selected {
 	my $file = $dir->child("output.txt");
 	unless ($file->exists){
 		my $full_path = $file->realpath;
-		$self->app->emit_and_exit(1, "No output.txt was not found in $full_path");
+		$self->app->emit_and_exit(1, "No output.txt was found in $full_path");
 	}
 	$self->_set_output_txt($file);
 	return $dir;
