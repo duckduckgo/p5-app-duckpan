@@ -482,7 +482,7 @@ sub request {
 			my $goodie = shift @calls_goodie;
 			my $json = encode_json($goodie);
 			$calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
-			# Uncomment following line and remove ".bind" line when javascript race condition is addressed
+			# Uncomment following line when javascript race condition is addressed
 			# $calls_script = run_on_ready_script( "DDH.add($json)" );
 			$calls_script = run_on_ready_script( "DDH.add.bind(DDH, $json)" );
 		}
@@ -490,7 +490,7 @@ sub request {
 			my $fathead = shift @calls_fathead;
 			my $json = encode_json($fathead);
 			$calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$fathead->{id}'});",
-			# Uncomment following line and remove ".bind" line when javascript race condition is addressed
+			# Uncomment following line when javascript race condition is addressed
 			# $calls_script = run_on_ready_script( "DDH.add($json)" );
 			$calls_script = run_on_ready_script( "DDH.add.bind(DDH, $json)" );
 		}
@@ -548,12 +548,11 @@ sub run_on_ready_script {
 	# any unescaped script tags at this stage will XSS the page - so strip them
 	$str =~ s|</?script>||gi;
 
-	# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
+	# Uncomment following line when javascript race condition is addressed
 	# return qq|<script type="text/javascript">DDG.ready(function () { $str });</script>|;
 	return qq|<script type="text/javascript">DDG.ready(function () { window.setTimeout($str, 100); });</script>|;
 
 }
-
 
 sub _no_results_error {
 	my ($self, $query)  = @_;
