@@ -26,28 +26,20 @@ sub _trigger_selected {
 		my $full_path = $dir->realpath;
 		$self->app->emit_and_exit(1, "Directory not found: $full_path") ;
 	}
+	my $file = $dir->child("output.txt");
+	unless ($file->exists){
+		my $full_path = $file->realpath;
+		$self->app->emit_and_exit(1, "No output.txt was found in $full_path");
+	}
+	$self->_set_output_txt($file);
 	return $dir;
 }
 
 has output_txt => (
-	is => 'rw',
+	is => 'rwp',
 	lazy => 1,
-	required => 0,
-	builder => 1
+	required => 0
 );
-
-sub _build_output_txt {
-	my ( $self ) = @_;
-	my $file = undef;
-	if ($self->has_selected) {
-		$file = path("lib/fathead/", $self->selected, "/output.txt");
-		unless ($file->exists){
-			my $full_path = $file->realpath;
-			$self->app->emit_and_exit(1, "No output.txt was not found in $full_path");
-		}
-	}
-	return $file;
-}
 
 has dbh => (
 	is => 'rw',
@@ -169,7 +161,7 @@ sub _build_structured_answer {
 		%extra_data = (
 			Heading 	=> $data->{title},
 			Abstract 	=> $self->_replace_newlines($data->{abstract}),
-			AbstractURL => $data->{abstract_url},
+			AbstractURL	=> $data->{abstract_url},
 			FirstURL 	=> $metadata->{src_url},
 			Image 		=> $self->_get_image($data->{images}),
 		);
@@ -181,7 +173,7 @@ sub _build_structured_answer {
 		$out->{model} = 'FatheadListItem';
 		$out->{templates} = { item => 'meanings_item' };
 		%extra_data = (
-			Heading 	=> $data->{title}." (".$metadata->{name}.")",
+			Heading => $data->{title}." (".$metadata->{name}.")",
 			RelatedTopics => $self->_parse_disambiguations($data->{disambiguation}, $out)
 		);
 	}
