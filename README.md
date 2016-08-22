@@ -261,6 +261,34 @@ Additionally you may run into issues with SSL Verification. In this case install
 cpanm Mozilla::CA
 ```
 
+#### Crypt::SSLeay (for Mac OS El Capitan)
+
+If you failed to install Crypt::SSLeay with cpanm
+
+```shell
+cpanm Crypt::SSLeay
+--> Working on Crypt::SSLeay
+Fetching http://www.cpan.org/authors/id/N/NA/NANIS/Crypt-SSLeay-0.72.tar.gz ... OK
+Configuring Crypt-SSLeay-0.72 ... N/A
+! Configure failed for Crypt-SSLeay-0.72. See /Users/soleo/.cpanm/work/1471743850.28096/build.log for details.
+```
+and the build.log shows missing openssl
+```shell
+openssl-version.c:2:10: fatal error: 'openssl/opensslv.h' file not found
+#include <openssl/opensslv.h>
+         ^
+1 error generated.
+Failed to build and link a simple executable using OpenSSL
+-> N/A
+```
+
+Try install openssl with homebrew and set up library path
+
+```shell
+brew install openssl
+OPENSSL_INCLUDE=$(brew --prefix openssl)/include OPENSSL_LIB=$(brew --prefix openssl)/lib cpanm Crypt::SSLeay
+```
+
 ### Optional Dependencies (for Staff and Maintainers)
 
 DuckPAN now uses [**Node.js**](https://nodejs.org/), [**Handlebars.js**](http://handlebarsjs.com/), and [**Uglify.js**]() to build releases of the ZeroClickInfo repositories. Releases are only created and used by DuckDuckGo Staff and so these dependencies are **only required for DuckDuckGo Staff**. If you execute `dzil build`, `dzil install` or `dzil test` without these dependencies you will see errors.
