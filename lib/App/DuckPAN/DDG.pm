@@ -132,6 +132,11 @@ sub get_blocks_from_current_dir {
 	# Now let's tell the user why some of the modules failed.
 	$self->show_failed_modules(\%failed_to_load);
 
+	# Always bail if we have no Instant Answers to work with.
+	unless (@successfully_loaded || $self->app->fathead->selected) {
+		$self->app->emit_and_exit(1, "No Instant Answers loaded.");
+	}
+
 	if(@UC_TRIGGERS){
 		$self->app->emit_notice('Detected potential UPPERCASE triggers in the following instant answers. If yours is listed, check it out! Only lowercase will work.' . "\n"
 			. p(@UC_TRIGGERS, colored => $self->app->colors));
