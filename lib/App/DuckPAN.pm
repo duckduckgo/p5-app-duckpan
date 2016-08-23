@@ -442,8 +442,6 @@ sub get_ia_by_name {
 			? DDG::Meta::Data->get_ia(id => $name)
 			: DDG::Meta::Data->get_ia(id => $self->camel_to_underscore($name));
 	}
-	$self->emit_and_exit(1, "No Instant Answer found with name '$name'")
-		unless defined $ia;
 	return $ia;
 }
 
