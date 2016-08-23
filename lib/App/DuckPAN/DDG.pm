@@ -50,13 +50,9 @@ sub get_blocks_from_current_dir {
 		} @args;
 		$self->app->fathead->selected(@fatheads);
 
-		my @clean_args = grep {
+		@args = grep {
 			$type->{name} eq "Spice" || $type->{name} eq "Goodie"
 		} @args;
-
-		@args = map {
-			$self->app->get_ia_by_name($_)->{perl_module}
-		} @clean_args;
 	}
 	require lib;
 	lib->import('lib');
@@ -71,9 +67,19 @@ sub get_blocks_from_current_dir {
 
 	my (%blocks_plugins, @UC_TRIGGERS);
 	# This loop goes through each Goodie / Spice, and it tries to load it.
-	foreach my $class (@args) {
+	foreach my $arg (@args) {
 		# Let's try to load each Goodie / Spice module
 		# and see if they load successfully.
+		my $class;
+		if (my $ia = $self->app->get_ia_by_name($arg)) {
+			$class = $ia->{perl_module};
+		}
+		else {
+			$failed_to_load{$arg} =
+				'Could not retrieve metadata - please ensure the Instant Answer page ' .
+				'is in development status or later.';
+			next;
+		}
 		my ($load_success, $load_error_message) = try_load_class($class);
 
 		# If they load successfully, $load_success would be a 1.
