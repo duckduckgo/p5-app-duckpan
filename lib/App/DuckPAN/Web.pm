@@ -72,16 +72,16 @@ sub BUILD {
 }
 
 sub run_psgi {
-	my ( $self, $env ) = @_;
+	my ( $self, $app, $env ) = @_;
 	$self->_our_hostname($env->{HTTP_HOST}) unless $self->_our_hostname;
 	my $request = Plack::Request->new($env);
-	my $response = $self->request($request);
+	my $response = $self->request($app, $request);
 	return $response->finalize;
 }
 
 my $has_common_js = 0;
 sub request {
-	my ( $self, $request ) = @_;
+	my ( $self, $app, $request ) = @_;
 	my $hostname = $self->server_hostname;
 	my @path_parts = split(/\/+/,$request->request_uri);
 	shift @path_parts;
@@ -97,19 +97,19 @@ sub request {
 		for (keys %{$self->_share_dir_hash}) {
 			if ($request->path =~ m|^/$_/|g) {
 
-	                           $share_dir = $_;
-	                           # Get filename from path and url unescape
-	                           my $filename = uri_unescape( pop @path_parts );
-	                           # Trim path from left to right to find parent dir of filename
-	                           # e.g /share/goodie/foo/foo_imgs/image.png -> "foo_imgs"
-	                           my $remainder = $request->path_info;
-	                           $remainder =~ s|$share_dir||;
-	                           $remainder =~ s|$filename||;
-	                           $remainder =~ s|//|/|;
-	                           $remainder =~ s|^/\d{3,4}||;
+				$share_dir = $_;
+				# Get filename from path and url unescape
+				my $filename = uri_unescape( pop @path_parts );
+				# Trim path from left to right to find parent dir of filename
+				# e.g /share/goodie/foo/foo_imgs/image.png -> "foo_imgs"
+				my $remainder = $request->path_info;
+				$remainder =~ s|$share_dir||;
+				$remainder =~ s|$filename||;
+				$remainder =~ s|//|/|;
+				$remainder =~ s|^/\d{3,4}||;
 
-	                           # if valid remainder exists, prepend to filename
-	                           $filename = "$remainder$filename" if $remainder ne $filename;
+				# if valid remainder exists, prepend to filename
+				$filename = "$remainder$filename" if $remainder ne $filename;
 
 				if (my $filename_path = $self->_share_dir_hash->{$share_dir}->can('share')->($filename)) {
 
@@ -275,8 +275,42 @@ sub request {
 		my %calls_template = ();
 		my %calls_data = ();
 		my @calls_goodie;
+		my @calls_fathead;
 		my @ids;
 
+		my $page = $self->page_spice;
+		my $uri_encoded_query = uri_escape_utf8($query, "^A-Za-z");
+		my $html_encoded_query = encode_entities($query);
+		my $uri_encoded_ddh = quotemeta(uri_escape('duckduckhack-template-for-spice2', "^A-Za-z0-9"));
+		$page =~ s/duckduckhack-template-for-spice2/$html_encoded_query/g;
+		$page =~ s/$uri_encoded_ddh/$uri_encoded_query/g;
+
+		# For debugging query replacement.
+		#p($uri_encoded_ddh);
+		#p($page);
+
+		my $root = HTML::TreeBuilder->new;
+		$root->parse($page);
+
+
+		##########
+		# FATHEAD
+		my $repo = $app->get_ia_type;
+		if ($repo->{name} eq "Fathead") {
+
+			my $output_txt = $app->fathead->output_txt;
+			if (my $result = $app->fathead->structured_answer_for_query($query)) {
+				p($result, colored => $app->colors);
+				push @calls_fathead, $result;
+			}
+			else {
+				# TODO Fallback to DDG API?
+				return $self->_no_results_error($query, $root);
+			}
+		}
+
+		###################
+		#  SPICE & GOODIES
 		for (@{$self->blocks}) {
 			push(@results,$_->request($ddg_request));
 		}
@@ -295,34 +329,8 @@ sub request {
 				return $response;
 		}
 
-		my $page = $self->page_spice;
-		my $uri_encoded_query = uri_escape_utf8($query, "^A-Za-z");
-		my $html_encoded_query = encode_entities($query);
-		my $uri_encoded_ddh = quotemeta(uri_escape('duckduckhack-template-for-spice2', "^A-Za-z0-9"));
-		$page =~ s/duckduckhack-template-for-spice2/$html_encoded_query/g;
-		$page =~ s/$uri_encoded_ddh/$uri_encoded_query/g;
-
-		# For debugging query replacement.
-		#p($uri_encoded_ddh);
-		#p($page);
-
-		my $root = HTML::TreeBuilder->new;
-		$root->parse($page);
-
 		# Check for no results
-		if (!scalar(@results)) {
-			my $error = "Sorry, no hit for your instant answer";
-			$root = HTML::TreeBuilder->new;
-			$root->parse($self->page_root);
-			my $text_field = $root->look_down(
-				"name", "q"
-			);
-			$text_field->attr( value => $query );
-			$root->find_by_tag_name('body')->push_content(
-				HTML::TreeBuilder->new_from_content("<script type=\"text/javascript\">seterr('$error')</script>")->guts
-			);
-			p($error, color => { string => 'red' });
-		}
+		return $self->_no_results_error($query, $root) if !scalar(@results) && $repo->{name} ne "Fathead";
 
 		# Iterate over results,
 		# checking if result is a Spice or Goodie
@@ -406,6 +414,8 @@ sub request {
 							. "});</script>")->guts);
 					}
 				}
+				# HTML Goodie
+				# TODO Remove when all HTML Goodies return structured_answer
 				else {
 					$zci_container->push_content(
 						HTML::TreeBuilder->new_from_content(
@@ -488,7 +498,14 @@ sub request {
 					});
 				</script>|;
 		}
-		else {
+		elsif(@calls_fathead){
+			my $fathead = shift @calls_fathead;
+			# $calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$fathead->{id}'});",
+			# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
+			# $calls_script = q|<script type="text/JavaScript">/*DDH.add(| . encode_json($fathead) . q|);*/</script>|;
+			$calls_script .= q|<script type="text/JavaScript">DDG.ready(function(){ window.setTimeout(DDH.add.bind(DDH, | . encode_json($fathead) . q|), 100)});</script>|;
+		}
+		else{
 			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
 		}
 
@@ -519,7 +536,7 @@ sub request {
 		}
 
 
-		inject_mock_content($root);
+		$self->_inject_mock_content($root);
 
 		$page = $root->as_HTML;
 
@@ -548,11 +565,33 @@ sub request {
 	return $response;
 }
 
+sub _no_results_error {
+	my ($self, $query)  = @_;
+
+	my $response = Plack::Response->new(200);
+	$response->content_type('text/html');
+	my $error = "Sorry, no results were returned from Instant Answer";
+	my $root = HTML::TreeBuilder->new;
+
+	$root->parse($self->page_root);
+	my $text_field = $root->look_down( "name", "q" );
+	$text_field->attr( value => $query );
+	$root->find_by_tag_name('body')->push_content(
+		HTML::TreeBuilder->new_from_content(
+			qq(<script type="text/javascript">seterr('$error')</script>)
+		)->guts
+	);
+	p($error, color => { string => 'red' });
+
+	my $body = $root->as_HTML;
+	$response->body($body);
+	return $response;
+}
 
 #inject some mock results into the SERP to make it look a little more real
-sub inject_mock_content {
+sub _inject_mock_content {
 
-	my $root= shift;
+	my ($self, $root) = @_;
 
 	# ensure results and ad containers exist
 	my $ad_container = $root->look_down(id => "ads");
@@ -590,7 +629,7 @@ sub inject_mock_content {
 	for (1..4){
 		$links_container->push_content(
 			HTML::TreeBuilder->new_from_content(
-				q(<div id="r$_-0" class="result results_links_deep " data-nir="$_"
+				qq(<div id="r$_-0" class="result results_links_deep " data-nir="$_"
 					<div class="result__body links_main links_deep">
 						<h2 class="result__title">
 						<a class="result__a" href="#">

@@ -6,7 +6,7 @@ DuckPAN is an application built to aid DuckDuckHack developers. It is mainly use
 
 Below are instructions to set up DuckPAN on various development environments.
 
-*Currently DuckPAN only supports Goodie and Spice Instant Answers.*
+_Currently DuckPAN supports **Goodie**, **Spice**, and **FatHead** Instant Answers_
 
 Join us on Slack! [Request invite](mailto:QuackSlack@duckduckgo.com?subject=AddMe)
 
@@ -290,7 +290,7 @@ Some of our awesome community members have written shell completion scripts for 
 #### Fish Shell
 
 - Submitted by: [gabriellhrn](https://github.com/gabriellhrn)
-- link: https://github.com/gabriellhrn/dotfiles/blob/master/fish/completions/duckpan-completion.fish
+- link: https://github.com/gabriellhrn/dotfiles/blob/master/fish/.config/fish/completions/duckpan-completion.fish
 
 #### Z Shell
 
@@ -364,14 +364,15 @@ duckpan new MyFirst::Spice
 ---
 
 ```
-duckpan query [package_name ...]
+duckpan query [name ... | id ...]
 ```
 
 Test Goodie and Spice triggers interactively on the command line.
 
 Arguments:
 
-- `[package_name ...]` to load only the specified Spice or Goodie Instant Answers.
+- `[name ...]` to load one or more Spice, or Goodie Instant Answers.
+- `[id ...]` to load one or more Spice, or Goodie Instant Answers; Or load a single Fathead Instant Answer
 
 Example:
 
@@ -383,13 +384,21 @@ duckpan query Npm
 duckpan query Twitter IsItUp
 ```
 
+```
+duckpan query mdn_css
+```
+
 ---
 
 ```
-duckpan server [--port <number>] [package_name ...]
+duckpan server [--port <number>] [name ... | id ...]
 ```
 
-Test Goodie and Spice Instant Answers on a local web server, which replicates the DuckDuckGo production environment. This should be used to ensure Spice and Goodies are displayed properly. For Spice Instant Answers, you should use the DuckPAN Server to also test your JavaScript code and Handlebars templates.
+Test multiple Goodie or Spice, or individual Fathead Instant Answers on a local web server, which simulates the DuckDuckGo production environment. This should be used to ensure Goodie, Spice, and Fathead Instant Answers are displayed properly.
+
+For Spice Instant Answers, you should use the DuckPAN Server to also test your JavaScript code and Handlebars templates. 
+
+For Fathead Instant Answers, the specified Instant Answer ID must have a matching folder in the `/lib/fathead/` dir containing an **output.txt** file. 
 
 Options:
 
@@ -397,7 +406,8 @@ Options:
 
 Arguments:
 
-- `[package_name ...]` to load only the specified Spice or Goodie Instant Answers.
+- `[name ...]` to load one or more Spice, or Goodie Instant Answers.
+- `[id ...]` to load one or more Spice, or Goodie Instant Answers; Or load a single Fathead Instant Answer
 
 Example:
 
@@ -407,6 +417,10 @@ duckpan server Movie
 
 ```
 duckpan server IDN Sort Morse
+```
+
+```
+duckpan server mdn_css
 ```
 
 ---

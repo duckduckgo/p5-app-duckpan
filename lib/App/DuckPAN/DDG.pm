@@ -14,12 +14,12 @@ sub show_failed_modules {
 	my ($self, $failed_to_load) = @_;
 
 	if (%$failed_to_load) {
-	    $self->app->emit_notice("These instant answers were not loaded:");
-	    $self->app->emit_notice(p($failed_to_load, colored => $self->app->colors));
-	    $self->app->emit_notice(
-	        "To learn more about installing Perl dependencies, please read http://docs.duckduckhack.com/resources/other-dev-environments.html#dealing-with-installation-issues.",
-	        "Note: You can ignore these errors if you're not working on these instant answers."
-	    ) if first { /dependencies/ } values %$failed_to_load;
+		$self->app->emit_notice("These instant answers were not loaded:");
+		$self->app->emit_notice(p($failed_to_load, colored => $self->app->colors));
+		$self->app->emit_notice(
+			"To learn more about installing Perl dependencies, please read http://docs.duckduckhack.com/resources/other-dev-environments.html#dealing-with-installation-issues.",
+			"Note: You can ignore these errors if you're not working on these instant answers."
+		) if first { /dependencies/ } values %$failed_to_load;
 	}
 }
 
@@ -27,26 +27,36 @@ sub get_blocks_from_current_dir {
 	my ($self, @args) = @_;
 
 	$self->emit_and_exit(1, 'You need to have the DDG distribution installed', 'To get the installation command, please run: duckpan check')
-	  unless ($self->app->get_local_ddg_version);
+		unless ($self->app->get_local_ddg_version);
 
-	my $type   = $self->app->get_ia_type();
+	my $type   = $self->app->get_ia_type;
 	my $finder = Module::Pluggable::Object->new(
-	    search_path => [$type->{dir}],
+		search_path => [$type->{dir}],
 	);
 	if (scalar @args == 0) {
-	    my @plugins = $finder->plugins;
-	    push @args, sort { $a cmp $b } @plugins;
-	    @args = map {
-	        $_ =~ s!/!::!g;
-	        my @parts = split('::', $_);
-	        shift @parts;
-	        join('::', @parts);
-	    } @args;
+		$self->app->emit_and_exit(1, "No Fathead ID passed as argument.", "Please specify a Fathead ID e.g. 'duckpan server mdn_css'") if $type->{name} eq "Fathead";
+		my @plugins = $finder->plugins;
+		push @args, sort { $a cmp $b } @plugins;
+		@args = map {
+			$_ =~ s!/!::!g;
+			my @parts = split('::', $_);
+			shift @parts;
+			join('::', @parts);
+		} @args;
 	}
 	else {
-	    @args = map {
-				my $camel_name = $self->app->get_ia_by_name($_)->{perl_module};
-			} @args;
+		my @fatheads = grep {
+			$type->{name} eq "Fathead"
+		} @args;
+		$self->app->fathead->selected(@fatheads);
+
+		my @clean_args = grep {
+			$type->{name} eq "Spice" || $type->{name} eq "Goodie"
+		} @args;
+
+		@args = map {
+			$self->app->get_ia_by_name($_)->{perl_module}
+		} @clean_args;
 	}
 	require lib;
 	lib->import('lib');
@@ -62,19 +72,19 @@ sub get_blocks_from_current_dir {
 	my (%blocks_plugins, @UC_TRIGGERS);
 	# This loop goes through each Goodie / Spice, and it tries to load it.
 	foreach my $class (@args) {
-	    # Let's try to load each Goodie / Spice module
-	    # and see if they load successfully.
-	    my ($load_success, $load_error_message) = try_load_class($class);
+		# Let's try to load each Goodie / Spice module
+		# and see if they load successfully.
+		my ($load_success, $load_error_message) = try_load_class($class);
 
-	    # If they load successfully, $load_success would be a 1.
-	    # Otherwise, it would be a 0.
-	    if ($load_success) {
-	        # Since we only want the successful classes to trigger, we
-	        # collect all of the ones that triggered successfully in a temporary list.
-	        push @successfully_loaded, $class;
+		# If they load successfully, $load_success would be a 1.
+		# Otherwise, it would be a 0.
+		if ($load_success) {
+			# Since we only want the successful classes to trigger, we
+			# collect all of the ones that triggered successfully in a temporary list.
+			push @successfully_loaded, $class;
 
-	        # Display to the user when a class has been successfully loaded.
-	        $self->app->emit_debug(" - $class (" . $class->triggers_block_type . ")");
+			# Display to the user when a class has been successfully loaded.
+			$self->app->emit_debug(" - $class (" . $class->triggers_block_type . ")");
 
 			unless ($blocks_plugins{$class->triggers_block_type}) {
 				$blocks_plugins{$class->triggers_block_type} = [];
@@ -99,20 +109,20 @@ sub get_blocks_from_current_dir {
 					}
 				}
 			}
-	    }
-	    else {
-	        # Get the module name that needs to be installed by the user.
-	        if ($load_error_message =~ /Can't locate ([^\.]+).pm in \@INC/) {
-	            $load_error_message = $1;
-	            $load_error_message =~ s/\//::/g;
+		}
+		else {
+			# Get the module name that needs to be installed by the user.
+			if ($load_error_message =~ /Can't locate ([^\.]+).pm in \@INC/) {
+				$load_error_message = $1;
+				$load_error_message =~ s/\//::/g;
 
-	            $failed_to_load{$class} = "Please install $load_error_message and any other required dependencies to use this instant answer.";
-	        }
-	        else {
-	            # We just set the value to whatever the error message was if it failed for some other reason.
-	            $failed_to_load{$class} = $load_error_message;
-	        }
-	    }
+				$failed_to_load{$class} = "Please install $load_error_message and any other required dependencies to use this instant answer.";
+			}
+			else {
+				# We just set the value to whatever the error message was if it failed for some other reason.
+				$failed_to_load{$class} = $load_error_message;
+			}
+		}
 	}
 
 	# Since @args can contain modules that we don't want to trigger (since they didn't load in the first place),
@@ -129,13 +139,13 @@ sub get_blocks_from_current_dir {
 
 	my @blocks;
 	for (keys %blocks_plugins) {
-	    my $block_class = 'DDG::Block::' . $_;
-	    load_class($block_class);
-	    push @blocks,
-	      $block_class->new(
-	        plugins    => $blocks_plugins{$_},
-	        return_one => 0
-	      );
+		my $block_class = 'DDG::Block::' . $_;
+		load_class($block_class);
+		push @blocks,
+		  $block_class->new(
+			plugins    => $blocks_plugins{$_},
+			return_one => 0
+		  );
 	}
 	load_class('DDG::Request');
 	return \@blocks;

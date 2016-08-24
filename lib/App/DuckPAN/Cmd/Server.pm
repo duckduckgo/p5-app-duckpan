@@ -23,7 +23,6 @@ option port => (
 	doc  => 'set port on which server should listen. defaults to 5000',
 );
 
-
 has page_info => (
 	is      => 'ro',
 	builder => '_build_page_info',
@@ -127,7 +126,7 @@ sub _run_app {
 	# Pull files out of cache to be served later by DuckPAN server
 	my %web_args = (
 		blocks          => \@blocks,
-		server_hostname => $self->hostname,
+		server_hostname => $self->hostname
 	);
 	foreach my $page (keys %{$self->page_info}) {
 		$web_args{'page_' . $page} = $self->slurp_or_empty($self->page_info->{$page});
@@ -141,7 +140,7 @@ sub _run_app {
 	my $runner = Plack::Runner->new(
 		#loader => 'Restarter',
 		includes => ['lib'],
-		app      => sub { $web->run_psgi(@_) },
+		app      => sub { $web->run_psgi($self->app, @_) },
 	);
 	#$runner->loader->watch("./lib");
 	$runner->parse_options("--port", $self->port);
