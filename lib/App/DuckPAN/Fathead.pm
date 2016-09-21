@@ -140,7 +140,7 @@ sub _build_structured_answer {
 	# Get IA Metadata via ID lookup
 	# Assume selected is an ID
 	my $metadata = DDG::Meta::Data->get_ia(id => $self->selected) // {};
-	$self->app->emit_error("No Metadata found for ID: ".$self->selected) unless keys $metadata;
+	$self->app->emit_error("No Metadata found for ID: ".$self->selected) unless keys %{$metadata};
 
 	# DBD::Csv ignores col_names letter casing
 	# So, manually map columns to template properties
