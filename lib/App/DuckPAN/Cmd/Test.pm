@@ -41,13 +41,25 @@ sub run {
 			}
 			# Unfortunately we can't just use the name, because some have
 			# spaces - thus we grab the end of the package name.
+
+			my $id = $self->app->get_ia_by_name($ia)->{id};
 			$ia = $self->app->get_ia_by_name($ia)->{perl_module} =~ /::(\w+)$/;
 			$ia = $1;
+
 			if (-d "t/$ia") {
 				push @to_test, "t/$ia";
 			}
 			elsif (my @test_file = File::Find::Rule->name("$ia.t")->in('t')) {
 				push @to_test, "@test_file";
+			}
+			elsif ($ia_type eq 'Fathead') {
+				my $path = "lib/fathead/$id/output.txt";
+				if (-f $path) {
+					$ENV{'DDG_TEST_FATHEAD'} = $id;
+					push @to_test, "t/validate_fathead.t";
+				} else {
+					$self->app->emit_and_exit(1, "Could not find output.txt for $ia in $path");
+				}
 			}
 			else {
 				$self->app->emit_and_exit(1, "Could not find any tests for $ia");
