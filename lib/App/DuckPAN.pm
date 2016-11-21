@@ -433,9 +433,23 @@ sub phrase_to_camel {
 sub get_ia_by_name {
 	my ($self, $name) = @_;
 	my $ia;
+
 	if ($name =~ /^DDG::/) {
 		$ia = DDG::Meta::Data->get_ia(module => $name);
-		$ia = $ia->[0] if $ia;
+		if ($ia) {
+			$ia = $ia->[0];
+		}
+		else {
+			my @msg = (
+				"Could not retrieve metadata for: $name.",
+				"If you have created an IA Page, please ensure it is in 'development' status or later.",
+				"To update the IA Page status, you will need to open a Pull Request.",
+				"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
+			);
+			$self->emit_notice(@msg);
+
+			$ia = { perl_module => $name, id => 'answer'};
+		}
 	}
 	else {
 		$ia = $name =~ /_/
