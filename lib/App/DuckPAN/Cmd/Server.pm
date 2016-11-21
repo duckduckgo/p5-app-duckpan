@@ -190,11 +190,13 @@ sub change_js {
 }
 
 # Rewrite all relative asset links in CSS
+# Capture leading quote, insert
 # E.g url("/assets/background.png") => url("http://duckduckgo.com/assets")
 sub change_css {
 	my ( $self, $css ) = @_;
 	my $hostname = $self->hostname;
-	$css =~ s!:\s*url\((["'])?/!:url\($1http://$hostname/!g;
+
+	$css =~ s|:\s*url\(["']([^'"]+)["']\)|:url\("http://$hostname/$1")|gi;
 	return $css;
 }
 
