@@ -441,14 +441,15 @@ sub get_ia_by_name {
 		}
 		else {
 			my @msg = (
-				"Could not retrieve metadata for: $name.",
+				"Could not retrieve Instant Answers Metadata for: $name.",
+				"Using temporary Metadata instead.\n",
 				"If you have created an IA Page, please ensure it is in 'development' status or later.",
 				"To update the IA Page status, you will need to open a Pull Request.",
 				"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
 			);
 			$self->emit_notice(@msg);
 
-			$ia = { perl_module => $name, id => 'answer'};
+			$ia = { perl_module => $name };
 		}
 	}
 	else {
