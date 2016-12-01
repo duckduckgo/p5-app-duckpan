@@ -41,15 +41,14 @@ sub run {
 			}
 			# Unfortunately we can't just use the name, because some have
 			# spaces - thus we grab the end of the package name.
+			$ia = $self->app->get_ia_by_name($ia);
+			my $id = $ia->{id};
+			my $perl_module = $ia->{perl_module} =~ /::(\w+)$/ ? $1 : '';
 
-			my $id = $self->app->get_ia_by_name($ia)->{id};
-			$ia = $self->app->get_ia_by_name($ia)->{perl_module} =~ /::(\w+)$/;
-			$ia = $1;
-
-			if (-d "t/$ia") {
-				push @to_test, "t/$ia";
+			if (-d "t/$perl_module") {
+				push @to_test, "t/$perl_module";
 			}
-			elsif (my @test_file = File::Find::Rule->name("$ia.t")->in('t')) {
+			elsif (my @test_file = File::Find::Rule->name("$perl_module.t")->in('t')) {
 				push @to_test, "@test_file";
 			}
 			elsif ($ia_type eq 'Fathead') {
@@ -58,11 +57,11 @@ sub run {
 					$ENV{'DDG_TEST_FATHEAD'} = $id;
 					push @to_test, "t/validate_fathead.t";
 				} else {
-					$self->app->emit_and_exit(1, "Could not find output.txt for $ia in $path");
+					$self->app->emit_and_exit(1, "Could not find output.txt for $id in $path");
 				}
 			}
 			else {
-				$self->app->emit_and_exit(1, "Could not find any tests for $ia");
+				$self->app->emit_and_exit(1, "Could not find any tests for $id");
 			}
 		};
 		$self->app->emit_error('Tests failed! See output above for details') if @to_test           and $ret = system("prove -lr @to_test");
