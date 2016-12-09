@@ -1,7 +1,6 @@
 package App::DuckPAN::Cmd::Test;
 # ABSTRACT: Command for running the tests of this library
 
-no warnings 'uninitialized';
 use MooX;
 with qw( App::DuckPAN::Cmd );
 
@@ -16,6 +15,8 @@ option full => (
 	default => sub { 0 },
 	doc     => 'run full test suite via dzil',
 );
+
+no warnings 'uninitialized';
 
 sub run {
 	my ($self, @args) = @_;
