@@ -32,18 +32,19 @@ sub run {
 	else {
 		my @to_test = ('t') unless @args;
 		my @cheat_sheet_tests;
-		foreach my $ia (@args) {
-			if ($ia =~ /_cheat_sheet$/) {
+		foreach my $ia_name (@args) {
+			if ($ia_name =~ /_cheat_sheet$/) {
 				$self->app->emit_and_exit(1, 'Cheat sheets can only be tested in Goodies')
 					unless $ia_type eq 'Goodie';
-				$ia =~ s/_cheat_sheet$//;
-				$ia =~ s/_/-/g;
-				push @cheat_sheet_tests, $ia;
+				$ia_name =~ s/_cheat_sheet$//;
+				$ia_name =~ s/_/-/g;
+				push @cheat_sheet_tests, $ia_name;
 				next;
 			}
 			# Unfortunately we can't just use the name, because some have
 			# spaces - thus we grab the end of the package name.
-			$ia = $self->app->get_ia_by_name($ia);
+			my $ia = $self->app->get_ia_by_name($ia_name);
+			$self->app->emit_and_exit(1, "Could not find an Instant Answer with name '$ia_name'") unless $ia;
 			my $id = $ia->{id};
 
 			if (my ($perl_module) = $ia->{perl_module} =~ /::(\w+)$/) {
