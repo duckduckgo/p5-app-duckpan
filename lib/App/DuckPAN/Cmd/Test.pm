@@ -1,6 +1,7 @@
 package App::DuckPAN::Cmd::Test;
 # ABSTRACT: Command for running the tests of this library
 
+no warnings 'uninitialized';
 use MooX;
 with qw( App::DuckPAN::Cmd );
 
@@ -43,13 +44,14 @@ sub run {
 			# spaces - thus we grab the end of the package name.
 			$ia = $self->app->get_ia_by_name($ia);
 			my $id = $ia->{id};
-			my $perl_module = $ia->{perl_module} =~ /::(\w+)$/ ? $1 : '';
 
-			if (-d "t/$perl_module") {
-				push @to_test, "t/$perl_module";
-			}
-			elsif (my @test_file = File::Find::Rule->name("$perl_module.t")->in('t')) {
-				push @to_test, "@test_file";
+			if (my ($perl_module) = $ia->{perl_module} =~ /::(\w+)$/) {
+				if (-d "t/$perl_module") {
+					push @to_test, "t/$perl_module";
+				}
+				elsif (my @test_file = File::Find::Rule->name("$perl_module.t")->in('t')) {
+					push @to_test, "@test_file";
+				}
 			}
 			elsif ($ia_type eq 'Fathead') {
 				my $path = "lib/fathead/$id/output.txt";
