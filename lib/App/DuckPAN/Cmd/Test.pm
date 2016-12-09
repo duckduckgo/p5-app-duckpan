@@ -55,6 +55,7 @@ sub run {
 					push @to_test, "@test_file";
 				}
 			}
+
 			if ($ia_type eq 'Fathead') {
 				my $path = "lib/fathead/$id/output.txt";
 				if (-f $path) {
@@ -64,9 +65,8 @@ sub run {
 					$self->app->emit_and_exit(1, "Could not find output.txt for $id in $path");
 				}
 			}
-			else {
-				$self->app->emit_and_exit(1, "Could not find any tests for $id");
-			}
+
+			$self->app->emit_and_exit(1, "Could not find any tests for $id $ia_type") unless @to_test;
 		};
 		$self->app->emit_error('Tests failed! See output above for details') if @to_test           and $ret = system("prove -lr @to_test");
 		$self->app->emit_error('Tests failed! See output above for details') if @cheat_sheet_tests and $ret = system("prove -lr t/CheatSheets/CheatSheetsJSON.t :: @cheat_sheet_tests");
