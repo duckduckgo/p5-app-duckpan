@@ -16,6 +16,8 @@ option full => (
 	doc     => 'run full test suite via dzil',
 );
 
+no warnings 'uninitialized';
+
 sub run {
 	my ($self, @args) = @_;
 
@@ -30,28 +32,41 @@ sub run {
 	else {
 		my @to_test = ('t') unless @args;
 		my @cheat_sheet_tests;
-		foreach my $ia (@args) {
-			if ($ia =~ /_cheat_sheet$/) {
+		foreach my $ia_name (@args) {
+			if ($ia_name =~ /_cheat_sheet$/) {
 				$self->app->emit_and_exit(1, 'Cheat sheets can only be tested in Goodies')
 					unless $ia_type eq 'Goodie';
-				$ia =~ s/_cheat_sheet$//;
-				$ia =~ s/_/-/g;
-				push @cheat_sheet_tests, $ia;
+				$ia_name =~ s/_cheat_sheet$//;
+				$ia_name =~ s/_/-/g;
+				push @cheat_sheet_tests, $ia_name;
 				next;
 			}
 			# Unfortunately we can't just use the name, because some have
 			# spaces - thus we grab the end of the package name.
-			$ia = $self->app->get_ia_by_name($ia)->{perl_module} =~ /::(\w+)$/;
-			$ia = $1;
-			if (-d "t/$ia") {
-				push @to_test, "t/$ia";
+			my $ia = $self->app->get_ia_by_name($ia_name);
+			$self->app->emit_and_exit(1, "Could not find an Instant Answer with name '$ia_name'") unless $ia;
+			my $id = $ia->{id};
+
+			if (my ($perl_module) = $ia->{perl_module} =~ /::(\w+)$/) {
+				if (-d "t/$perl_module") {
+					push @to_test, "t/$perl_module";
+				}
+				elsif (my @test_file = File::Find::Rule->name("$perl_module.t")->in('t')) {
+					push @to_test, "@test_file";
+				}
 			}
-			elsif (my @test_file = File::Find::Rule->name("$ia.t")->in('t')) {
-				push @to_test, "@test_file";
+
+			if ($ia_type eq 'Fathead') {
+				my $path = "lib/fathead/$id/output.txt";
+				if (-f $path) {
+					$ENV{'DDG_TEST_FATHEAD'} = $id;
+					push @to_test, "t/validate_fathead.t";
+				} else {
+					$self->app->emit_and_exit(1, "Could not find output.txt for $id in $path");
+				}
 			}
-			else {
-				$self->app->emit_and_exit(1, "Could not find any tests for $ia");
-			}
+
+			$self->app->emit_and_exit(1, "Could not find any tests for $id $ia_type") unless @to_test;
 		};
 		$self->app->emit_error('Tests failed! See output above for details') if @to_test           and $ret = system("prove -lr @to_test");
 		$self->app->emit_error('Tests failed! See output above for details') if @cheat_sheet_tests and $ret = system("prove -lr t/CheatSheets/CheatSheetsJSON.t :: @cheat_sheet_tests");
