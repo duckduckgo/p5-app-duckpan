@@ -53,7 +53,7 @@ sub run {
 					push @to_test, "@test_file";
 				}
 			}
-			elsif ($ia_type eq 'Fathead') {
+			if ($ia_type eq 'Fathead') {
 				my $path = "lib/fathead/$id/output.txt";
 				if (-f $path) {
 					$ENV{'DDG_TEST_FATHEAD'} = $id;
