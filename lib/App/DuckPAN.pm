@@ -27,6 +27,8 @@ use open qw/:std :utf8/;
 use App::DuckPAN::Cmd::Help;
 use DDG::Meta::Data;
 
+use Data::Printer;
+
 no warnings 'uninitialized';
 
 option dev_version => (
@@ -436,27 +438,28 @@ sub get_ia_by_name {
 
 	if ($name =~ /^DDG::/) {
 		$ia = DDG::Meta::Data->get_ia(module => $name);
-		if ($ia) {
-			$ia = $ia->[0];
-		}
-		else {
-			my @msg = (
-				"Could not retrieve Instant Answers Metadata for: $name.",
-				"Using temporary Metadata instead.\n",
-				"If you have created an IA Page, please ensure it is in 'development' status or later.",
-				"To update the IA Page status, you will need to open a Pull Request.",
-				"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
-			);
-			$self->emit_notice(@msg);
-
-			$ia = { perl_module => $name };
-		}
+		p($ia);
+		$ia = $ia->[0] if $ia;
 	}
 	else {
 		$ia = $name =~ /_/
 			? DDG::Meta::Data->get_ia(id => $name)
 			: DDG::Meta::Data->get_ia(id => $self->camel_to_underscore($name));
 	}
+
+	unless ($ia) {
+		my @msg = (
+			"Could not retrieve Instant Answers Metadata for: $name.",
+			"Using temporary Metadata instead.\n",
+			"If you have created an IA Page, please ensure it is in 'development' status or later.",
+			"To update the IA Page status, you will need to open a Pull Request.",
+			"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
+		);
+		$self->emit_notice(@msg);
+
+		$ia = { perl_module => $name };
+	}
+
 	return $ia;
 }
 

@@ -343,6 +343,9 @@ sub request {
 				if (@$ia == 1) {
 					$id = $ia->[0]{id};
 					push @ids, $id;
+				} else {
+					my $id = eval{ $caller->id };
+					push @ids, $id if $id;
 				}
 			}
 
