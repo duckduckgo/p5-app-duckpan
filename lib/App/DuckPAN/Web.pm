@@ -339,15 +339,17 @@ sub request {
 			my $caller = $result->caller;
 			my $id;
 			#exlude parent/child IAs like CheatSheets
-			if(my $ia = DDG::Meta::Data->get_ia(module => $caller)){
+			if (my $ia = DDG::Meta::Data->get_ia(module => $caller)){
 				if (@$ia == 1) {
 					$id = $ia->[0]{id};
-					push @ids, $id;
-				} else {
-					my $id = eval{ $caller->id };
-					push @ids, $id if $id;
 				}
 			}
+			else {
+				my $clean_module = $caller;
+				$clean_module =~ s/DDG::[^:]+:://;
+				$id = App::DuckPAN->camel_to_underscore($clean_module);
+			}
+			push @ids, $id;
 
 			# Info for terminal.
 			p($result) if $result;
