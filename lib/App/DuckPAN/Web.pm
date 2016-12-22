@@ -15,6 +15,7 @@ use HTML::TreeBuilder;
 use HTML::Element;
 use Data::Printer return_value => 'dump';
 use HTTP::Request;
+use HTTP::Headers;
 use LWP::UserAgent;
 use URI::Escape;
 use JSON;
@@ -174,13 +175,13 @@ sub request {
 					# Make sure we replace "${dollar}" with "$".
 					$to =~ s/\$\{dollar\}/\$/g;
 
-					my ($wrap_jsonp_callback, $callback, $wrap_string_callback, $missing_envs, $accept_header) =
-						($rewrite->wrap_jsonp_callback, $rewrite->callback, $rewrite->wrap_string_callback, defined($rewrite->missing_envs), $rewrite->accept_header);
+					my ($wrap_jsonp_callback, $callback, $wrap_string_callback, $missing_envs, $headers) =
+						($rewrite->wrap_jsonp_callback, $rewrite->callback, $rewrite->wrap_string_callback, defined($rewrite->missing_envs), $rewrite->headers);
 
 					# Check if environment variables (most likely the API key) is missing.
 					# If it is missing, switch to the DDG endpoint.
 					my ($use_ddh, $request_uri);
-					if($missing_envs) {
+					if ($missing_envs) {
 						++$use_ddh;
 						$request_uri = $request->request_uri;
 						 # Display the URL that we used.
@@ -190,18 +191,19 @@ sub request {
 					$to = "https://beta.duckduckgo.com$request_uri" if $use_ddh;
 					p($to);
 
+					my $h = HTTP::Headers->new( %$headers );
 					my $res;
 					if ( $post_body && !$use_ddh ) {
 						$res = $self->ua->request(HTTP::Request->new(
 							POST => $to,
-							[ $accept_header ? (Accept => $accept_header) : () ],
+							$h,
 							$post_body
 						));
 					}
 					else {
 						$res = $self->ua->request(HTTP::Request->new(
 							GET => $to,
-							[ $accept_header ? (Accept => $accept_header) : () ]
+							$h
 						));
 					}
 
