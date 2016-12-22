@@ -479,7 +479,10 @@ sub request {
 		#   calls_nrc : css calls
 		#   calls_template : handlebars templates
 
-		my $calls_nrj = join('', map{ DDG::Meta::Data->get_js(id => $_) } @ids);
+		my $calls_nrj = join('', map {
+			DDG::Meta::Data->get_js(id => $_)
+			|| qq(DDH.$_=DDH.$_||{};DDH.$_.meta={"tab":"Answer", "id":"$_"};)
+		} @ids);
 		my $calls_script = join('', map { q|<script type='text/JavaScript' src='| . $_ . q|'></script>| } @calls_script);
 		# For now we only allow a single goodie. If that changes, we will do the
 		# same join/map as with spices.
