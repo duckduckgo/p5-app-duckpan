@@ -74,11 +74,29 @@ sub get_blocks_from_current_dir {
 		if (my $ia = $self->app->get_ia_by_name($arg)) {
 			$class = $ia->{perl_module};
 		}
+		elsif ($arg =~ /_/) {
+			my @msg = (
+				"Could not retrieve Instant Answers Metadata for ID: $arg.",
+				"If a local Perl Module exists, please provide the module name instead of the ID.",
+				"Or, if you have created an IA Page, please ensure it is in 'development' status or later.",
+				"To update the IA Page status, you will need to open a Pull Request.",
+				"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
+			);
+			$self->app->emit_notice(@msg);
+		}
 		else {
-			$failed_to_load{$arg} =
-				'Could not retrieve metadata - please ensure the Instant Answer page ' .
-				'is in development status or later.';
-			next;
+			my @msg = (
+				"Could not retrieve Instant Answers Metadata for: $arg.",
+				"Using temporary Metadata instead.",
+				"If you have created an IA Page, please ensure it is in 'development' status or later.",
+				"To update the IA Page status, you will need to open a Pull Request.",
+				"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
+			);
+			$self->app->emit_notice(@msg);
+			($class) = $arg =~ /DDG::/
+				? $arg
+				: "DDG::" . $type->{name} . "::$arg";
+			$self->app->emit_notice("Attempting to load local module: $class");
 		}
 		my ($load_success, $load_error_message) = try_load_class($class);
 
