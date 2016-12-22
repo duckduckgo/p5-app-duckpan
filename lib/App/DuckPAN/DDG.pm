@@ -9,17 +9,33 @@ use Class::Load ':all';
 use Data::Printer return_value => 'dump';
 use List::Util qw (first);
 
-# This function tells the user which modules / instant answers failed to load.
+# This function tells the user which modules / Instant Answers failed to load
 sub show_failed_modules {
 	my ($self, $failed_to_load) = @_;
 
 	if (%$failed_to_load) {
-		$self->app->emit_notice("These instant answers were not loaded:");
+		$self->app->emit_notice("These Instant Answers were not loaded:");
 		$self->app->emit_notice(p($failed_to_load, colored => $self->app->colors));
 		$self->app->emit_notice(
 			"To learn more about installing Perl dependencies, please read http://docs.duckduckhack.com/resources/other-dev-environments.html#dealing-with-installation-issues.",
-			"Note: You can ignore these errors if you're not working on these instant answers."
+			"Note: You can ignore these errors if you're not working on these Instant Answers."
 		) if first { /dependencies/ } values %$failed_to_load;
+	}
+}
+
+# This function tells the user which modules / Instant Answers have no associated metadata
+sub show_no_metadata_modules {
+	my ($self, $no_metadata) = @_;
+
+	if (@$no_metadata) {
+		$self->app->emit_notice("No metadata was found for these Instant Answers:");
+		$self->app->emit_notice(p($no_metadata, colored => $self->app->colors));
+		$self->app->emit_notice(
+			"Using temporary Metadata instead.",
+			"If you have created an IA Page, please ensure it is in 'development' status or later.",
+			"To update the IA Page status, you will need to open a Pull Request.",
+			"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
+		);
 	}
 }
 
@@ -65,6 +81,8 @@ sub get_blocks_from_current_dir {
 	# The key contains the module name and the value contains the dependency that wasn't met.
 	my %failed_to_load;
 
+	my @no_metadata;
+
 	my (%blocks_plugins, @UC_TRIGGERS);
 	# This loop goes through each Goodie / Spice, and it tries to load it.
 	foreach my $arg (@args) {
@@ -78,25 +96,17 @@ sub get_blocks_from_current_dir {
 			my @msg = (
 				"Could not retrieve Instant Answers Metadata for ID: $arg.",
 				"If a local Perl Module exists, please provide the module name instead of the ID.",
-				"Or, if you have created an IA Page, please ensure it is in 'development' status or later.",
+				"Or, if you have created an IA Page for any of these, please ensure its status is 'development' or 'testing'.",
 				"To update the IA Page status, you will need to open a Pull Request.",
 				"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
 			);
 			$self->app->emit_notice(@msg);
 		}
 		else {
-			my @msg = (
-				"Could not retrieve Instant Answers Metadata for: $arg.",
-				"Using temporary Metadata instead.",
-				"If you have created an IA Page, please ensure it is in 'development' status or later.",
-				"To update the IA Page status, you will need to open a Pull Request.",
-				"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
-			);
-			$self->app->emit_notice(@msg);
+			push @no_metadata, $arg;
 			($class) = $arg =~ /DDG::/
 				? $arg
 				: "DDG::" . $type->{name} . "::$arg";
-			$self->app->emit_notice("Attempting to load local module: $class");
 		}
 		my ($load_success, $load_error_message) = try_load_class($class);
 
@@ -153,6 +163,9 @@ sub get_blocks_from_current_dir {
 	# and @successfully_loaded does, we just use what's in @successfully_loaded.
 	@args = @successfully_loaded;
 
+	# Now let's tell the user which Instant Answers have no metadata
+	$self->show_no_metadata_modules(\@no_metadata);
+
 	# Now let's tell the user why some of the modules failed.
 	$self->show_failed_modules(\%failed_to_load);
 
@@ -162,7 +175,7 @@ sub get_blocks_from_current_dir {
 	}
 
 	if(@UC_TRIGGERS){
-		$self->app->emit_notice('Detected potential UPPERCASE triggers in the following instant answers. If yours is listed, check it out! Only lowercase will work.' . "\n"
+		$self->app->emit_notice('Detected potential UPPERCASE triggers in the following Instant Answers. If yours is listed, check it out! Only lowercase will work.' . "\n"
 			. p(@UC_TRIGGERS, colored => $self->app->colors));
 	}
 
