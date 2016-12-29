@@ -184,14 +184,21 @@ sub request {
 					if ($missing_envs) {
 						++$use_ddh;
 						$request_uri = $request->request_uri;
-						 # Display the URL that we used.
-						 print "\nAPI key not found. Using DuckDuckGo's endpoint:\n";
+						# Display the URL that we used.
+						print "\nAPI key not found. Using DuckDuckGo's endpoint:\n";
 					}
 
 					$to = "https://beta.duckduckgo.com$request_uri" if $use_ddh;
 					p($to);
 
+					my ($uname, $pw);
+					if (defined $headers->{basic_auth}) {
+						($uname, $pw) = @{$headers->{basic_auth}};
+						delete $headers->{basic_auth};
+					}
 					my $h = HTTP::Headers->new( %$headers );
+					$h->authorization_basic($uname, $pw) if (defined $uname && defined $pw);
+
 					my $res;
 					if ( $post_body && !$use_ddh ) {
 						$res = $self->ua->request(HTTP::Request->new(
