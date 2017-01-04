@@ -16,10 +16,19 @@ option full => (
 	doc     => 'run full test suite via dzil',
 );
 
+option verbose => (
+	is      => 'ro',
+	short   => 'v',
+	default => sub { 0 },
+	doc     => 'verbose test output',
+);
+
 no warnings 'uninitialized';
 
 sub run {
 	my ($self, @args) = @_;
+
+	$ENV{'DDG_VERBOSE_TEST'} = $self->verbose;
 
 	my $ia_type = $self->app->get_ia_type->{name};
 
@@ -68,6 +77,7 @@ sub run {
 
 			$self->app->emit_and_exit(1, "Could not find any tests for $id $ia_type") unless @to_test;
 		};
+
 		$self->app->emit_error('Tests failed! See output above for details') if @to_test           and $ret = system("prove -lr @to_test");
 		$self->app->emit_error('Tests failed! See output above for details') if @cheat_sheet_tests and $ret = system("prove -lr t/CheatSheets/CheatSheetsJSON.t :: @cheat_sheet_tests");
 	}
