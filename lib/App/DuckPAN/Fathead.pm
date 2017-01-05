@@ -35,6 +35,39 @@ sub _trigger_selected {
 	return $dir;
 }
 
+has _trigger_words => (
+	is      => 'ro',
+	builder => 1,
+	lazy    => 1,
+);
+
+sub _build__trigger_words {
+	my ($self) = @_;
+	my $tf = 'trigger_words.txt';
+	return [] unless $self->has_selected;
+	my $file = path("lib/fathead/", $self->selected, $tf);
+	unless ($file->exists){
+		my $full_path = $file->realpath;
+		$self->app->emit_debug("No $tf was found in $full_path");
+		return [];
+	}
+	chomp (my @words = $file->lines);
+	return \@words;
+}
+
+has _trigger_re => (
+	is      => 'ro',
+	lazy    => 1,
+	builder => 1,
+);
+
+sub _build__trigger_re {
+	my ($self) = @_;
+	my @words = @{$self->_trigger_words};
+	my $text = join '|', map { quotemeta $_ } @words;
+	return qr/\b(?:$text)\b/i;
+}
+
 has output_txt => (
 	is => 'rwp',
 	lazy => 1,
@@ -95,6 +128,8 @@ sub _search_output {
 
 	my ($self, $query) = @_;
 
+	my $trigger_re = $self->_trigger_re;
+	$query =~ s/^$trigger_re\s+|\s+$trigger_re$//;
 	my $result = $self->_db_lookup($query);
 
 	while ($result && $result->{type} eq 'R') {
