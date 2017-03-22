@@ -203,7 +203,8 @@ sub request {
 					}
 					else {
 						$req = HTTP::Request->new(
-							GET => $to
+							GET => $to,
+							$h
 						);
 					}
 
