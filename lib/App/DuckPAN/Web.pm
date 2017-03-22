@@ -189,23 +189,26 @@ sub request {
 					}
 
 					$to = "https://beta.duckduckgo.com$request_uri" if $use_ddh;
-					p($to);
 
 					my $h = HTTP::Headers->new( %$headers );
 					my $res;
+					my $req;
+
 					if ( $post_body && !$use_ddh ) {
-						$res = $self->ua->request(HTTP::Request->new(
+						$req = HTTP::Request->new(
 							POST => $to,
 							$h,
 							$post_body
-						));
+						);
 					}
 					else {
-						$res = $self->ua->request(HTTP::Request->new(
-							GET => $to,
-							$h
-						));
+						$req = HTTP::Request->new(
+							GET => $to
+						);
 					}
+
+					p($req->as_string);
+					$res = $self->ua->request($req);
 
 					if ($res->is_success) {
 						$body = $res->decoded_content;
