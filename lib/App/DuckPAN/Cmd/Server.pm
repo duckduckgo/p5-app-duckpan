@@ -195,8 +195,7 @@ sub change_js {
 sub change_css {
 	my ( $self, $css ) = @_;
 	my $hostname = $self->hostname;
-
-	$css =~ s|:\s*url\(["']([^'"]+)["']\)|:url\("http://$hostname/$1")|gi;
+	$css =~ s!:\s*url\((["'])?/!:url\($1http://$hostname/!g;
 	return $css;
 }
 
