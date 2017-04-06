@@ -279,6 +279,7 @@ sub request {
 		my @calls_nrc = ();
 		my @calls_script = ();
 		my %calls_template = ();
+		my %calls_data = ();
 		my @calls_goodie;
 		my @calls_fathead;
 		my @ids;
@@ -361,9 +362,15 @@ sub request {
 			my $result_type =	($res_ref eq 'DDG::ZeroClickInfo::Spice') ? 'spice' :
 								($res_ref eq 'DDG::ZeroClickInfo') ?		'goodie' :
 																			'other';
+
 			my $is_goodie = $result_type eq 'goodie';
-			if (($result_type eq 'spice' || $is_goodie)
-				&& $caller->can('module_share_dir')) {
+			my $is_spice  = $result_type eq 'spice';
+
+			if ($is_spice && $result->has_call_data){
+				$calls_data{$id} = $result->call_data;
+			}
+
+			if (($is_spice || $is_goodie) && $caller->can('module_share_dir')) {
 				# grab associated JS, Handlebars and CSS
 				# and add them to correct arrays for injection into page
 				my $share_dir = path($caller->module_share_dir);
@@ -481,15 +488,21 @@ sub request {
 		#   calls_template : handlebars templates
 
 		my $calls_nrj = join('', map{ DDG::Meta::Data->get_js(id => $_) } @ids);
-		my $calls_script = join('', map { q|<script type='text/JavaScript' src='| . $_ . q|'></script>| } @calls_script);
+		my $calls_script = join('', map { qq|<script type='text/JavaScript' src='$_'></script>| } @calls_script);
 		# For now we only allow a single goodie. If that changes, we will do the
 		# same join/map as with spices.
-		if(@calls_goodie){
+		if (@calls_goodie) {
 			my $goodie = shift @calls_goodie;
+			my $goodie_json = encode_json($goodie);
 			$calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
 			# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
 			# $calls_script = q|<script type="text/JavaScript">/*DDH.add(| . encode_json($goodie) . q|);*/</script>|;
-			$calls_script .= q|<script type="text/JavaScript">DDG.ready(function(){ window.setTimeout(DDH.add.bind(DDH, | . encode_json($goodie) . q|), 100)});</script>|;
+			$calls_script .= qq|
+				<script type="text/JavaScript">
+					DDG.ready(function(){
+						window.setTimeout( DDH.add($goodie_json), 100);
+					});
+				</script>|;
 		}
 		elsif(@calls_fathead){
 			my $fathead = shift @calls_fathead;
@@ -501,6 +514,19 @@ sub request {
 		else{
 			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
 		}
+
+		if (%calls_data) {
+			foreach my $spice_id ( keys %calls_data ){
+				my $json_data = encode_json($calls_data{$spice_id});
+				$calls_script .= qq|
+					<script type="text/JavaScript">
+						DDG.ready(function(){
+							DDG.inject('Spice.$spice_id.call_data', $json_data);
+						});
+					</script>|;
+			}
+		}
+
 		my $calls_nrc = @calls_nrc ? join(';', map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
 
 		if (%calls_template) {
