@@ -86,13 +86,20 @@ sub get_blocks_from_current_dir {
 	my (%blocks_plugins, @UC_TRIGGERS);
 	# This loop goes through each Goodie / Spice, and it tries to load it.
 	foreach my $arg (@args) {
+
 		# Let's try to load each Goodie / Spice module
 		# and see if they load successfully.
 		my $class;
+
+		# Attempt to load Metadata based on passed ID
 		if (my $ia = $self->app->get_ia_by_name($arg)) {
 			$class = $ia->{perl_module};
 		}
-		elsif ($arg =~ /_/) {
+
+		# Check if input resembles an ID
+		# i.e. lowercased alphanumeric string, possibly containing underscores
+		# Assumes no lowercased Perl package names exist (e.g. DDG::Goodie::lowercase)
+		elsif ($arg =~ /^[a-z0-9\_]+$/) {
 			my @msg = (
 				"Could not retrieve Instant Answers Metadata for ID: $arg.",
 				"If a local Perl Module exists, please provide the module name instead of the ID.",
@@ -101,13 +108,23 @@ sub get_blocks_from_current_dir {
 				"More info: https://docs.duckduckhack.com/submitting/submitting-overview.html\n"
 			);
 			$self->app->emit_notice(@msg);
+			$failed_to_load{$arg} = "No metadata found. See details above.";
+			next;
 		}
-		else {
+
+		# Check if Perl Package name provided
+		# We don't have Goodie packages with
+		elsif ($arg =~ /^(DDG::(?:Goodie|Spice|Fathead)::)?[A-Z]+[a-z0-9]*?$/) {
 			push @no_metadata, $arg;
-			($class) = $arg =~ /DDG::/
-				? $arg
-				: "DDG::" . $type->{name} . "::$arg";
+			$class = $1 ? $arg : "DDG::$type->{name}::$arg";
 		}
+
+		# Bad input
+		else {
+			$failed_to_load{$arg} = "Invalid Instant Answer ID or Perl package name";
+			next;
+		}
+
 		my ($load_success, $load_error_message) = try_load_class($class);
 
 		# If they load successfully, $load_success would be a 1.
