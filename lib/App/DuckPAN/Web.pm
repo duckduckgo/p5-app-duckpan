@@ -153,7 +153,7 @@ sub request {
 				$path_remainder =~ s/^\///;
 				my $spice_class = $self->_path_hash->{$_};
 				$rewrite = $self->_rewrite_hash->{$spice_class};
-				die "Spice tested here must have a rewrite..." unless $rewrite;
+				croak("Spice tested here must have a rewrite...") unless $rewrite;
 				my $from = $rewrite->from;
 				my $re = $rewrite->has_from ? qr{$from} : qr{(.*)};
 				if (my @captures = $path_remainder =~ m/$re/) {
@@ -404,8 +404,8 @@ sub request {
 					}
 					else{ # auto-template
 						my $input_size = @{$structured->{input}};
-						die "Auto-templating with input of size $input_size called for '$structured->{operation}', "
-							. "while only sizes up to 2 are supported" if $input_size >= 3;
+						croak("Auto-templating with input of size $input_size called for '$structured->{operation}', "
+							. "while only sizes up to 2 are supported") if $input_size >= 3;
 						my $template_name = 'goodie_'.$input_size.'_inputs';
 						my $json_string = encode_json({Answer => $structured});
 						$zci_container->push_content(HTML::TreeBuilder->new_from_content("<script>\$(window).load(function(){"

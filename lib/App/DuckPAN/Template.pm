@@ -9,6 +9,7 @@ use Moo;
 use Try::Tiny;
 use Text::Xslate;
 use Path::Tiny qw(path);
+use Carp;
 
 use namespace::clean;
 
@@ -72,14 +73,14 @@ sub generate {
 	# actual path here
 	my $output_file = path($tx->render_string($self->output_file, $vars));
 
-	die "Template output file '" . $output_file . "' already exists" if $output_file->exists;
+	croak("Template output file $output_file already exists") and return if $output_file->exists;
 
 	my $content = $tx->render($input_file, $vars);
 
 	try {
 	    path($output_file)->touchpath->spew_utf8($content);
 	} catch {
-	    die "Error creating output file '$output_file' from template: $_";
+	    croak "Error creating output file '$output_file' from template: $_";
 	};
 
 	return $output_file;

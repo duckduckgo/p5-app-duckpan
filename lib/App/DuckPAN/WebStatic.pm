@@ -31,7 +31,7 @@ sub BUILD {
 		my $port = $self->sites->{$site}->{port};
 		my $url = $self->sites->{$site}->{url};
 		my $data_file = path($site.'.json');
-		die "Missing JSON publisher data file for ".$site unless $data_file->is_file;
+		croak("Missing JSON publisher data file for $site") unless $data_file->is_file;
 		my $data = decode_json($data_file->slurp_utf8);
 		my %urls;
 		for my $dir (keys %$data) {
