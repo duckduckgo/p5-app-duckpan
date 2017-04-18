@@ -2,7 +2,11 @@ package App::DuckPAN::Cmd::Query;
 # ABSTRACT: Command line tool for testing queries and see triggered instant answers
 
 use MooX;
-with qw( App::DuckPAN::Cmd App::DuckPAN::Restart );
+with qw(
+	App::DuckPAN::Cmd
+	App::DuckPAN::Option::Tell
+	App::DuckPAN::Restart
+);
 
 use MooX::Options protect_argv => 0;
 

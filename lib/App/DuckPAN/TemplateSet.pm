@@ -14,6 +14,7 @@ use Moo;
 use Try::Tiny;
 use List::Util qw(all);
 use Algorithm::Combinatorics qw(combinations);
+use Carp;
 
 use namespace::clean;
 
@@ -120,7 +121,7 @@ sub generate {
 
 	# Verify that $optional_templates has templates from within $self->optional_templates
 	$self->_are_templates_optional(@$optional_templates)
-		or die "Unknown template(s) in \$optional_templates";
+		or croak("Unknown template(s) in \$optional_templates");
 
 	for my $template (@{$self->required_templates}, @$optional_templates) {
 		try {
