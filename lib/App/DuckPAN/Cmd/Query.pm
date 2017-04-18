@@ -8,8 +8,7 @@ use MooX::Options protect_argv => 0;
 
 sub run {
 	my ($self, @args) = @_;
-
-	exit $self->run_restarter(\@args);
+	$self->run_restarter(\@args);
 }
 
 sub _run_app {
