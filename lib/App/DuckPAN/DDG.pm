@@ -77,8 +77,7 @@ sub get_blocks_from_current_dir {
 		else {
 			$failed_to_load{$arg} =
 				'Could not retrieve metadata - please ensure the Instant Answer page ' .
-				'is in development status or later.';
-			next;
+				'is in development status or later; the IA has still been loaded.';
 		}
 		my ($load_success, $load_error_message) = try_load_class($class);
 
