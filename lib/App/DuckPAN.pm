@@ -433,6 +433,7 @@ sub phrase_to_camel {
 sub get_ia_by_name {
 	my ($self, $name) = @_;
 	my $ia;
+
 	if ($name =~ /^DDG::/) {
 		$ia = DDG::Meta::Data->get_ia(module => $name);
 		$ia = $ia->[0] if $ia;
@@ -442,6 +443,7 @@ sub get_ia_by_name {
 			? DDG::Meta::Data->get_ia(id => $name)
 			: DDG::Meta::Data->get_ia(id => $self->camel_to_underscore($name));
 	}
+
 	return $ia;
 }
 

@@ -345,12 +345,17 @@ sub request {
 			my $caller = $result->caller;
 			my $id;
 			#exlude parent/child IAs like CheatSheets
-			if(my $ia = DDG::Meta::Data->get_ia(module => $caller)){
+			if (my $ia = DDG::Meta::Data->get_ia(module => $caller)){
 				if (@$ia == 1) {
 					$id = $ia->[0]{id};
-					push @ids, $id;
 				}
 			}
+			else {
+				my $clean_module = $caller;
+				$clean_module =~ s/DDG::[^:]+:://;
+				$id = App::DuckPAN->camel_to_underscore($clean_module);
+			}
+			push @ids, $id;
 
 			# Info for terminal.
 			p($result) if $result;
@@ -480,7 +485,10 @@ sub request {
 		#   calls_nrc : css calls
 		#   calls_template : handlebars templates
 
-		my $calls_nrj = join('', map{ DDG::Meta::Data->get_js(id => $_) } @ids);
+		my $calls_nrj = join('', map {
+			DDG::Meta::Data->get_js(id => $_)
+			|| qq(DDH.$_=DDH.$_||{};DDH.$_.meta={"tab":"Answer", "id":"$_"};)
+		} @ids);
 		my $calls_script = join('', map { q|<script type='text/JavaScript' src='| . $_ . q|'></script>| } @calls_script);
 		# For now we only allow a single goodie. If that changes, we will do the
 		# same join/map as with spices.
