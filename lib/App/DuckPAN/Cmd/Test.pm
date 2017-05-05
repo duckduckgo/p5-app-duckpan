@@ -70,7 +70,8 @@ sub run {
 				if (-f $path) {
 					$ENV{'DDG_TEST_FATHEAD'} = $id;
 					push @to_test, "t/validate_fathead.t";
-				} else {
+				}
+				else {
 					$self->app->emit_and_exit(1, "Could not find output.txt for $id in $path");
 				}
 			}
@@ -78,6 +79,29 @@ sub run {
 			$self->app->emit_and_exit(1, "Could not find any tests for $id $ia_type") unless @to_test;
 		};
 
+		# For the front-end tests
+		print("\n\nSearching for front-end tests\n");
+		if(scalar(@args) == 0) {
+			$self->app->emit_error("Couldn't run front-end tests. Please ensure that jasmine is installed globally.\n\nnpm install -g jasmine-node\n") if system("jasmine-node --test-dir spec/");
+		}
+		else {
+			foreach my $ia_name (@args) {
+
+				if($ia_type eq "Goodie" or $ia_type eq "Spice") {
+					my $test_file = "spec/$ia_name\_spec.js";
+
+					if(-e $test_file) {
+						print "\nRunning front-end tests for $ia_name\n";
+						$self->app->emit_error("Couldn't run front-end tests. Please ensure that jasmine is installed globally.\n\nnpm install -g jasmine-node\n") if system("jasmine-node $test_file");
+					}
+					else {
+						print "\nNo front-end tests detected for $ia_name\n";
+					}
+				}
+			}
+		}
+
+		print("\n\nSearching for back-end tests\n");
 		$self->app->emit_error('Tests failed! See output above for details') if @to_test           and $ret = system("prove -lr @to_test");
 		$self->app->emit_error('Tests failed! See output above for details') if @cheat_sheet_tests and $ret = system("prove -lr t/CheatSheets/CheatSheetsJSON.t :: @cheat_sheet_tests");
 	}
