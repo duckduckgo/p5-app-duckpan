@@ -80,28 +80,27 @@ sub run {
 		};
 
 		# For the front-end tests
-		print("\n\nSearching for front-end tests\n");
+		$self->app->emit_info("Searching for front-end tests");
 		if(scalar(@args) == 0) {
+
 			$self->app->emit_error("Couldn't run front-end tests. Please ensure that jasmine is installed globally.\n\nnpm install -g jasmine-node\n") if system("jasmine-node --test-dir spec/");
 		}
-		else {
+		elsif($ia_type eq "Goodie" or $ia_type eq "Spice") {
+
 			foreach my $ia_name (@args) {
+				my $test_file = "spec/$ia_name\_spec.js";
 
-				if($ia_type eq "Goodie" or $ia_type eq "Spice") {
-					my $test_file = "spec/$ia_name\_spec.js";
-
-					if(-e $test_file) {
-						print "\nRunning front-end tests for $ia_name\n";
-						$self->app->emit_error("Couldn't run front-end tests. Please ensure that jasmine is installed globally.\n\nnpm install -g jasmine-node\n") if system("jasmine-node $test_file");
-					}
-					else {
-						print "\nNo front-end tests detected for $ia_name\n";
-					}
+				if(-e $test_file) {
+					$self->app->emit_info("Running front-end tests for $ia_name");
+					$self->app->emit_error("Couldn't run front-end tests. Please ensure that jasmine is installed globally.\n\nnpm install -g jasmine-node\n") if system("jasmine-node $test_file");
+				}
+				else {
+					$self->app->emit_info("No front-end tests detected for $ia_name");
 				}
 			}
 		}
 
-		print("\n\nSearching for back-end tests\n");
+		$self->app->emit_info("Searching for back-end tests");
 		$self->app->emit_error('Tests failed! See output above for details') if @to_test           and $ret = system("prove -lr @to_test");
 		$self->app->emit_error('Tests failed! See output above for details') if @cheat_sheet_tests and $ret = system("prove -lr t/CheatSheets/CheatSheetsJSON.t :: @cheat_sheet_tests");
 	}
