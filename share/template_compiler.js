@@ -11,7 +11,7 @@
 	env.Spice.failed = function (ia) {
 
 		// First call original Spice.failed()
-		oldSpiceFailed(ia);
+		var res = oldSpiceFailed(ia);
 
 		if (!ia){
 			console.log('[ERROR] Spice.failed() called without specifying Spice ID.');
@@ -25,6 +25,8 @@
 
 		// Alert in Console - just to be safe
 		console.log('[NOTICE] ' + errorMsg);
+
+		return res;
 	}
 }(this));
 
