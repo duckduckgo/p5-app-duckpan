@@ -277,6 +277,9 @@ sub change_html {
 			elsif ($src =~ /locales/) {
 				$_->attr('src','/?duckduckhack_locales=1');
 			}
+			elsif ($src =~ /^\/lib\/l\d+/) {
+				$_->attr('src','/?duckduckhack_ignore=1');
+			}
 			elsif (substr($src,0,1) eq '/') {
 				$_->attr('src','http://'.$self->hostname.''.$_->attr('src'));
 			}
@@ -322,40 +325,49 @@ sub get_sub_assets {
 
 	my $cache_path = $self->asset_cache_path;
 
-	# Find version no. for d.js and g.js
+	# Find version no. for d.js, l.js, and g.js
 	for (@script) {
 		if (my $src = $_->attr('src')) {
 			if ($src =~ m/^\/((?:dpan\d+|duckpan)\.js)/) {
-				unshift @{$self->page_info->{js}},
-				  {
+				push @{$self->page_info->{js}},
+				{
 					name     => 'Main JS',
 					internal => $cache_path->child($1),
 					external => $1
-				  };
+				};
+			}
+			elsif ($src =~ m/^\/(lib\/l\d+\.js)/) {
+				push @{$self->page_info->{js}},
+				{
+					name     => 'Lib JS',
+					internal => $cache_path->child($1),
+					external => $1
+				};
 			}
 			elsif ($src =~ m/^\/((?:g\d+|serp)\.js)/) {
 				unshift @{$self->page_info->{templates}},
-				  {
+				{
 					name     => 'Templating JS',
 					internal => $cache_path->child($1),
 					external => $1
-				  };
+				};
 			}
 			elsif ($src =~ m/^\/(locales(?:.*)\.js)/) {
 				my $long_path  = $1;
 				my $cache_name = $long_path;
 				$cache_name =~ s#^.+(\.\d+\.\d+\.js)#locales$1#g;    # Turn long path into cacheable name
 				unshift @{$self->page_info->{locales}},
-				  {
+				{
 					name     => 'Locales JS',
 					internal => $cache_path->child($cache_name),
 					external => $long_path
-				  };
+				};
 			}
 		}
+
 	}
 
-    	my @cssfile;
+	my @cssfile;
 	for (grep { $_->attr('type') && $_->attr('type') eq 'text/css' } @link) {
 		if (my $href = $_->attr('href')) {
 			# We're looking for txxx.css and sxxx.css.
@@ -366,15 +378,15 @@ sub get_sub_assets {
 			}
 		}
 	}
-    	foreach (sort @cssfile) {
-    		my $name = $_;
+	foreach (sort @cssfile) {
+		my $name = $_;
 		unshift @{$self->page_info->{css}},
-		  {
+		{
 			name     => $name . ' CSS',
 			internal => $cache_path->child($name),
 			external => $name
-		  };
-    	}
+		};
+	}
 
 	# Check if we need to request any new assets from hostname, otherwise use cached copies
 	foreach my $curr_asset (grep { defined $_ && $_->{internal} } map { @{$self->page_info->{$_}} } (qw(js templates css locales))) {
