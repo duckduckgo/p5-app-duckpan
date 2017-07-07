@@ -81,6 +81,7 @@ sub run_psgi {
 }
 
 my $has_common_js = 0;
+my %session_cache;
 sub request {
 	my ( $self, $app, $request ) = @_;
 	my $hostname = $self->server_hostname;
@@ -537,15 +538,31 @@ sub request {
 
 	}
 	else {
-		my $res = $self->ua->request(HTTP::Request->new(GET => "http://".$hostname.$request->request_uri));
-		if ($res->is_success) {
-			$body = $res->decoded_content;
-			$response->code($res->code);
-			$response->content_type($res->content_type);
+		my $uri = $request->request_uri;
+		if (exists $session_cache{$uri}) {
+			my $res = $session_cache{$uri};
+			$body = $res->{decoded_content};
+			$response->code($res->{code});
+			$response->content_type($res->{content_type});
 		}
 		else {
-			p($res->status_line, color => { string => 'red' });
-			$body = "";
+			my $res = $self->ua->request(
+				HTTP::Request->new(GET => "http://$hostname$uri")
+			);
+			if ($res->is_success) {
+				$body = $res->decoded_content;
+				$response->code($res->code);
+				$response->content_type($res->content_type);
+				$session_cache{$uri} = {
+					content_type    => $res->content_type,
+					code            => $res->code,
+					decoded_content => $res->decoded_content,
+				};
+			}
+			else {
+				p($res->status_line, color => { string => 'red' });
+				$body = "";
+			}
 		}
 	}
 
