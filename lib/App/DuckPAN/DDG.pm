@@ -114,7 +114,7 @@ sub get_blocks_from_current_dir {
 
 		# Check if Perl Package name provided
 		# We don't have Goodie packages with
-		elsif ($arg =~ /^(DDG::(?:Goodie|Spice|Fathead)::)?[A-Z]+[a-z0-9]*?$/) {
+		elsif ($arg =~ /^(DDG::(?:Goodie|Spice|Fathead)::)?[A-Z]+[a-zA-Z0-9]*$/) {
 			push @no_metadata, $arg;
 			$class = $1 ? $arg : "DDG::$type->{name}::$arg";
 		}
