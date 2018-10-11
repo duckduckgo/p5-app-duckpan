@@ -492,27 +492,29 @@ sub request {
 		my $calls_script = join('', map { q|<script type='text/JavaScript' src='| . $_ . q|'></script>| } @calls_script);
 		# For now we only allow a single goodie. If that changes, we will do the
 		# same join/map as with spices.
-		if(@calls_goodie){
+		if(@calls_goodie) {
 			my $goodie = shift @calls_goodie;
+			my $json = encode_json($goodie);
 			$calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$goodie->{id}'});",
-			# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
-			# $calls_script = q|<script type="text/JavaScript">/*DDH.add(| . encode_json($goodie) . q|);*/</script>|;
-			$calls_script .= q|<script type="text/JavaScript">DDG.ready(function(){ window.setTimeout(DDH.add.bind(DDH, | . encode_json($goodie) . q|), 100)});</script>|;
+			# Uncomment following line when javascript race condition is addressed
+			# $calls_script = run_on_ready_script( "DDH.add($json)" );
+			$calls_script = run_on_ready_script( "DDH.add.bind(DDH, $json)" );
 		}
-		elsif(@calls_fathead){
+		elsif(@calls_fathead) {
 			my $fathead = shift @calls_fathead;
-			# $calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$fathead->{id}'});",
-			# Uncomment following line and remove "setTimeout" line when javascript race condition is addressed
-			# $calls_script = q|<script type="text/JavaScript">/*DDH.add(| . encode_json($fathead) . q|);*/</script>|;
-			$calls_script .= q|<script type="text/JavaScript">DDG.ready(function(){ window.setTimeout(DDH.add.bind(DDH, | . encode_json($fathead) . q|), 100)});</script>|;
+			my $json = encode_json($fathead);
+			$calls_nrj .= "DDG.duckbar.future_signal_tab({signal:'high',from:'$fathead->{id}'});",
+			# Uncomment following line when javascript race condition is addressed
+			# $calls_script = run_on_ready_script( "DDH.add($json)" );
+			$calls_script = run_on_ready_script( "DDH.add.bind(DDH, $json)" );
 		}
-		else{
-			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('".$_."')" } @calls_nrj) . ';' : '';
+		else {
+			$calls_nrj .= @calls_nrj ? join(';', map { "nrj('$_')" } @calls_nrj) . ';' : '';
 		}
-		my $calls_nrc = @calls_nrc ? join(';', map { "nrc('".$_."')" } @calls_nrc) . ';' : '';
+		my $calls_nrc = @calls_nrc ? join(';', map { "nrc('$_')" } @calls_nrc) . ';' : '';
 
 		if (%calls_template) {
-			foreach my $spice_name ( keys %calls_template ){
+			foreach my $spice_name ( keys %calls_template ) {
 				$calls_script .= join("",map {
 					my $template_name = $_;
 					my $is_ct_self = $calls_template{$spice_name}{$template_name}{"is_ct_self"};
@@ -551,6 +553,19 @@ sub request {
 
 	$response->body($body);
 	return $response;
+}
+
+
+sub run_on_ready_script {
+	my ($str) = @_;
+
+	# any unescaped script tags at this stage will XSS the page - so strip them
+	$str =~ s|</?script>||gi;
+
+	# Uncomment following line when javascript race condition is addressed
+	# return qq|<script type="text/javascript">DDG.ready(function () { $str });</script>|;
+	return qq|<script type="text/javascript">DDG.ready(function () { window.setTimeout($str, 100); });</script>|;
+
 }
 
 sub _no_results_error {
